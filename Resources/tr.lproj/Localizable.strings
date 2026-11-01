@@ -232,3 +232,15 @@
 "Saving notes" = "Notlar kaydediliyor";
 "Writing the meeting summary…" = "Toplantı özeti yazılıyor…";
 "Open last meeting notes" = "Son toplantı notlarını aç";
+
+/* Meeting: hear the translation */
+"Hear the translation" = "Çeviriyi dinle";
+"Hear the translation instead of the original" = "Orijinal yerine çeviriyi dinle";
+"Voice" = "Ses";
+"None installed" = "Yüklü değil";
+"Only the basic %@ voice is installed. Enhanced and Premium voices sound much more natural." = "Yalnızca temel %@ sesi yüklü. Geliştirilmiş ve Premium sesler çok daha doğal duyulur.";
+"Get voices…" = "Ses indir…";
+"The meeting app goes silent for you and Polylocal speaks the translation, about two seconds behind. Use headphones, or the others will hear the translation through your microphone. You can switch back to the original in the subtitle bar." = "Toplantı uygulaması senin için sessize alınır ve Polylocal çeviriyi yaklaşık iki saniye geriden seslendirir. Kulaklık kullan, yoksa diğerleri çeviriyi senin mikrofonundan duyar. Altyazı çubuğundan istediğin zaman orijinale dönebilirsin.";
+"Hearing translation" = "Çeviri dinleniyor";
+"Hearing original" = "Orijinal dinleniyor";
+"Switch between the original audio and the spoken translation" = "Orijinal ses ile seslendirilen çeviri arasında geçiş yap";

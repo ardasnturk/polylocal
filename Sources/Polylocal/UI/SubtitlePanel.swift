@@ -74,6 +74,12 @@ private struct SubtitleView: View {
                     .labelStyle(.titleAndIcon)
             }
             Spacer()
+            Button { meeting.setHearingTranslation(!meeting.isHearingTranslation) } label: {
+                Label(meeting.isHearingTranslation ? "Hearing translation" : "Hearing original",
+                      systemImage: meeting.isHearingTranslation ? "speaker.wave.2.bubble" : "speaker.wave.2")
+                    .font(.caption)
+            }
+            .help("Switch between the original audio and the spoken translation")
             if hovering {
                 Button { app.settings.meetingFontSize = max(14, fontSize - 2) } label: { Image(systemName: "textformat.size.smaller") }
                 Button { app.settings.meetingFontSize = min(44, fontSize + 2) } label: { Image(systemName: "textformat.size.larger") }

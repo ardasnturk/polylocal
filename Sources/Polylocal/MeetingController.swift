@@ -76,6 +76,8 @@ final class MeetingController {
     private(set) var lastNotesFolder: URL?
     private(set) var isSummarizing = false
     private(set) var isSavingNotes = false
+    /// The meeting app is muted for the user and translations are spoken instead.
+    private(set) var isHearingTranslation = false
 
     var isActive: Bool { state != .idle }
 
@@ -91,6 +93,8 @@ final class MeetingController {
     @ObservationIgnored private var watchTimer: Timer?
     @ObservationIgnored private var languageVote = LanguageVote()
     @ObservationIgnored private var notes: MeetingNotesWriter?
+    @ObservationIgnored private var segmenter: SegmenterBox?
+    @ObservationIgnored private lazy var voice = MeetingVoice()
     @ObservationIgnored private lazy var panel = SubtitlePanel(app: app)
 
     init(app: AppModel) {
@@ -120,6 +124,7 @@ final class MeetingController {
                                        targetLanguage: app.settings.primaryLanguage)
         }
         isSavingNotes = notes != nil
+        isHearingTranslation = app.settings.meetingHearTranslation
         state = .starting(String(localized: "Loading speech recognition…"))
         panel.show()
 
@@ -162,6 +167,9 @@ final class MeetingController {
         }
         notes = nil
         isSavingNotes = false
+        voice.stop()
+        isHearingTranslation = false
+        segmenter = nil
         state = .idle
         panel.hide()
     }
@@ -170,18 +178,37 @@ final class MeetingController {
 
     @available(macOS 14.2, *)
     private func startCapture() {
-        guard let source, let phrases else { return }
-        let segmenter = SegmenterBox()
-        let capture = AppAudioCapture(bundleIDPrefix: source.bundleID) { samples in
-            // Runs on the capture queue, the segmenter's only user.
-            for phrase in segmenter.append(samples) { phrases.yield(phrase) }
-        }
-        self.capture = capture
+        segmenter = SegmenterBox()
+        guard let capture = makeCapture() else { return }
         attachCapture(capture)
         // Meeting apps start audio processes late (joining a call, a new browser tab): follow them.
         watchTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.followAudioProcesses() }
         }
+    }
+
+    /// Muted for the user while they hear the translation instead.
+    @available(macOS 14.2, *)
+    private func makeCapture() -> AppAudioCapture? {
+        guard let source, let phrases, let segmenter else { return nil }
+        let capture = AppAudioCapture(bundleIDPrefix: source.bundleID, mute: isHearingTranslation) { samples in
+            // Runs on the capture queue, the segmenter's only user.
+            for phrase in segmenter.append(samples) { phrases.yield(phrase) }
+        }
+        self.capture = capture
+        return capture
+    }
+
+    /// Switches between hearing the meeting as it is and hearing the translation, during a meeting too.
+    func setHearingTranslation(_ on: Bool) {
+        app.settings.meetingHearTranslation = on
+        guard isActive, on != isHearingTranslation else { return }
+        isHearingTranslation = on
+        if !on { voice.stop() }
+        // A tap's mute behavior is fixed when it is created, so swap it for one with the other setting.
+        guard #available(macOS 14.2, *), let old = capture as? AppAudioCapture else { return }
+        old.stop()
+        if let capture = makeCapture() { attachCapture(capture) }
     }
 
     @available(macOS 14.2, *)
@@ -243,7 +270,11 @@ final class MeetingController {
         notes?.add(line.id, .init(time: asrStart.addingTimeInterval(-duration), language: result.language?.code,
                                   original: text, translation: nil))
         Log.meeting.notice("phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms lang=\(result.language?.code ?? "?", privacy: .public)\(expected == nil ? "" : " (given)", privacy: .public) chars=\(text.count, privacy: .public)")
-        guard !ownLanguage else { return }
+        guard !ownLanguage else {
+            // The app is muted, so even what is already in the user's language has to be spoken.
+            if isHearingTranslation { voice.say(text, language: target) }
+            return
+        }
 
         // Recognition continues while this phrase translates.
         let id = line.id
@@ -263,6 +294,7 @@ final class MeetingController {
             update(id) { $0.isTranslating = false }
             let translation = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
             notes?.setTranslation(id, translation.isEmpty ? nil : translation)
+            if isHearingTranslation, !translation.isEmpty { voice.say(translation, language: target) }
             Log.meeting.notice("translated in \(Int(Date().timeIntervalSince(asrStart) * 1000) - asrMS, privacy: .public)ms chars=\(buffer.count, privacy: .public)")
         }
     }

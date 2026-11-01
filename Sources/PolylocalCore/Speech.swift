@@ -265,3 +265,34 @@ public enum TranscriptFilter {
         sentence.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 }
+
+/// Keeps a spoken translation from falling behind the meeting (docs/MEETING_MODE.md §3.5).
+/// Speech is slower than reading: when phrases queue up, speak faster, and past a limit skip the oldest
+/// (they stay in the subtitles), so what the user hears is never far behind what is being said.
+public enum SpeechBacklog {
+    /// Measured with the macOS Turkish and German voices at the default rate (S4): ~13 characters per second.
+    public static let charactersPerSecond = 13.0
+    /// Below this backlog, normal speed.
+    public static let relaxed: TimeInterval = 3
+    /// Above this, the oldest waiting phrases are skipped.
+    public static let limit: TimeInterval = 8
+    public static let maxSpeedup: Float = 1.25
+
+    public static func seconds(_ texts: [String]) -> TimeInterval {
+        Double(texts.reduce(0) { $0 + $1.count }) / charactersPerSecond
+    }
+
+    /// Speaking rate multiplier for the waiting backlog: 1 up to `relaxed`, rising to `maxSpeedup` at `limit`.
+    public static func speedup(forBacklog seconds: TimeInterval) -> Float {
+        guard seconds > relaxed else { return 1 }
+        let progress = min(1, (seconds - relaxed) / (limit - relaxed))
+        return 1 + Float(progress) * (maxSpeedup - 1)
+    }
+
+    /// Drops the oldest waiting phrases until the rest fits within `limit`; always keeps the newest.
+    public static func trimmed(_ pending: [String]) -> [String] {
+        var pending = pending
+        while pending.count > 1, seconds(pending) > limit { pending.removeFirst() }
+        return pending
+    }
+}

@@ -143,3 +143,29 @@ import Testing
         #expect(TranscriptFilter.clean("Ja. Nein. Ja.") == "Ja. Nein. Ja.")
     }
 }
+
+@Suite struct SpeechBacklogTests {
+    func phrase(seconds: Double) -> String {
+        String(repeating: "a", count: Int(seconds * SpeechBacklog.charactersPerSecond))
+    }
+
+    @Test func speedsUpOnlyWhenBehind() {
+        #expect(SpeechBacklog.speedup(forBacklog: 1) == 1)
+        #expect(SpeechBacklog.speedup(forBacklog: 3) == 1)
+        let middle = SpeechBacklog.speedup(forBacklog: 5.5)
+        #expect(middle > 1.1 && middle < 1.15)
+        #expect(SpeechBacklog.speedup(forBacklog: 30) == SpeechBacklog.maxSpeedup)
+    }
+
+    @Test func skipsTheOldestWhenTooFarBehind() {
+        let pending = [phrase(seconds: 4), phrase(seconds: 3), phrase(seconds: 3), phrase(seconds: 2)]
+        let kept = SpeechBacklog.trimmed(pending)
+        #expect(kept == Array(pending.suffix(3)))
+        #expect(SpeechBacklog.seconds(kept) <= SpeechBacklog.limit)
+    }
+
+    @Test func alwaysKeepsTheNewestPhrase() {
+        let long = phrase(seconds: 20)
+        #expect(SpeechBacklog.trimmed([phrase(seconds: 2), long]) == [long])
+    }
+}

@@ -44,6 +44,8 @@ final class AppSettings {
     /// nil = ~/Documents/Polylocal Meetings.
     var meetingNotesFolder: String? { didSet { save(meetingNotesFolder, "meetingNotesFolder") } }
     var meetingSummarize: Bool { didSet { save(meetingSummarize, "meetingSummarize") } }
+    /// Level 3: mute the meeting app for the user and speak the translation instead.
+    var meetingHearTranslation: Bool { didSet { save(meetingHearTranslation, "meetingHearTranslation") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -75,6 +77,7 @@ final class AppSettings {
         meetingSaveNotes = defaults.bool(forKey: "meetingSaveNotes")
         meetingNotesFolder = defaults.string(forKey: "meetingNotesFolder")
         meetingSummarize = defaults.object(forKey: "meetingSummarize") as? Bool ?? true
+        meetingHearTranslation = defaults.bool(forKey: "meetingHearTranslation")
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

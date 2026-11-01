@@ -37,6 +37,31 @@ struct MeetingSettingsView: View {
             }
 
             Section {
+                Toggle("Hear the translation instead of the original", isOn: Binding(
+                    get: { settings.meetingHearTranslation },
+                    set: { app.meeting.setHearingTranslation($0) }))
+                LabeledContent("Voice") {
+                    Text(MeetingVoice.voice(for: settings.primaryLanguage)?.name ?? String(localized: "None installed"))
+                        .foregroundStyle(.secondary)
+                }
+                if MeetingVoice.hasOnlyBasicVoice(for: settings.primaryLanguage) {
+                    HStack {
+                        Text("Only the basic \(settings.primaryLanguage.localizedName) voice is installed. Enhanced and Premium voices sound much more natural.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Get voices…") {
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.universalaccess?SpeakableItems")!)
+                        }
+                    }
+                }
+            } header: {
+                Text("Hear the translation")
+            } footer: {
+                Text("The meeting app goes silent for you and Polylocal speaks the translation, about two seconds behind. Use headphones, or the others will hear the translation through your microphone. You can switch back to the original in the subtitle bar.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section {
                 Toggle("Save meeting notes", isOn: Binding(
                     get: { settings.meetingSaveNotes },
                     set: { on in

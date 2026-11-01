@@ -42,6 +42,7 @@ Meeting subtitles (Settings → Meeting, menu bar → Meeting subtitles) listen 
 
 - Audio is captured only while meeting subtitles are on, and only from the selected app and its helper processes, never the microphone.
 - Audio is cut into phrases in memory, transcribed by the bundled `whisper-server` on `127.0.0.1`, translated by the local engine, then discarded. Audio is never written to disk, and nothing leaves the Mac.
+- **Hear the translation** (off by default) mutes the selected app for you only, through the same tap, and speaks the translations with the macOS system voices, on this Mac.
 - Subtitles are kept only in memory (the last 50 phrases) and disappear when you stop.
 - **Meeting notes** are off by default. When you turn them on (Settings → Meeting → Notes, after a consent reminder), each meeting's text (the original and the translation, with times) is saved to a folder, by default `~/Documents/Polylocal Meetings`. Folders and files are readable only by your user account (0700/0600). The subtitle bar shows "Saving notes" the whole time. An optional summary is written by the local translation model after the meeting.
 - Transcribing other people may require their consent where you live; you are responsible for that.
