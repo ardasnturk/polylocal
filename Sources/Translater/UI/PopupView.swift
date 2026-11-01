@@ -44,6 +44,9 @@ struct PopupView: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .fixedSize()
+            if translator.target.hasFormality {
+                FormalityPicker(formality: $translator.formality)
+            }
             Spacer()
             if translator.isTranslating { ProgressView().controlSize(.small) }
             Button(action: actions.close) {

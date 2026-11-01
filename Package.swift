@@ -24,5 +24,6 @@ let package = Package(
         ),
         .testTarget(name: "TranslaterCoreTests", dependencies: ["TranslaterCore", "Engines"]),
         .testTarget(name: "ModelManagerTests", dependencies: ["ModelManager"]),
+        .testTarget(name: "TranslaterAppTests", dependencies: ["Translater", "TranslaterCore"]),
     ]
 )

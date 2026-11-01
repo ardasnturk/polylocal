@@ -45,7 +45,9 @@ private struct MenuContent: View {
         Divider()
         Button("Çeviri penceresi") { app.windows.showMain() }
             .keyboardShortcut("t")
-        Toggle("Kısayollar açık (⌘C C)", isOn: Binding(
+        Button("Geçmiş") { app.windows.showHistory() }
+            .keyboardShortcut("y")
+        Toggle(shortcutToggleTitle, isOn: Binding(
             get: { app.settings.hotkeysEnabled },
             set: { app.settings.hotkeysEnabled = $0 }))
         Divider()
@@ -55,5 +57,10 @@ private struct MenuContent: View {
         Divider()
         Button("Translater'dan çık") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
+    }
+
+    private var shortcutToggleTitle: String {
+        if let shortcut = app.settings.translateShortcut { return "Kısayollar açık (\(shortcut.displayString))" }
+        return "Kısayollar açık"
     }
 }

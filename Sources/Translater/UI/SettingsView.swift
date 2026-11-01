@@ -38,16 +38,44 @@ private struct GeneralSettings: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
-            Section("Kısayollar") {
+            Section {
                 Toggle("Global kısayolları kullan", isOn: $settings.hotkeysEnabled)
-                LabeledContent("Seçili metni çevir", value: "⌘C C")
-                LabeledContent("Çevir ve yerine yaz", value: "⌘⇧C C")
+                LabeledContent("Seçili metni çevir") {
+                    ShortcutRecorder(shortcut: $settings.translateShortcut, other: settings.replaceShortcut,
+                                     defaultValue: .defaultTranslate, onRecordingChange: app.setShortcutRecording)
+                }
+                LabeledContent("Çevir ve yerine yaz") {
+                    ShortcutRecorder(shortcut: $settings.replaceShortcut, other: settings.translateShortcut,
+                                     defaultValue: .defaultReplace, onRecordingChange: app.setShortcutRecording)
+                }
                 if !app.accessibilityTrusted {
                     HStack {
                         Label("Erişilebilirlik izni gerekli", systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.orange)
                         Spacer()
                         Button("İzin ver") { app.requestAccessibility() }
+                    }
+                }
+            } header: {
+                Text("Kısayollar")
+            } footer: {
+                Text("⇧⌘C bir pano yöneticisi (ör. Raycast) tarafından kullanılıyorsa başka bir kısayol seç. Çeviri penceresinde ⌘↩ da yerine yazar.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .onChange(of: settings.translateShortcut) { app.applyShortcuts() }
+            .onChange(of: settings.replaceShortcut) { app.applyShortcuts() }
+
+            Section("Çeviri") {
+                Picker("Varsayılan hitap", selection: $settings.defaultFormality) {
+                    ForEach(Formality.allCases) { Text($0.title).tag($0) }
+                }
+                Toggle("Çeviri geçmişini kaydet", isOn: $settings.historyEnabled)
+                if !app.history.entries.isEmpty {
+                    HStack {
+                        Text("\(app.history.entries.count) kayıt, yalnızca bu Mac'te").foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Geçmişi göster") { app.windows.showHistory() }
+                        Button("Temizle", role: .destructive) { app.history.clear() }
                     }
                 }
             }

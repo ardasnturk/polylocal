@@ -2,19 +2,21 @@ import AppKit
 import ApplicationServices
 import TranslaterCore
 
-/// Listens system-wide for ⌘C+C and ⌘⇧C+C.
+/// Listens system-wide for the configured shortcuts (default ⌘C C and ⌘⇧C C).
 ///
-/// The tap is listen-only: every ⌘C still reaches the frontmost app, so its normal copy keeps working
-/// and the selection is already on the pasteboard when we fire.
+/// Double-press shortcuts are never swallowed: every ⌘C still reaches the frontmost app, so its normal
+/// copy keeps working and the selection is already on the pasteboard when we fire. Single-press
+/// shortcuts (e.g. ⌃⌥T) are consumed so the app does not also act on them.
 @MainActor
 public final class HotkeyMonitor {
-    public enum Action: Sendable {
-        case translate   // ⌘C+C
-        case replace     // ⌘⇧C+C
+    public enum Action: Hashable, Sendable {
+        case translate
+        case replace
     }
 
     public struct Trigger: Sendable {
         public let action: Action
+        public let shortcut: Shortcut
         /// Pasteboard change count before the first press; lets capture tell a fresh copy from stale contents.
         public let pasteboardChangeCount: Int
     }
@@ -22,12 +24,19 @@ public final class HotkeyMonitor {
     public var onTrigger: ((Trigger) -> Void)?
     public private(set) var isRunning = false
 
+    /// Set to false while the user records a new shortcut in Settings.
+    public var isPaused = false
+
     private var tap: CFMachPort?
     private var source: CFRunLoopSource?
-    private var detector = DoublePressDetector()
+    private var matcher = ShortcutMatcher<Action>(shortcuts: [:])
     private var changeCountAtFirstPress = 0
 
     public init() {}
+
+    public func setShortcuts(_ shortcuts: [Action: Shortcut]) {
+        matcher.shortcuts = shortcuts
+    }
 
     /// Fails when Accessibility (or Input Monitoring) has not been granted.
     @discardableResult
@@ -35,7 +44,8 @@ public final class HotkeyMonitor {
         guard tap == nil else { return true }
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         let info = Unmanaged.passUnretained(self).toOpaque()
-        guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .listenOnly,
+        // An active (default) tap so single-press shortcuts can be swallowed; everything else passes through.
+        guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
                                           eventsOfInterest: mask, callback: hotkeyTapCallback, userInfo: info)
         else { return false }
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
@@ -62,39 +72,49 @@ public final class HotkeyMonitor {
         let flags: CGEventFlags
     }
 
-    fileprivate func handle(_ key: KeyEvent) {
+    /// Returns true when the event should be swallowed.
+    fileprivate func handle(_ key: KeyEvent) -> Bool {
         if key.type == .tapDisabledByTimeout || key.type == .tapDisabledByUserInput {
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
-            return
+            return false
         }
-        guard key.type == .keyDown, key.keyCode == 8, !key.isRepeat else { return }  // kVK_ANSI_C (key position)
-        let flags = key.flags
-        guard flags.contains(.maskCommand), !flags.contains(.maskControl), !flags.contains(.maskAlternate) else {
-            detector.reset()
-            return
-        }
-        let shift = flags.contains(.maskShift)
+        guard key.type == .keyDown, !key.isRepeat, !isPaused else { return false }
+
+        var modifiers: Shortcut.Modifiers = []
+        if key.flags.contains(.maskControl) { modifiers.insert(.control) }
+        if key.flags.contains(.maskAlternate) { modifiers.insert(.option) }
+        if key.flags.contains(.maskShift) { modifiers.insert(.shift) }
+        if key.flags.contains(.maskCommand) { modifiers.insert(.command) }
+        // Plain keys go through the matcher too: typing between two ⌘C presses must break the double press.
+
         let changeCount = NSPasteboard.general.changeCount
-        if detector.press(at: ProcessInfo.processInfo.systemUptime, variant: shift ? 1 : 0) {
-            let trigger = Trigger(action: shift ? .replace : .translate, pasteboardChangeCount: changeCountAtFirstPress)
-            DispatchQueue.main.async { [weak self] in self?.onTrigger?(trigger) }
-        } else {
+        switch matcher.press(keyCode: UInt16(truncatingIfNeeded: key.keyCode), modifiers: modifiers,
+                             at: ProcessInfo.processInfo.systemUptime) {
+        case .none:
+            return false
+        case .armed:
             changeCountAtFirstPress = changeCount
+            return false
+        case .fire(let action, let consume):
+            guard let shortcut = matcher.shortcuts[action] else { return false }
+            let trigger = Trigger(action: action, shortcut: shortcut,
+                                  pasteboardChangeCount: shortcut.doublePress ? changeCountAtFirstPress : changeCount)
+            DispatchQueue.main.async { [weak self] in self?.onTrigger?(trigger) }
+            return consume
         }
     }
 }
 
 private func hotkeyTapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent,
                                userInfo: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
-    if let userInfo {
-        let monitor = Unmanaged<HotkeyMonitor>.fromOpaque(userInfo).takeUnretainedValue()
-        let key = HotkeyMonitor.KeyEvent(
-            type: type,
-            keyCode: event.getIntegerValueField(.keyboardEventKeycode),
-            isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
-            flags: event.flags)
-        // The tap's run loop source lives on the main run loop.
-        MainActor.assumeIsolated { monitor.handle(key) }
-    }
-    return Unmanaged.passUnretained(event)
+    guard let userInfo else { return Unmanaged.passUnretained(event) }
+    let monitor = Unmanaged<HotkeyMonitor>.fromOpaque(userInfo).takeUnretainedValue()
+    let key = HotkeyMonitor.KeyEvent(
+        type: type,
+        keyCode: event.getIntegerValueField(.keyboardEventKeycode),
+        isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
+        flags: event.flags)
+    // The tap's run loop source lives on the main run loop.
+    let swallow = MainActor.assumeIsolated { monitor.handle(key) }
+    return swallow ? nil : Unmanaged.passUnretained(event)
 }

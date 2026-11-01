@@ -333,7 +333,7 @@ translater/
 |---|---|---|
 | **0 — Doğrulama** | Model karşılaştırma CLI'ı; llama.cpp ve MLX hız karşılaştırması; AX prototipi (seçili metni oku/yaz) | Model ve motor kararı |
 | **1 — MVP** | Menü çubuğu uygulaması, ModelManager, Mod A (⌘C+C popup), ana çeviri penceresi, ilk kurulum | v0.1 GitHub Release |
-| **2 — Yerine yazma** | Mod B (⌘⇧C+C), resmi/samimi hitap, geçmiş, Sparkle, Homebrew, MLX motoru | v0.2 |
+| **2 — Yerine yazma** | Mod B (⌘⇧C+C) ✅, özelleştirilebilir kısayollar ✅, resmi/samimi hitap ✅, geçmiş ✅ · Sparkle, Homebrew (yayın aşamasına bağlı), MLX motoru (bekliyor) | v0.2 |
 | **3 — Satır içi öneri** | Mod C, RulesEngine, uygulama/alan adı kuralları, uyumluluk katmanı | v0.3 |
 | **4 — Yazım asistanı** | Sözlük, yeniden ifade etme ve ton değiştirme (DeepL Write benzeri), hedef dilde tamamlama | v0.4 |
 | **5 — Genişleme** | Ekran bağlamı (OCR), belge çevirisi, Windows/Linux (motor katmanı paylaşılır, sistem entegrasyonu yeniden yazılır) | v1.x |

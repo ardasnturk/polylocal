@@ -14,6 +14,7 @@ final class AppModel {
     let settings = AppSettings()
     let store = ModelStore(catalog: ModelStore.bundledCatalog())
     let engine = EngineController()
+    let history = HistoryStore()
     let mainTranslator: TranslatorModel
     private(set) var accessibilityTrusted = Permissions.isAccessibilityTrusted
     private(set) var ollamaModels: [String]?
@@ -25,6 +26,9 @@ final class AppModel {
 
     private init() {
         mainTranslator = TranslatorModel(settings: settings, engine: engine)
+        mainTranslator.onComplete = { [weak self] request, output in
+            self?.record(request, output, origin: .window, appName: nil)
+        }
     }
 
     private(set) var hotkeysRunning = false
@@ -35,6 +39,7 @@ final class AppModel {
         hotkeys.onTrigger = { [weak self] trigger in
             Task { await self?.handle(trigger) }
         }
+        applyShortcuts()
         watchAccessibility()
         Task {
             await refreshOllama()
@@ -52,6 +57,24 @@ final class AppModel {
 
     func applyEngine() {
         engine.configure(settings: settings, store: store)
+    }
+
+    func applyShortcuts() {
+        var shortcuts: [HotkeyMonitor.Action: Shortcut] = [:]
+        shortcuts[.translate] = settings.translateShortcut
+        shortcuts[.replace] = settings.replaceShortcut
+        hotkeys.setShortcuts(shortcuts)
+    }
+
+    /// While recording a new shortcut in Settings, the old one must not fire.
+    func setShortcutRecording(_ recording: Bool) {
+        hotkeys.isPaused = recording
+    }
+
+    func record(_ request: TranslationRequest, _ output: String, origin: HistoryStore.Entry.Origin, appName: String?) {
+        guard settings.historyEnabled else { return }
+        history.add(.init(date: Date(), sourceText: request.text, translation: output, source: request.source,
+                          target: request.target, origin: origin, appName: appName))
     }
 
     func refreshOllama() async {
@@ -103,7 +126,8 @@ final class AppModel {
         }
         guard let captured = await TextCapture.captureSelection(
             pasteboardChangeCount: trigger.pasteboardChangeCount,
-            allowSimulatedCopy: trigger.action == .replace)
+            // Only a ⌘C-based shortcut has already copied the selection; any other needs a simulated copy.
+            allowSimulatedCopy: !trigger.shortcut.copiesSelection)
         else {
             Log.capture.notice("capture app=\(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "?", privacy: .public) action=\(String(describing: trigger.action), privacy: .public) result=none")
             NSSound.beep()

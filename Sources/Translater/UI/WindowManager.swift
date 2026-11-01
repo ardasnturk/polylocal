@@ -19,6 +19,12 @@ final class WindowManager {
         }
     }
 
+    func showHistory() {
+        show("history", title: "Çeviri Geçmişi", size: NSSize(width: 620, height: 520), resizable: true) {
+            HistoryView(app: self.app)
+        }
+    }
+
     func showSettings() {
         show("settings", title: "Translater Ayarları", size: NSSize(width: 620, height: 480), resizable: false) {
             SettingsView(app: self.app)

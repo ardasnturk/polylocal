@@ -28,6 +28,9 @@ final class PopupController {
         self.app = app
         translator = TranslatorModel(settings: app.settings, engine: app.engine)
         translator.debounce = .zero
+        translator.onComplete = { [weak self] request, output in
+            self?.app.record(request, output, origin: .popup, appName: self?.state.appName)
+        }
     }
 
     func show(_ captured: CapturedText, mode: Mode) {

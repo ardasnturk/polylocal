@@ -49,6 +49,7 @@ struct OnboardingView: View {
             Spacer()
             Label("Seçili metni çevirmek için ⌘C'ye iki kez bas", systemImage: "command")
             Label("Yazdığını çevirip yerine yazmak için ⌘⇧C'ye iki kez bas", systemImage: "arrow.uturn.left")
+            Text("Kısayolları Ayarlar'dan değiştirebilirsin.").font(.caption).foregroundStyle(.secondary)
         }
     }
 
@@ -109,8 +110,14 @@ struct OnboardingView: View {
             Text("Hazırsın").font(.title.weight(.semibold))
             Text("Translater menü çubuğunda çalışır.").foregroundStyle(.secondary)
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 10) {
-                GridRow { Text("⌘C C").monospaced().bold(); Text("Seçili metni çevir") }
-                GridRow { Text("⌘⇧C C").monospaced().bold(); Text("Çevir ve yerine yaz (önizlemeden sonra ↩)") }
+                GridRow {
+                    Text(app.settings.translateShortcut?.displayString ?? "—").monospaced().bold()
+                    Text("Seçili metni çevir")
+                }
+                GridRow {
+                    Text(app.settings.replaceShortcut?.displayString ?? "—").monospaced().bold()
+                    Text("Çevir ve yerine yaz (önizlemeden sonra ↩)")
+                }
                 GridRow { Text("Esc").monospaced().bold(); Text("Çeviri penceresini kapat") }
             }
             Spacer()

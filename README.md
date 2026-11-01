@@ -4,11 +4,14 @@ macOS için açık kaynaklı, ücretsiz ve **tamamen yerel** çalışan bir çev
 
 - **⌘C+C** ile her uygulamada seçili metni çevirir (DeepL tarzı).
 - **⌘⇧C+C** ile seçili metni çevirir, önizletir ve ↩ ile yerine yazar.
+- Kısayollar Ayarlar'dan değiştirilebilir (çift basış ya da ⌃⌥C gibi tek basış).
+- Resmi/samimi hitap seçimi (siz/sen, Sie/du…).
+- İsteğe bağlı çeviri geçmişi; yalnızca bu Mac'te, yalnızca kullanıcının okuyabildiği bir dosyada.
 - Menü çubuğundan açılan iki panelli çeviri penceresi: yazarken çevirir, dili otomatik algılar.
 - Çeviriler bilgisayarına indirdiğin bir AI modeliyle yapılır; metinlerin cihazdan çıkmaz.
 - Yazarken satır içi çeviri önerisi (Cotypist tarzı) planlanıyor.
 
-> Durum: **Faz 1 — MVP (geliştirme aşamasında).**
+> Durum: **Faz 2 (geliştirme aşamasında).**
 
 ## Gereksinimler
 

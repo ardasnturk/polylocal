@@ -94,6 +94,9 @@ struct MainWindowView: View {
             .labelsHidden()
             .fixedSize()
             Spacer()
+            if translator.target.hasFormality {
+                FormalityPicker(formality: $translator.formality)
+            }
         }
     }
 
@@ -129,12 +132,18 @@ struct StatusBar: View {
                 Button("Kısayollar için Erişilebilirlik izni ver") { app.requestAccessibility() }
                     .buttonStyle(.link)
             } else if app.hotkeysActive {
-                Text("⌘C+C: çevir · ⌘⇧C+C: yerine yaz").foregroundStyle(.secondary)
+                Text(shortcutHint).foregroundStyle(.secondary)
             }
         }
         .font(.caption)
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
+    }
+
+    private var shortcutHint: String {
+        [app.settings.translateShortcut.map { "\($0.displayString): çevir" },
+         app.settings.replaceShortcut.map { "\($0.displayString): yerine yaz" }]
+            .compactMap { $0 }.joined(separator: " · ")
     }
 
     private var color: Color {

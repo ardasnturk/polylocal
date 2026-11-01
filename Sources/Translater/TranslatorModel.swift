@@ -11,6 +11,7 @@ final class TranslatorModel {
     var sourceOverride: Language? { didSet { scheduleTranslation(immediately: true) } }
     /// nil = derive from the language pair.
     var targetOverride: Language? { didSet { scheduleTranslation(immediately: true) } }
+    var formality: Formality { didSet { if formality != oldValue { scheduleTranslation(immediately: true) } } }
 
     private(set) var output = ""
     private(set) var detectedSource: Language?
@@ -18,6 +19,8 @@ final class TranslatorModel {
     private(set) var error: String?
 
     var debounce: Duration = .milliseconds(450)
+    /// Called with each finished translation (used for history).
+    @ObservationIgnored var onComplete: ((TranslationRequest, String) -> Void)?
 
     private let settings: AppSettings
     private let engine: EngineController
@@ -26,6 +29,7 @@ final class TranslatorModel {
     init(settings: AppSettings, engine: EngineController) {
         self.settings = settings
         self.engine = engine
+        formality = settings.defaultFormality
     }
 
     var source: Language? { sourceOverride ?? detectedSource }
@@ -46,6 +50,7 @@ final class TranslatorModel {
         task?.cancel()
         sourceOverride = nil
         targetOverride = nil
+        formality = settings.defaultFormality
         output = ""
         error = nil
         input = text
@@ -74,7 +79,7 @@ final class TranslatorModel {
 
     private func run(_ text: String) async {
         detectedSource = LanguageDetector.detect(text, preferring: [settings.primaryLanguage, settings.secondaryLanguage])
-        let request = TranslationRequest(text: text, source: source, target: target)
+        let request = TranslationRequest(text: text, source: source, target: target, formality: formality)
         isTranslating = true
         error = nil
         var buffer = ""
@@ -85,6 +90,7 @@ final class TranslatorModel {
                 buffer += token
                 output = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
             }
+            if !Task.isCancelled, !output.isEmpty { onComplete?(request, output) }
         } catch is CancellationError {
         } catch let urlError as URLError where urlError.code == .cancelled {
         } catch {

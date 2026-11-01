@@ -20,6 +20,12 @@ final class AppSettings {
     var ollamaModel: String? { didSet { save(ollamaModel, "ollamaModel") } }
     var hotkeysEnabled: Bool { didSet { save(hotkeysEnabled, "hotkeysEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { save(hasCompletedOnboarding, "hasCompletedOnboarding") } }
+    /// nil = shortcut turned off.
+    var translateShortcut: Shortcut? { didSet { saveShortcut(translateShortcut, "translateShortcut") } }
+    var replaceShortcut: Shortcut? { didSet { saveShortcut(replaceShortcut, "replaceShortcut") } }
+    var defaultFormality: Formality { didSet { save(defaultFormality.rawValue, "defaultFormality") } }
+    /// Off by default: translated text may be sensitive, so keeping it is the user's choice.
+    var historyEnabled: Bool { didSet { save(historyEnabled, "historyEnabled") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -35,6 +41,20 @@ final class AppSettings {
         ollamaModel = defaults.string(forKey: "ollamaModel")
         hotkeysEnabled = defaults.object(forKey: "hotkeysEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
+        translateShortcut = Self.loadShortcut(defaults, "translateShortcut", default: .defaultTranslate)
+        replaceShortcut = Self.loadShortcut(defaults, "replaceShortcut", default: .defaultReplace)
+        defaultFormality = defaults.string(forKey: "defaultFormality").flatMap(Formality.init) ?? .automatic
+        historyEnabled = defaults.bool(forKey: "historyEnabled")
+    }
+
+    private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut) -> Shortcut? {
+        guard let data = defaults.data(forKey: key) else { return value }
+        // Stored as JSON; an explicit `null` means the user turned the shortcut off.
+        return try? JSONDecoder().decode(Shortcut?.self, from: data)
+    }
+
+    private func saveShortcut(_ shortcut: Shortcut?, _ key: String) {
+        defaults.set(try? JSONEncoder().encode(shortcut), forKey: key)
     }
 
     private func save(_ value: Any?, _ key: String) {
