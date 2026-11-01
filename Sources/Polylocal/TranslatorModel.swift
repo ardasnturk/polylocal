@@ -16,7 +16,7 @@ final class TranslatorModel {
     enum Mode: String, CaseIterable, Identifiable {
         case translate, rewrite
         var id: String { rawValue }
-        var title: String { self == .translate ? "Çevir" : "Yazım" }
+        var title: String { self == .translate ? String(localized: "Translate") : String(localized: "Write") }
     }
 
     var mode: Mode = .translate { didSet { if mode != oldValue { scheduleTranslation(immediately: true) } } }

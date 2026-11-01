@@ -7,8 +7,10 @@ public struct Language: Hashable, Codable, Sendable, Identifiable {
 
     public var id: String { code }
 
+    /// Name in the app's UI language (not the region format locale), e.g. "German" / "Almanca".
     public var localizedName: String {
-        Locale.current.localizedString(forLanguageCode: code)?.localizedCapitalized ?? englishName
+        let ui = Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
+        return ui.localizedString(forLanguageCode: code)?.localizedCapitalized ?? englishName
     }
 
     public init(code: String, englishName: String) {

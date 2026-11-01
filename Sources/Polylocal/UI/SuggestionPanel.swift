@@ -73,7 +73,7 @@ private struct SuggestionView: View {
                 if state.isLoading {
                     ProgressView().controlSize(.mini)
                 } else {
-                    Text("⇥ değiştir  ·  esc").foregroundStyle(.tertiary)
+                    Text("⇥ replace  ·  esc").foregroundStyle(.tertiary)
                 }
             }
             .font(.caption)

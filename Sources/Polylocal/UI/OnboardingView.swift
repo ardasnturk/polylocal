@@ -21,14 +21,14 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
             HStack {
-                if step > 0 { Button("Geri") { step -= 1 } }
+                if step > 0 { Button("Back") { step -= 1 } }
                 Spacer()
                 Text("\(step + 1) / 4").font(.caption).foregroundStyle(.tertiary)
                 Spacer()
                 if step < 3 {
-                    Button(step == 0 ? "Başla" : "Devam") { step += 1 }.keyboardShortcut(.defaultAction)
+                    Button(step == 0 ? "Start" : "Continue") { step += 1 }.keyboardShortcut(.defaultAction)
                 } else {
-                    Button("Bitir") {
+                    Button("Finish") {
                         app.settings.hasCompletedOnboarding = true
                         onFinish()
                     }
@@ -43,28 +43,28 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(alignment: .leading, spacing: 12) {
             Image(systemName: "character.bubble").font(.system(size: 48)).foregroundStyle(.tint)
-            Text("Polylocal'a hoş geldin").font(.largeTitle.weight(.semibold))
-            Text("Her uygulamada, kısayolla, tamamen bu Mac üzerinde çeviri yapar. Metinlerin hiçbir sunucuya gönderilmez.")
+            Text("Welcome to Polylocal").font(.largeTitle.weight(.semibold))
+            Text("Translates in any app with a shortcut, entirely on this Mac. Your text is never sent to a server.")
                 .font(.title3).foregroundStyle(.secondary)
             Spacer()
-            Label("Seçili metni çevirmek için ⌘C'ye iki kez bas", systemImage: "command")
-            Label("Yazdığını çevirip yerine yazmak için ⌘⇧C'ye iki kez bas", systemImage: "arrow.uturn.left")
-            Text("Kısayolları Ayarlar'dan değiştirebilirsin.").font(.caption).foregroundStyle(.secondary)
+            Label("Press ⌘C twice to translate the selected text", systemImage: "command")
+            Label("Press ⇧⌘C twice to translate what you wrote and replace it", systemImage: "arrow.uturn.left")
+            Text("You can change the shortcuts in Settings.").font(.caption).foregroundStyle(.secondary)
         }
     }
 
     private var permission: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Erişilebilirlik izni").font(.title.weight(.semibold))
-            Text("Kısayolları algılamak, seçili metni okumak ve çeviriyi yerine yazmak için gerekli. Polylocal bu izni yalnızca sen kısayola bastığında kullanır; şifre alanlarına asla dokunmaz.")
+            Text("Accessibility permission").font(.title.weight(.semibold))
+            Text("Needed to detect the shortcuts, read the selected text and write the translation back. Polylocal uses it only when you press a shortcut and never touches password fields.")
                 .foregroundStyle(.secondary)
             Spacer().frame(height: 8)
             if app.accessibilityTrusted {
-                Label("İzin verildi", systemImage: "checkmark.circle.fill").foregroundStyle(.green).font(.title3)
+                Label("Permission granted", systemImage: "checkmark.circle.fill").foregroundStyle(.green).font(.title3)
             } else {
-                Button("Sistem Ayarları'nda izin ver") { app.requestAccessibility() }
+                Button("Grant in System Settings") { app.requestAccessibility() }
                     .controlSize(.large)
-                Text("Gizlilik ve Güvenlik → Erişilebilirlik listesinde Polylocal'ı aç. Bu ekran izni otomatik algılar.")
+                Text("Turn on Polylocal in Privacy & Security → Accessibility. This screen notices the change automatically.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -72,13 +72,13 @@ struct OnboardingView: View {
 
     private var model: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Çeviri modeli").font(.title.weight(.semibold))
-            Text("Çeviriler bu Mac'e indirilen bir AI modeliyle yapılır. Bu Mac'te \(Hardware.memoryGB) GB bellek var.")
+            Text("Translation model").font(.title.weight(.semibold))
+            Text("Translations are done by an AI model downloaded to this Mac. This Mac has \(Hardware.memoryGB) GB of memory.")
                 .foregroundStyle(.secondary)
             if let models = app.ollamaModels, !models.isEmpty {
                 GroupBox {
                     VStack(alignment: .leading) {
-                        Text("Ollama kurulu: mevcut bir modeli indirmeden kullanabilirsin.").font(.callout)
+                        Text("Ollama is installed: you can use an existing model without downloading.").font(.callout)
                         OllamaSection(app: app)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -107,18 +107,18 @@ struct OnboardingView: View {
 
     private var done: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Hazırsın").font(.title.weight(.semibold))
-            Text("Polylocal menü çubuğunda çalışır.").foregroundStyle(.secondary)
+            Text("You're all set").font(.title.weight(.semibold))
+            Text("Polylocal runs in the menu bar.").foregroundStyle(.secondary)
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 10) {
                 GridRow {
                     Text(app.settings.translateShortcut?.displayString ?? "—").monospaced().bold()
-                    Text("Seçili metni çevir")
+                    Text("Translate selection")
                 }
                 GridRow {
                     Text(app.settings.replaceShortcut?.displayString ?? "—").monospaced().bold()
-                    Text("Çevir ve yerine yaz (önizlemeden sonra ↩)")
+                    Text("Translate and replace (↩ after the preview)")
                 }
-                GridRow { Text("Esc").monospaced().bold(); Text("Çeviri penceresini kapat") }
+                GridRow { Text("Esc").monospaced().bold(); Text("Close the translation popup") }
             }
             Spacer()
             Text(app.engine.status.message).font(.caption).foregroundStyle(.secondary)

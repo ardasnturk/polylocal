@@ -145,7 +145,7 @@ final class InlineSuggestionController {
                                 replaceRange: NSRange(location: caret, length: 0),
                                 checkRange: checkRange, checkText: ns.substring(with: checkRange), sourceText: context)
             request = TranslationRequest(text: context, source: rule.target, target: rule.target, kind: .complete)
-            panel.state.targetName = "Tamamlama · \(rule.target.localizedName)"
+            panel.state.targetName = String(localized: "Completion · \(rule.target.localizedName)")
         } else {
             return
         }

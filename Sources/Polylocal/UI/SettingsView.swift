@@ -1,3 +1,4 @@
+import AppKit
 import ServiceManagement
 import SwiftUI
 import PolylocalCore
@@ -7,11 +8,11 @@ struct SettingsView: View {
 
     var body: some View {
         TabView {
-            GeneralSettings(app: app).tabItem { Label("Genel", systemImage: "gearshape") }
-            ModelSettings(app: app).tabItem { Label("Modeller", systemImage: "cpu") }
-            InlineSettingsView(app: app).tabItem { Label("Satır içi", systemImage: "text.cursor") }
-            GlossarySettingsView(app: app).tabItem { Label("Sözlük", systemImage: "character.book.closed") }
-            AboutView().tabItem { Label("Hakkında", systemImage: "info.circle") }
+            GeneralSettings(app: app).tabItem { Label("General", systemImage: "gearshape") }
+            ModelSettings(app: app).tabItem { Label("Models", systemImage: "cpu") }
+            InlineSettingsView(app: app).tabItem { Label("Inline", systemImage: "text.cursor") }
+            GlossarySettingsView(app: app).tabItem { Label("Glossary", systemImage: "character.book.closed") }
+            AboutView().tabItem { Label("About", systemImage: "info.circle") }
         }
         .padding(20)
         .frame(width: 620, height: 480)
@@ -22,79 +23,110 @@ private struct GeneralSettings: View {
     let app: AppModel
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchError: String?
+    @State private var interfaceLanguage = (UserDefaults.standard.persistentDomain(forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] as? [String])?.first ?? ""
+    @State private var languageChanged = false
+
+    private static func relaunch() {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
 
     var body: some View {
         @Bindable var settings = app.settings
         Form {
             Section {
-                Picker("Ana dil", selection: $settings.primaryLanguage) {
+                Picker("Primary language", selection: $settings.primaryLanguage) {
                     ForEach(Language.all) { Text($0.localizedName).tag($0) }
                 }
-                Picker("İkinci dil", selection: $settings.secondaryLanguage) {
+                Picker("Secondary language", selection: $settings.secondaryLanguage) {
                     ForEach(Language.all) { Text($0.localizedName).tag($0) }
                 }
             } header: {
-                Text("Dil çifti")
+                Text("Language pair")
             } footer: {
-                Text("Ana dildeki metin ikinci dile, diğer tüm diller ana dile çevrilir.")
+                Text("Text in the primary language is translated into the secondary language; all other languages into the primary language.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {
-                Toggle("Global kısayolları kullan", isOn: $settings.hotkeysEnabled)
-                LabeledContent("Seçili metni çevir") {
+                Toggle("Use global shortcuts", isOn: $settings.hotkeysEnabled)
+                LabeledContent("Translate selection") {
                     ShortcutRecorder(shortcut: $settings.translateShortcut,
                                      others: [settings.replaceShortcut, settings.rewriteShortcut],
                                      defaultValue: .defaultTranslate, onRecordingChange: app.setShortcutRecording)
                 }
-                LabeledContent("Çevir ve yerine yaz") {
+                LabeledContent("Translate and replace") {
                     ShortcutRecorder(shortcut: $settings.replaceShortcut,
                                      others: [settings.translateShortcut, settings.rewriteShortcut],
                                      defaultValue: .defaultReplace, onRecordingChange: app.setShortcutRecording)
                 }
-                LabeledContent("Yazımı düzelt ve yerine yaz") {
+                LabeledContent("Improve writing and replace") {
                     ShortcutRecorder(shortcut: $settings.rewriteShortcut,
                                      others: [settings.translateShortcut, settings.replaceShortcut],
                                      defaultValue: nil, onRecordingChange: app.setShortcutRecording)
                 }
                 if !app.accessibilityTrusted {
                     HStack {
-                        Label("Erişilebilirlik izni gerekli", systemImage: "exclamationmark.triangle")
+                        Label("Accessibility permission required", systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.orange)
                         Spacer()
-                        Button("İzin ver") { app.requestAccessibility() }
+                        Button("Grant") { app.requestAccessibility() }
                     }
                 }
             } header: {
-                Text("Kısayollar")
+                Text("Shortcuts")
             } footer: {
-                Text("⇧⌘C bir pano yöneticisi (ör. Raycast) tarafından kullanılıyorsa başka bir kısayol seç. Çeviri penceresinde ⌘↩ da yerine yazar.")
+                Text("If a clipboard manager (e.g. Raycast) uses ⇧⌘C, choose another shortcut. In the translation popup, ⌘↩ also replaces.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             .onChange(of: settings.translateShortcut) { app.applyShortcuts() }
             .onChange(of: settings.replaceShortcut) { app.applyShortcuts() }
             .onChange(of: settings.rewriteShortcut) { app.applyShortcuts() }
 
-            Section("Çeviri") {
-                Picker("Varsayılan hitap", selection: $settings.defaultFormality) {
+            Section("Translation") {
+                Picker("Default form of address", selection: $settings.defaultFormality) {
                     ForEach(Formality.allCases) { Text($0.title).tag($0) }
                 }
-                Picker("Varsayılan yazım stili", selection: $settings.defaultRewriteStyle) {
+                Picker("Default writing style", selection: $settings.defaultRewriteStyle) {
                     ForEach(RewriteStyle.allCases) { Text($0.title).tag($0) }
                 }
-                Toggle("Çeviri geçmişini kaydet", isOn: $settings.historyEnabled)
+                Toggle("Save translation history", isOn: $settings.historyEnabled)
                 if !app.history.entries.isEmpty {
                     HStack {
-                        Text("\(app.history.entries.count) kayıt, yalnızca bu Mac'te").foregroundStyle(.secondary)
+                        Text("\(app.history.entries.count) entries, only on this Mac").foregroundStyle(.secondary)
                         Spacer()
-                        Button("Geçmişi göster") { app.windows.showHistory() }
-                        Button("Temizle", role: .destructive) { app.history.clear() }
+                        Button("Show history") { app.windows.showHistory() }
+                        Button("Clear", role: .destructive) { app.history.clear() }
                     }
                 }
             }
 
-            Section("Sistem") {
-                Toggle("Girişte başlat", isOn: $launchAtLogin)
+            Section("System") {
+                Picker("Interface language", selection: $interfaceLanguage) {
+                    Text("System default").tag("")
+                    Text(verbatim: "English").tag("en")
+                    Text(verbatim: "Türkçe").tag("tr")
+                }
+                .onChange(of: interfaceLanguage) { _, code in
+                    // Per-app override of the macOS language order; takes effect on next launch.
+                    if code.isEmpty {
+                        UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+                    } else {
+                        UserDefaults.standard.set([code], forKey: "AppleLanguages")
+                    }
+                    languageChanged = true
+                }
+                if languageChanged {
+                    HStack {
+                        Text("Restart Polylocal to apply the new language.").foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Restart now", action: Self.relaunch)
+                    }
+                }
+                Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in
                         do {
                             if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
@@ -118,21 +150,21 @@ private struct ModelSettings: View {
         @Bindable var settings = app.settings
         Form {
             Section {
-                Picker("Çeviri motoru", selection: $settings.engineKind) {
-                    Text("Yerleşik (llama.cpp)").tag(EngineKind.builtIn)
+                Picker("Translation engine", selection: $settings.engineKind) {
+                    Text("Built-in (llama.cpp)").tag(EngineKind.builtIn)
                     Text("Ollama").tag(EngineKind.ollama)
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: settings.engineKind) { app.applyEngine() }
-                LabeledContent("Durum", value: app.engine.status.message)
+                LabeledContent("Status", value: app.engine.status.message)
             }
             if settings.engineKind == .builtIn {
                 Section {
                     ForEach(app.store.catalog) { ModelRow(app: app, model: $0) }
                 } header: {
-                    Text("Modeller")
+                    Text("Models")
                 } footer: {
-                    Text("Modeller \(app.store.directory.path) klasörüne indirilir. Çeviriler tamamen bu Mac'te yapılır.")
+                    Text("Models are downloaded to \(app.store.directory.path). Translation happens entirely on this Mac.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             } else {
@@ -149,9 +181,9 @@ private struct AboutView: View {
         VStack(spacing: 10) {
             Image(systemName: "character.bubble").font(.system(size: 44)).foregroundStyle(.tint)
             Text("Polylocal").font(.title2.weight(.semibold))
-            Text("Sürüm \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "geliştirme")")
+            Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? String(localized: "development"))")
                 .foregroundStyle(.secondary)
-            Text("Açık kaynak, ücretsiz ve tamamen yerel çeviri.\nMetinlerin bu Mac'ten hiç çıkmaz.")
+            Text("Open-source, free and fully local translation.\nYour text never leaves this Mac.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
         }

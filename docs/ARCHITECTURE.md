@@ -253,7 +253,7 @@ struct TranslationRequest: Sendable {
 | Settings | SwiftUI `Settings` | General · Shortcuts · Models · Rules · Glossary · Privacy |
 | Onboarding | SwiftUI | Permission guide, model selection and download, shortcut introduction |
 
-The UI is currently Turkish only; English localization is planned.
+The UI is in English (the development language: English strings in code are the localization keys) with a Turkish translation in `Resources/tr.lproj/Localizable.strings`, which `scripts/build-app.sh` copies into the app bundle. Computed strings use `String(localized:)`; SwiftUI literals are localized automatically.
 
 ---
 
@@ -349,7 +349,7 @@ polylocal/
 | **2 — Replace** | Mode B (⇧⌘C C) ✅, customizable shortcuts ✅, formal/informal address ✅, history ✅, signed DMG + notarization script ✅ · Sparkle, Homebrew cask (depend on releases), MLX engine (pending) | v0.2 |
 | **3 — Inline suggestions** | Mode C ✅, app/domain rules ✅ (verified in TextEdit) · browser and Electron compatibility (pending) | v0.3 |
 | **4 — Writing assistant** | Glossary with CSV import ✅, rewrite styles (DeepL Write-style) ✅, target-language completion ✅ (verified in TextEdit) | v0.4 |
-| **5 — Expansion** | English UI localization, screen context (OCR), document translation, Windows/Linux (engine layer shared, system integration rewritten) | v1.x |
+| **5 — Expansion** | Screen context (OCR), document translation, Windows/Linux (engine layer shared, system integration rewritten) | v1.x |
 
 ---
 

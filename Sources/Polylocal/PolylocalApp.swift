@@ -40,27 +40,27 @@ private struct MenuContent: View {
     var body: some View {
         Text(app.engine.status.message)
         if !app.accessibilityTrusted {
-            Button("Kısayollar için Erişilebilirlik izni ver…") { app.requestAccessibility() }
+            Button("Grant Accessibility access for shortcuts…") { app.requestAccessibility() }
         }
         Divider()
-        Button("Çeviri penceresi") { app.windows.showMain() }
+        Button("Translation window") { app.windows.showMain() }
             .keyboardShortcut("t")
-        Button("Geçmiş") { app.windows.showHistory() }
+        Button("History") { app.windows.showHistory() }
             .keyboardShortcut("y")
         Toggle(shortcutToggleTitle, isOn: Binding(
             get: { app.settings.hotkeysEnabled },
             set: { app.settings.hotkeysEnabled = $0 }))
         Divider()
-        Button("Ayarlar…") { app.windows.showSettings() }
+        Button("Settings…") { app.windows.showSettings() }
             .keyboardShortcut(",")
-        Button("Kurulum asistanı…") { app.windows.showOnboarding() }
+        Button("Setup assistant…") { app.windows.showOnboarding() }
         Divider()
-        Button("Polylocal'dan çık") { NSApp.terminate(nil) }
+        Button("Quit Polylocal") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
 
     private var shortcutToggleTitle: String {
-        if let shortcut = app.settings.translateShortcut { return "Kısayollar açık (\(shortcut.displayString))" }
-        return "Kısayollar açık"
+        if let shortcut = app.settings.translateShortcut { return String(localized: "Shortcuts on (\(shortcut.displayString))") }
+        return String(localized: "Shortcuts on")
     }
 }

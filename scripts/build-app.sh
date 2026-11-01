@@ -27,6 +27,8 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/Polylocal"
 cp "$ROOT/models/catalog.json" "$APP/Contents/Resources/catalog.json"
 cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/"
+# UI translations: English strings are the keys in code; other languages live in Resources/<lang>.lproj.
+cp -R "$ROOT"/Resources/*.lproj "$APP/Contents/Resources/"
 
 LLAMA="$ROOT/build/llama-server/llama-server"
 if [ -x "$LLAMA" ]; then
@@ -50,7 +52,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
-    <key>CFBundleDevelopmentRegion</key><string>tr</string>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleLocalizations</key><array><string>en</string><string>tr</string></array>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>

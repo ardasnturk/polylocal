@@ -23,7 +23,7 @@ final class EngineController {
         }
     }
 
-    private(set) var status: Status = .notConfigured("Model seçilmedi")
+    private(set) var status: Status = .notConfigured(String(localized: "No model selected"))
 
     private var engine: (any TranslationEngine)?
     private var server: LlamaServer?
@@ -45,15 +45,15 @@ final class EngineController {
         switch settings.engineKind {
         case .builtIn:
             guard let id = settings.builtInModelID, let model = store.catalog.first(where: { $0.id == id }) else {
-                status = .notConfigured("Model seçilmedi")
+                status = .notConfigured(String(localized: "No model selected"))
                 return
             }
             guard store.state(of: model) == .installed else {
-                status = .notConfigured("\(model.name) indirilmedi")
+                status = .notConfigured(String(localized: "\(model.name) is not downloaded"))
                 return
             }
             let path = store.fileURL(for: model)
-            status = .starting("\(model.name) yükleniyor…")
+            status = .starting(String(localized: "Loading \(model.name)…"))
             configureTask = Task {
                 defer { configureTask = nil }
                 let server = LlamaServer(modelPath: path, pidFile: store.directory.appendingPathComponent("llama-server.pid"))
@@ -64,7 +64,7 @@ final class EngineController {
                     let engine = OpenAICompatibleEngine(baseURL: server.baseURL, model: model.id, template: model.promptTemplate)
                     await warmUp(engine)
                     self.engine = engine
-                    status = .ready("\(model.name) hazır")
+                    status = .ready(String(localized: "\(model.name) ready"))
                 } catch is CancellationError {
                     server.stop()
                 } catch {
@@ -75,18 +75,18 @@ final class EngineController {
 
         case .ollama:
             guard let name = settings.ollamaModel else {
-                status = .notConfigured("Ollama modeli seçilmedi")
+                status = .notConfigured(String(localized: "No Ollama model selected"))
                 return
             }
-            status = .starting("Ollama: \(name) yükleniyor…")
+            status = .starting(String(localized: "Ollama: loading \(name)…"))
             configureTask = Task {
                 defer { configureTask = nil }
                 guard let installed = await Ollama.installedModels() else {
-                    status = .failed("Ollama çalışmıyor (localhost:11434)")
+                    status = .failed(String(localized: "Ollama is not running (localhost:11434)"))
                     return
                 }
                 guard installed.contains(name) else {
-                    status = .failed("Ollama'da \(name) yok")
+                    status = .failed(String(localized: "\(name) is not installed in Ollama"))
                     return
                 }
                 let template: PromptTemplate = name.hasPrefix("translategemma") ? .translategemma : .generic
@@ -94,7 +94,7 @@ final class EngineController {
                 await warmUp(engine)
                 guard !Task.isCancelled else { return }
                 self.engine = engine
-                status = .ready("Ollama: \(name) hazır")
+                status = .ready(String(localized: "Ollama: \(name) ready"))
             }
         }
     }

@@ -89,7 +89,7 @@ public final class ModelStore {
             let digest = try await Task.detached(priority: .utility) { try Self.sha256(of: temp) }.value
             guard digest == model.sha256.lowercased() else {
                 try? FileManager.default.removeItem(at: temp)
-                states[model.id] = .failed("Dosya doğrulanamadı (SHA-256 uyuşmuyor).")
+                states[model.id] = .failed(String(localized: "Could not verify the file (SHA-256 mismatch)."))
                 return
             }
             try? FileManager.default.removeItem(at: destination)

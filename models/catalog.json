@@ -12,7 +12,7 @@
       "tier": "fast",
       "promptTemplate": "generic",
       "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
-      "summary": "Önerilen. Karşılaştırmada en iyi kalite (chrF++ ~78), ilk kelime ~120 ms, ~5 GB bellek."
+      "summary": "Recommended. Best quality in our benchmark (chrF++ ~78), first token ~120 ms, ~5 GB memory."
     },
     {
       "id": "gemma-4-e2b-q4_0",
@@ -25,7 +25,7 @@
       "tier": "light",
       "promptTemplate": "generic",
       "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
-      "summary": "8 GB RAM'li Mac'ler için hafif seçenek."
+      "summary": "Lightweight option for Macs with 8 GB of RAM."
     },
     {
       "id": "gemma-4-26b-a4b-q4_0",
@@ -38,7 +38,7 @@
       "tier": "quality",
       "promptTemplate": "generic",
       "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
-      "summary": "Kalite modu. Daha yavaş ve çok bellek ister; henüz karşılaştırılmadı."
+      "summary": "Quality mode. Slower and needs a lot of memory; not benchmarked yet."
     },
     {
       "id": "translategemma-4b-q4_k_m",
@@ -51,7 +51,7 @@
       "tier": "light",
       "promptTemplate": "translategemma",
       "license": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms", "requiresAcceptance": true },
-      "summary": "Çeviriye özel model. Faz 0'da Türkçede Gemma 4 E4B'nin gerisinde kaldı (chrF++ 69.9)."
+      "summary": "Translation-specific model. Behind Gemma 4 E4B for Turkish in our benchmark (chrF++ 69.9)."
     }
   ]
 }

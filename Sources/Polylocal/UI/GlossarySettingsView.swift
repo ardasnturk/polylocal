@@ -15,27 +15,27 @@ struct GlossarySettingsView: View {
         Form {
             Section {
                 HStack {
-                    TextField("Terim", text: $newSource, prompt: Text("ör. pull request"))
+                    TextField("Term", text: $newSource, prompt: Text("e.g. pull request"))
                     Image(systemName: "arrow.right").foregroundStyle(.secondary)
-                    TextField("Çevirisi", text: $newTarget, prompt: Text("ör. PR"))
-                    Picker("Dil", selection: languageBinding) {
+                    TextField("Translated term", text: $newTarget, prompt: Text("e.g. PR"))
+                    Picker("Language", selection: languageBinding) {
                         ForEach(Language.all) { Text($0.localizedName).tag($0) }
                     }
                     .labelsHidden()
                     .fixedSize()
-                    Button("Ekle", action: add)
+                    Button("Add", action: add)
                         .disabled(newSource.trimmingCharacters(in: .whitespaces).isEmpty
                                   || newTarget.trimmingCharacters(in: .whitespaces).isEmpty)
                         .keyboardShortcut(.defaultAction)
                 }
             } footer: {
-                Text("Bu terimler, metinde geçtiğinde seçilen dile hep bu şekilde çevrilir. Marka ve ürün adlarını çevrilmeden bırakmak için terimi kendisiyle eşleştir.")
+                Text("When these terms appear in a text, they are always translated this way into the selected language. To keep a brand or product name untranslated, map it to itself.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {
                 if settings.glossary.isEmpty {
-                    Text("Sözlük boş.").foregroundStyle(.secondary)
+                    Text("The glossary is empty.").foregroundStyle(.secondary)
                 }
                 ForEach(settings.glossary) { entry in
                     HStack {
@@ -52,9 +52,9 @@ struct GlossarySettingsView: View {
                 }
             } header: {
                 HStack {
-                    Text("Terimler (\(settings.glossary.count))")
+                    Text("Terms (\(settings.glossary.count))")
                     Spacer()
-                    Button("CSV içe aktar…", action: importCSV).font(.caption)
+                    Button("Import CSV…", action: importCSV).font(.caption)
                 }
             } footer: {
                 if let importMessage { Text(importMessage).font(.caption).foregroundStyle(.secondary) }
@@ -76,7 +76,7 @@ struct GlossarySettingsView: View {
         newTarget = ""
     }
 
-    /// One "terim,çevirisi" per line; the language picker above sets the target language.
+    /// One "term,translation" per line; the language picker above sets the target language.
     private func importCSV() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.commaSeparatedText, .tabSeparatedText, .plainText]
@@ -84,6 +84,6 @@ struct GlossarySettingsView: View {
               let text = try? String(contentsOf: url, encoding: .utf8) else { return }
         let entries = Glossary.parseCSV(text, targetLanguage: languageBinding.wrappedValue)
         app.settings.glossary.append(contentsOf: entries)
-        importMessage = "\(entries.count) terim eklendi (\(languageBinding.wrappedValue.localizedName))."
+        importMessage = String(localized: "\(entries.count) terms added (\(languageBinding.wrappedValue.localizedName)).")
     }
 }

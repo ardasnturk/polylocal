@@ -35,11 +35,11 @@ public enum RewriteStyle: String, Codable, Sendable, CaseIterable, Identifiable 
 
     public var title: String {
         switch self {
-        case .correct: "Düzelt"
-        case .fluent: "Akıcı"
-        case .formal: "Resmi"
-        case .casual: "Samimi"
-        case .concise: "Kısa"
+        case .correct: String(localized: "Correct")
+        case .fluent: String(localized: "Fluent")
+        case .formal: String(localized: "Formal")
+        case .casual: String(localized: "Casual")
+        case .concise: String(localized: "Concise")
         }
     }
 
@@ -62,9 +62,9 @@ public enum Formality: String, Codable, Sendable, CaseIterable, Identifiable {
 
     public var title: String {
         switch self {
-        case .automatic: "Otomatik"
-        case .formal: "Resmi"
-        case .informal: "Samimi"
+        case .automatic: String(localized: "Automatic")
+        case .formal: String(localized: "Formal")
+        case .informal: String(localized: "Informal")
         }
     }
 }
@@ -169,7 +169,7 @@ public enum TranslationError: LocalizedError, Sendable {
     public var errorDescription: String? {
         switch self {
         case .engineUnavailable(let reason): reason
-        case .server(let status, let body): "Sunucu hatası \(status): \(body.prefix(200))"
+        case .server(let status, let body): String(localized: "Server error \(status): \(String(body.prefix(200)))")
         }
     }
 }

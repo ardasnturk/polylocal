@@ -20,19 +20,19 @@ final class WindowManager {
     }
 
     func showHistory() {
-        show("history", title: "Çeviri Geçmişi", size: NSSize(width: 620, height: 520), resizable: true) {
+        show("history", title: String(localized: "Translation History"), size: NSSize(width: 620, height: 520), resizable: true) {
             HistoryView(app: self.app)
         }
     }
 
     func showSettings() {
-        show("settings", title: "Polylocal Ayarları", size: NSSize(width: 620, height: 480), resizable: false) {
+        show("settings", title: String(localized: "Polylocal Settings"), size: NSSize(width: 620, height: 480), resizable: false) {
             SettingsView(app: self.app)
         }
     }
 
     func showOnboarding() {
-        show("onboarding", title: "Polylocal'a hoş geldin", size: NSSize(width: 560, height: 460), resizable: false) {
+        show("onboarding", title: String(localized: "Welcome to Polylocal"), size: NSSize(width: 560, height: 460), resizable: false) {
             OnboardingView(app: self.app) { [weak self] in self?.close("onboarding") }
         }
     }

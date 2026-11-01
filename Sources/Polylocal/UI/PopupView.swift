@@ -26,14 +26,14 @@ struct PopupView: View {
             footer
         }
         .padding(14)
-        .frame(width: 440)
+        .frame(width: 480)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.separator.opacity(0.6)))
     }
 
     private var header: some View {
         HStack(spacing: 6) {
-            Picker("Mod", selection: $translator.mode) {
+            Picker("Mode", selection: $translator.mode) {
                 ForEach(TranslatorModel.Mode.allCases) { Text($0.title).tag($0) }
             }
             .labelsHidden()
@@ -42,10 +42,12 @@ struct PopupView: View {
             if translator.mode == .translate {
                 Text(sourceLabel)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
                 Image(systemName: "arrow.right")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
-                Picker("Hedef dil", selection: targetBinding) {
+                Picker("Target language", selection: targetBinding) {
                     ForEach(Language.all) { Text($0.localizedName).tag($0) }
                 }
                 .labelsHidden()
@@ -64,7 +66,7 @@ struct PopupView: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.cancelAction)
-            .help("Kapat (Esc)")
+            .help("Close (Esc)")
         }
         .font(.callout)
     }
@@ -90,17 +92,17 @@ struct PopupView: View {
 
     private var footer: some View {
         HStack {
-            Button(state.copied ? "Kopyalandı" : "Kopyala", systemImage: state.copied ? "checkmark" : "doc.on.doc",
+            Button(state.copied ? "Copied" : "Copy", systemImage: state.copied ? "checkmark" : "doc.on.doc",
                    action: actions.copy)
                 .keyboardShortcut("c", modifiers: .command)
                 .disabled(translator.output.isEmpty)
             if state.canReplace {
-                Button("Yerine yaz", systemImage: "arrow.uturn.left", action: actions.replace)
+                Button("Replace", systemImage: "arrow.uturn.left", action: actions.replace)
                     .keyboardShortcut(state.mode == .replace ? .defaultAction : KeyboardShortcut(.return, modifiers: .command))
                     .disabled(translator.output.isEmpty || translator.isTranslating)
             }
             Spacer()
-            Button("Pencerede aç", systemImage: "macwindow", action: actions.openMain)
+            Button("Open in window", systemImage: "macwindow", action: actions.openMain)
                 .keyboardShortcut("o", modifiers: .command)
         }
         .controlSize(.small)
@@ -108,7 +110,7 @@ struct PopupView: View {
 
     private var sourceLabel: String {
         if let source = translator.source { return source.localizedName }
-        return translator.isTranslating ? "Algılanıyor…" : "Bilinmeyen dil"
+        return translator.isTranslating ? String(localized: "Detecting…") : String(localized: "Unknown language")
     }
 
     private var targetBinding: Binding<Language> {

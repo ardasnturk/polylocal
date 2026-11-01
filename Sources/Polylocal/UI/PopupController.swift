@@ -104,7 +104,7 @@ final class PopupController {
 
 final class PopupPanel: NSPanel {
     init<Content: View>(content: Content) {
-        super.init(contentRect: NSRect(x: 0, y: 0, width: 440, height: 200),
+        super.init(contentRect: NSRect(x: 0, y: 0, width: 480, height: 200),
                    styleMask: [.nonactivatingPanel, .borderless, .fullSizeContentView],
                    backing: .buffered, defer: true)
         isFloatingPanel = true

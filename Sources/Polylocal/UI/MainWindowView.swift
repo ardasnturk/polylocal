@@ -16,7 +16,7 @@ struct MainWindowView: View {
                         .scrollContentBackground(.hidden)
                         .overlay(alignment: .topLeading) {
                             if translator.input.isEmpty {
-                                Text("Çevirmek için yaz veya yapıştır")
+                                Text("Type or paste text to translate")
                                     .font(.title3)
                                     .foregroundStyle(.tertiary)
                                     .padding(.leading, 5)
@@ -25,12 +25,12 @@ struct MainWindowView: View {
                         }
                 } footer: {
                     if !translator.input.isEmpty {
-                        Button("Temizle", systemImage: "xmark") { translator.reset(input: "") }
+                        Button("Clear", systemImage: "xmark") { translator.reset(input: "") }
                             .labelStyle(.iconOnly)
                             .buttonStyle(.borderless)
                     }
                     Spacer()
-                    Text("\(translator.input.count) karakter").foregroundStyle(.tertiary)
+                    Text("\(translator.input.count) characters").foregroundStyle(.tertiary)
                 }
 
                 Divider()
@@ -53,7 +53,7 @@ struct MainWindowView: View {
                 } footer: {
                     if translator.isTranslating { ProgressView().controlSize(.small) }
                     Spacer()
-                    Button("Kopyala", systemImage: "doc.on.doc") {
+                    Button("Copy", systemImage: "doc.on.doc") {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(translator.output, forType: .string)
                     }
@@ -70,13 +70,13 @@ struct MainWindowView: View {
 
     private var sourcePicker: some View {
         HStack {
-            Picker("Mod", selection: $translator.mode) {
+            Picker("Mode", selection: $translator.mode) {
                 ForEach(TranslatorModel.Mode.allCases) { Text($0.title).tag($0) }
             }
             .labelsHidden()
             .pickerStyle(.segmented)
             .fixedSize()
-            Picker("Kaynak", selection: $translator.sourceOverride) {
+            Picker("Source", selection: $translator.sourceOverride) {
                 Text(autoLabel).tag(Language?.none)
                 Divider()
                 ForEach(Language.all) { Text($0.localizedName).tag(Language?.some($0)) }
@@ -84,11 +84,11 @@ struct MainWindowView: View {
             .labelsHidden()
             .fixedSize()
             Spacer()
-            Button("Dilleri değiştir", systemImage: "arrow.left.arrow.right") { translator.swap() }
+            Button("Swap languages", systemImage: "arrow.left.arrow.right") { translator.swap() }
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
                 .keyboardShortcut("s", modifiers: [.command, .shift])
-                .help("Dilleri değiştir (⇧⌘S)")
+                .help("Swap languages (⇧⌘S)")
         }
     }
 
@@ -106,7 +106,7 @@ struct MainWindowView: View {
 
     private var translationTargetPicker: some View {
         HStack {
-            Picker("Hedef", selection: Binding(get: { translator.target }, set: { translator.targetOverride = $0 })) {
+            Picker("Target", selection: Binding(get: { translator.target }, set: { translator.targetOverride = $0 })) {
                 ForEach(Language.all) { Text($0.localizedName).tag($0) }
             }
             .labelsHidden()
@@ -120,9 +120,9 @@ struct MainWindowView: View {
 
     private var autoLabel: String {
         if translator.sourceOverride == nil, let detected = translator.source {
-            return "Otomatik (\(detected.localizedName))"
+            return String(localized: "Automatic (\(detected.localizedName))")
         }
-        return "Otomatik algıla"
+        return String(localized: "Detect automatically")
     }
 
     private func pane<Header: View, Content: View, Footer: View>(
@@ -147,7 +147,7 @@ struct StatusBar: View {
             Text(app.engine.status.message)
             Spacer()
             if !app.accessibilityTrusted {
-                Button("Kısayollar için Erişilebilirlik izni ver") { app.requestAccessibility() }
+                Button("Grant Accessibility access for shortcuts") { app.requestAccessibility() }
                     .buttonStyle(.link)
             } else if app.hotkeysActive {
                 Text(shortcutHint).foregroundStyle(.secondary)
@@ -159,8 +159,8 @@ struct StatusBar: View {
     }
 
     private var shortcutHint: String {
-        [app.settings.translateShortcut.map { "\($0.displayString): çevir" },
-         app.settings.replaceShortcut.map { "\($0.displayString): yerine yaz" }]
+        [app.settings.translateShortcut.map { String(localized: "\($0.displayString): translate") },
+         app.settings.replaceShortcut.map { String(localized: "\($0.displayString): replace") }]
             .compactMap { $0 }.joined(separator: " · ")
     }
 

@@ -10,25 +10,25 @@ struct InlineSettingsView: View {
         @Bindable var settings = app.settings
         Form {
             Section {
-                Toggle("Satır içi çeviri önerileri", isOn: $settings.inlineEnabled)
+                Toggle("Inline translation suggestions", isOn: $settings.inlineEnabled)
                     .onChange(of: settings.inlineEnabled) { app.applyInlineRules() }
             } footer: {
-                Text("Kural eklediğin uygulamada başka bir dilde yazınca, imlecin altında çeviri önerisi çıkar. \"Tamamla\" açıksa, kuralın dilinde yazarken cümlenin devamı önerilir. ⇥ kabul eder, Esc kapatır, ⌥⇥ gerçek bir sekme ekler. Yalnızca kural olan uygulamalardaki metin okunur.")
+                Text("When you type in another language in an app with a rule, a translation suggestion appears below the caret. If \"Complete\" is on, the rest of the sentence is suggested while you write in the rule's language. ⇥ accepts, Esc dismisses, ⌥⇥ inserts a real tab. Text is read only in apps that have a rule.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
             Section {
                 if settings.inlineRules.isEmpty {
-                    Text("Henüz kural yok.").foregroundStyle(.secondary)
+                    Text("No rules yet.").foregroundStyle(.secondary)
                 }
                 ForEach($settings.inlineRules) { $rule in
                     RuleRow(rule: $rule) {
                         settings.inlineRules.removeAll { $0.id == rule.id }
                     }
                 }
-                Button("Kural ekle…", systemImage: "plus") { showAdd = true }
+                Button("Add rule…", systemImage: "plus") { showAdd = true }
             } header: {
-                Text("Kurallar")
+                Text("Rules")
             }
             .onChange(of: settings.inlineRules) { app.applyInlineRules() }
         }
@@ -51,10 +51,10 @@ private struct RuleRow: View {
             AppIcon(bundleID: rule.bundleID)
             VStack(alignment: .leading, spacing: 1) {
                 Text(rule.appName)
-                Text(rule.domain ?? "Tüm uygulama").font(.caption).foregroundStyle(.secondary)
+                Text(rule.domain ?? String(localized: "Whole app")).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            Picker("Hedef", selection: $rule.target) {
+            Picker("Target", selection: $rule.target) {
                 ForEach(Language.all) { Text($0.localizedName).tag($0) }
             }
             .labelsHidden()
@@ -62,12 +62,12 @@ private struct RuleRow: View {
             if rule.target.hasFormality {
                 FormalityPicker(formality: $rule.formality)
             }
-            Toggle("Tamamla", isOn: $rule.completions)
+            Toggle("Complete", isOn: $rule.completions)
                 .toggleStyle(.checkbox)
-                .help("Bu dilde yazarken cümlenin devamını öner")
+                .help("Suggest the rest of the sentence while writing in this language")
             Button(role: .destructive, action: onDelete) { Image(systemName: "trash") }
                 .buttonStyle(.borderless)
-                .help("Kuralı sil")
+                .help("Delete rule")
         }
     }
 }
@@ -90,28 +90,28 @@ private struct AddRuleSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Kural ekle").font(.title3.weight(.semibold))
+            Text("Add rule").font(.title3.weight(.semibold))
             Form {
-                Picker("Uygulama", selection: $bundleID) {
-                    Text("Seç…").tag("")
+                Picker("App", selection: $bundleID) {
+                    Text("Choose…").tag("")
                     ForEach(apps, id: \.processIdentifier) { app in
                         Text(app.localizedName ?? app.bundleIdentifier ?? "?").tag(app.bundleIdentifier ?? "")
                     }
                 }
                 if Self.browsers.contains(bundleID) {
-                    TextField("Site (isteğe bağlı)", text: $domain, prompt: Text("ör. slack.com"))
+                    TextField("Site (optional)", text: $domain, prompt: Text("e.g. slack.com"))
                 }
-                Picker("Bu uygulamada yazdığım dil", selection: Binding(
+                Picker("Language I write in this app", selection: Binding(
                     get: { target ?? defaultTarget }, set: { target = $0 })) {
                     ForEach(Language.all) { Text($0.localizedName).tag($0) }
                 }
-                Toggle("Bu dilde yazarken cümle tamamlama öner", isOn: $completions)
+                Toggle("Suggest sentence completions while writing in this language", isOn: $completions)
             }
             .formStyle(.grouped)
             HStack {
                 Spacer()
-                Button("Vazgeç", role: .cancel) { dismiss() }
-                Button("Ekle") {
+                Button("Cancel", role: .cancel) { dismiss() }
+                Button("Add") {
                     let name = apps.first { $0.bundleIdentifier == bundleID }?.localizedName ?? bundleID
                     let site = domain.trimmingCharacters(in: .whitespaces)
                     onAdd(InlineRule(bundleID: bundleID, appName: name, domain: site.isEmpty ? nil : site,

@@ -54,3 +54,20 @@ Record results in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) with the date, 
 ## License
 
 By contributing you agree that your contributions are licensed under the [MIT License](LICENSE).
+
+## Translating the UI
+
+English is the development language: the English strings in the Swift code are the localization keys.
+Translations live in `Resources/<language>.lproj/Localizable.strings` and are copied into the app by
+`scripts/build-app.sh`.
+
+To add a language:
+
+1. Copy `Resources/tr.lproj/Localizable.strings` to `Resources/<code>.lproj/` and translate the right-hand side.
+   Keep format specifiers (`%@`, `%lld`) in place.
+2. Add the code to `CFBundleLocalizations` in `scripts/build-app.sh` and to the interface-language picker in
+   `Sources/Polylocal/UI/SettingsView.swift`.
+3. Check with `build/Polylocal.app/Contents/MacOS/Polylocal -AppleLanguages "(<code>)"`.
+
+When you add UI text, write it in English; use `String(localized:)` for strings that are not passed directly to a
+SwiftUI view, and add the Turkish entry to `Resources/tr.lproj/Localizable.strings`.

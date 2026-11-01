@@ -22,12 +22,12 @@ struct ModelRow: View {
                 HStack(spacing: 6) {
                     Text(model.name).fontWeight(.medium)
                     if model.id == recommendedID {
-                        Text("Önerilen").font(.caption2).padding(.horizontal, 5).padding(.vertical, 1)
+                        Text("Recommended").font(.caption2).padding(.horizontal, 5).padding(.vertical, 1)
                             .background(.tint.opacity(0.15), in: Capsule())
                     }
                 }
-                Text(model.summary).font(.caption).foregroundStyle(.secondary)
-                Text("\(ByteCountFormatter.string(fromByteCount: model.sizeBytes, countStyle: .file)) · en az \(model.minRAMGB) GB RAM · \(model.license.name)")
+                Text(LocalizedStringKey(model.summary)).font(.caption).foregroundStyle(.secondary)
+                Text("\(ByteCountFormatter.string(fromByteCount: model.sizeBytes, countStyle: .file)) · at least \(model.minRAMGB) GB RAM · \(model.license.name)")
                     .font(.caption2).foregroundStyle(.tertiary)
                 if case .downloading(let progress, let received) = state {
                     ProgressView(value: progress)
@@ -43,11 +43,11 @@ struct ModelRow: View {
         }
         .padding(.vertical, 4)
         .alert("\(model.license.name)", isPresented: $showLicense) {
-            Button("Kabul ediyorum ve indir") { app.store.download(model) }
-            Button("Lisansı aç") { NSWorkspace.shared.open(model.license.url) }
-            Button("Vazgeç", role: .cancel) {}
+            Button("Accept and download") { app.store.download(model) }
+            Button("Open license") { NSWorkspace.shared.open(model.license.url) }
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("\(model.name), kendi lisans koşullarına tabidir. İndirerek bu koşulları kabul etmiş olursun.")
+            Text("\(model.name) is subject to its own license terms. By downloading it, you accept them.")
         }
     }
 
@@ -55,24 +55,24 @@ struct ModelRow: View {
     private var actions: some View {
         switch state {
         case .notInstalled, .failed:
-            Button("İndir") {
+            Button("Download") {
                 if model.license.requiresAcceptance { showLicense = true } else { app.store.download(model) }
             }
         case .downloading:
-            Button("Durdur") { app.store.cancel(model) }
+            Button("Stop") { app.store.cancel(model) }
         case .verifying:
             ProgressView().controlSize(.small)
         case .installed:
             HStack {
                 if !isSelected {
-                    Button("Kullan") {
+                    Button("Use") {
                         app.settings.engineKind = .builtIn
                         app.settings.builtInModelID = model.id
                         app.applyEngine()
                     }
                 }
                 Menu {
-                    Button("Sil", role: .destructive) {
+                    Button("Delete", role: .destructive) {
                         app.store.delete(model)
                         if isSelected { app.applyEngine() }
                     }
@@ -95,23 +95,23 @@ struct OllamaSection: View {
     var body: some View {
         if let models = app.ollamaModels {
             if models.isEmpty {
-                Text("Ollama çalışıyor ama yüklü model yok.").foregroundStyle(.secondary)
+                Text("Ollama is running but has no models installed.").foregroundStyle(.secondary)
             } else {
-                Picker("Ollama modeli", selection: Binding(
+                Picker("Ollama model", selection: Binding(
                     get: { app.settings.ollamaModel ?? "" },
                     set: { name in
                         app.settings.ollamaModel = name
                         app.settings.engineKind = .ollama
                         app.applyEngine()
                     })) {
-                    if app.settings.ollamaModel == nil { Text("Seç…").tag("") }
+                    if app.settings.ollamaModel == nil { Text("Choose…").tag("") }
                     ForEach(models, id: \.self) { Text($0).tag($0) }
                 }
             }
         } else {
             HStack {
-                Text("Ollama bulunamadı (localhost:11434).").foregroundStyle(.secondary)
-                Button("Tekrar dene") { Task { await app.refreshOllama() } }
+                Text("Ollama not found (localhost:11434).").foregroundStyle(.secondary)
+                Button("Try again") { Task { await app.refreshOllama() } }
             }
         }
     }

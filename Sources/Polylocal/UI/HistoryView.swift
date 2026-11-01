@@ -11,30 +11,30 @@ struct HistoryView: View {
         Group {
             if !app.settings.historyEnabled && app.history.entries.isEmpty {
                 ContentUnavailableView {
-                    Label("Geçmiş kapalı", systemImage: "clock.badge.xmark")
+                    Label("History is off", systemImage: "clock.badge.xmark")
                 } description: {
-                    Text("Açarsan çevirilerin yalnızca bu Mac'te saklanır.")
+                    Text("If you turn it on, translations are stored only on this Mac.")
                 } actions: {
-                    Button("Geçmişi aç") { app.settings.historyEnabled = true }
+                    Button("Turn on history") { app.settings.historyEnabled = true }
                 }
             } else if app.history.entries.isEmpty {
-                ContentUnavailableView("Henüz çeviri yok", systemImage: "clock")
+                ContentUnavailableView("No translations yet", systemImage: "clock")
             } else {
                 list
             }
         }
         .frame(minWidth: 520, minHeight: 360)
-        .searchable(text: $query, placement: .toolbar, prompt: "Geçmişte ara")
+        .searchable(text: $query, placement: .toolbar, prompt: "Search history")
         .toolbar {
             ToolbarItem {
-                Button("Tümünü sil", systemImage: "trash") { confirmClear = true }
+                Button("Delete all", systemImage: "trash") { confirmClear = true }
                     .disabled(app.history.entries.isEmpty)
             }
         }
-        .confirmationDialog("Tüm geçmiş silinsin mi?", isPresented: $confirmClear) {
-            Button("Tümünü sil", role: .destructive) { app.history.clear() }
+        .confirmationDialog("Delete all history?", isPresented: $confirmClear) {
+            Button("Delete all", role: .destructive) { app.history.clear() }
         } message: {
-            Text("Bu işlem geri alınamaz.")
+            Text("This cannot be undone.")
         }
     }
 
@@ -54,13 +54,13 @@ struct HistoryView: View {
             }
             .padding(.vertical, 2)
             .contextMenu {
-                Button("Pencerede aç") { app.windows.showMain(with: entry.sourceText) }
-                Button("Çeviriyi kopyala") {
+                Button("Open in window") { app.windows.showMain(with: entry.sourceText) }
+                Button("Copy translation") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(entry.translation, forType: .string)
                 }
                 Divider()
-                Button("Sil", role: .destructive) { app.history.remove([entry.id]) }
+                Button("Delete", role: .destructive) { app.history.remove([entry.id]) }
             }
         }
         .onDeleteCommand { app.history.remove(selection) }

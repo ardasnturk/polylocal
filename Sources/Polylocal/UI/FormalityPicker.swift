@@ -6,13 +6,13 @@ struct FormalityPicker: View {
     @Binding var formality: Formality
 
     var body: some View {
-        Picker("Hitap", selection: $formality) {
+        Picker("Form of address", selection: $formality) {
             ForEach(Formality.allCases) { Text($0.title).tag($0) }
         }
         .labelsHidden()
         .pickerStyle(.menu)
         .fixedSize()
-        .help("Hitap: resmi (siz/Sie) veya samimi (sen/du)")
+        .help("Form of address: formal (Sie/siz) or informal (du/sen)")
     }
 }
 
@@ -21,12 +21,12 @@ struct RewriteStylePicker: View {
     @Binding var style: RewriteStyle
 
     var body: some View {
-        Picker("Stil", selection: $style) {
+        Picker("Style", selection: $style) {
             ForEach(RewriteStyle.allCases) { Text($0.title).tag($0) }
         }
         .labelsHidden()
         .pickerStyle(.menu)
         .fixedSize()
-        .help("Yazım stili: düzelt, akıcı, resmi, samimi veya kısa")
+        .help("Writing style: correct, fluent, formal, casual or concise")
     }
 }

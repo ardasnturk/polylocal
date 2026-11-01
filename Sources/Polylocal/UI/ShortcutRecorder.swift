@@ -27,9 +27,9 @@ struct ShortcutRecorder: View {
                 }
                 Menu {
                     if let defaultValue {
-                        Button("Varsayılana dön (\(defaultValue.displayString))") { set(defaultValue) }
+                        Button("Reset to default (\(defaultValue.displayString))") { set(defaultValue) }
                     }
-                    Button("Kapat") { set(nil) }
+                    Button("Turn off") { set(nil) }
                 } label: { Image(systemName: "ellipsis.circle") }
                     .menuStyle(.borderlessButton)
                     .fixedSize()
@@ -37,7 +37,7 @@ struct ShortcutRecorder: View {
             if let problem {
                 Text(problem).font(.caption).foregroundStyle(.red)
             } else if recording {
-                Text("İki kez basarsan çift basış olarak kaydedilir. İptal: Esc")
+                Text("Press twice to record a double press. Cancel: Esc")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -45,8 +45,8 @@ struct ShortcutRecorder: View {
     }
 
     private var label: String {
-        if recording { return pending?.shortcut.displayString ?? "Kısayola bas…" }
-        return shortcut?.displayString ?? "Kapalı"
+        if recording { return pending?.shortcut.displayString ?? String(localized: "Press a shortcut…") }
+        return shortcut?.displayString ?? String(localized: "Off")
     }
 
     private func toggleRecording() {
@@ -103,9 +103,9 @@ struct ShortcutRecorder: View {
         let issue = others.compactMap { candidate.problem(conflictingWith: $0) }.first
             ?? candidate.problem(conflictingWith: nil)
         switch issue {
-        case .needsModifier: problem = "En az bir değiştirici tuş gerekli (⌘ ⌃ ⌥ ⇧)."
-        case .reservedSystemShortcut: problem = "\(candidate.displayString) sistemde kullanılıyor; iki kez basarak kullanabilirsin."
-        case .sameAsOther: problem = "Diğer kısayolla aynı tuşlar."
+        case .needsModifier: problem = String(localized: "At least one modifier key is required (⌘ ⌃ ⌥ ⇧).")
+        case .reservedSystemShortcut: problem = String(localized: "\(candidate.displayString) is used by the system; use it as a double press instead.")
+        case .sameAsOther: problem = String(localized: "Same keys as another shortcut.")
         case nil: set(candidate)
         }
     }

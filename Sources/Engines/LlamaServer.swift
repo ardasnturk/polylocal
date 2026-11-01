@@ -39,7 +39,7 @@ public final class LlamaServer: @unchecked Sendable {
     public func start(contextSize: Int = 4096, timeout: TimeInterval = 90) async throws {
         guard let binary = Self.findBinary() else {
             // Release builds bundle it; this only happens in development builds without scripts/build-llama-server.sh.
-            throw TranslationError.engineUnavailable("llama-server bulunamadı. Geliştirme derlemesinde scripts/build-llama-server.sh çalıştır ya da `brew install llama.cpp` ile kur.")
+            throw TranslationError.engineUnavailable(String(localized: "llama-server not found. In a development build, run scripts/build-llama-server.sh or install it with `brew install llama.cpp`."))
         }
         if let pidFile { Self.reapStale(pidFile: pidFile) }
         let port = try Self.freePort()
@@ -68,7 +68,7 @@ public final class LlamaServer: @unchecked Sendable {
         let health = URL(string: "http://127.0.0.1:\(port)/health")!
         while Date() < deadline {
             guard process.isRunning else {
-                throw TranslationError.engineUnavailable("llama-server başlarken kapandı (çıkış kodu \(process.terminationStatus)).")
+                throw TranslationError.engineUnavailable(String(localized: "llama-server exited while starting (exit code \(Int(process.terminationStatus)))."))
             }
             if let (_, response) = try? await URLSession.shared.data(from: health),
                (response as? HTTPURLResponse)?.statusCode == 200 {
@@ -77,7 +77,7 @@ public final class LlamaServer: @unchecked Sendable {
             try await Task.sleep(for: .milliseconds(250))
         }
         stop()
-        throw TranslationError.engineUnavailable("llama-server \(Int(timeout)) saniyede hazır olmadı.")
+        throw TranslationError.engineUnavailable(String(localized: "llama-server was not ready within \(Int(timeout)) seconds."))
     }
 
     public func stop() {
@@ -103,7 +103,7 @@ public final class LlamaServer: @unchecked Sendable {
 
     static func freePort() throws -> Int {
         let fd = socket(AF_INET, SOCK_STREAM, 0)
-        guard fd >= 0 else { throw TranslationError.engineUnavailable("Port açılamadı.") }
+        guard fd >= 0 else { throw TranslationError.engineUnavailable(String(localized: "Could not open a port.")) }
         defer { close(fd) }
         var addr = sockaddr_in()
         addr.sin_family = sa_family_t(AF_INET)
@@ -115,7 +115,7 @@ public final class LlamaServer: @unchecked Sendable {
                 bind(fd, ptr, len) == 0 && getsockname(fd, ptr, &len) == 0
             }
         }
-        guard bound else { throw TranslationError.engineUnavailable("Port açılamadı.") }
+        guard bound else { throw TranslationError.engineUnavailable(String(localized: "Could not open a port.")) }
         return Int(UInt16(bigEndian: addr.sin_port))
     }
 }

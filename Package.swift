@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Polylocal",
-    defaultLocalization: "tr",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "Polylocal", targets: ["Polylocal"]),

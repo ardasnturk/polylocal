@@ -17,7 +17,7 @@ Polylocal is a free, open-source macOS menu-bar app that translates and rewrites
 - **Glossary:** make specific terms always translate the same way; import from CSV.
 - **Optional history:** off by default; stored only on this Mac, readable only by your user account.
 
-The user interface is currently in Turkish only. English localization is planned.
+The user interface is available in English and Turkish. It follows the macOS language order; Settings → General → Interface language overrides it.
 
 ## Requirements
 
