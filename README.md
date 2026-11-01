@@ -2,7 +2,7 @@
 
 Polylocal is a free, open-source macOS menu-bar app that translates and rewrites text in any app using an AI model that runs entirely on your Mac. Select text and press ⌘C twice to see a translation, translate what you are typing and replace it in place, or get inline translation suggestions while you write. Your text never leaves the device: the only network access is downloading a model.
 
-> Status: early development (roadmap phases 0–4 implemented and verified in TextEdit). There is no prebuilt release yet; build from source.
+> Status: early development (v0.1.0 pre-release). Roadmap phases 0–4 are implemented; inline suggestions are verified only in TextEdit so far.
 
 ## Features
 
@@ -25,10 +25,16 @@ The user interface is available in English and Turkish. It follows the macOS lan
 - About 5 GB of free RAM and ~4.6 GB of disk space for the default model
 - To build: Xcode 16 or later (Swift 6) and `cmake` (`brew install cmake`) for building the bundled `llama-server`
 
+## Install
+
+1. Download `Polylocal-<version>.dmg` from [Releases](https://github.com/ardasnturk/polylocal/releases) (signed with Developer ID and notarized by Apple).
+2. Open it and drag **Polylocal** to Applications.
+3. Launch it; the setup assistant asks for the Accessibility permission and downloads a model.
+
 ## Build from source
 
 ```bash
-git clone https://github.com/<owner>/polylocal.git
+git clone https://github.com/ardasnturk/polylocal.git
 cd polylocal
 scripts/build-llama-server.sh   # builds llama.cpp's llama-server (static, Metal)
 scripts/build-app.sh            # builds build/Polylocal.app (release), bundling llama-server
