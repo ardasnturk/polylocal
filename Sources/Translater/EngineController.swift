@@ -56,7 +56,7 @@ final class EngineController {
             status = .starting("\(model.name) yükleniyor…")
             configureTask = Task {
                 defer { configureTask = nil }
-                let server = LlamaServer(modelPath: path)
+                let server = LlamaServer(modelPath: path, pidFile: store.directory.appendingPathComponent("llama-server.pid"))
                 do {
                     try await server.start()
                     try Task.checkCancellation()

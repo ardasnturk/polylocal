@@ -47,6 +47,14 @@ import Testing
         #expect(LanguageDetector.detect(text)?.code == code)
     }
 
+    /// Regression: with TR/EN hints, German text was detected as Turkish.
+    @Test func hintsDoNotOverrideClearLanguage() {
+        let german = "Können wir das Meeting auf morgen um drei Uhr verschieben?"
+        #expect(LanguageDetector.detect(german, preferring: [tr, en])?.code == "de")
+        let turkish = "Toplantıyı yarın saat üçe erteleyebilir miyiz?"
+        #expect(LanguageDetector.detect(turkish, preferring: [tr, en])?.code == "tr")
+    }
+
     @Test func tooShortIsNil() {
         #expect(LanguageDetector.detect("ok") == nil || LanguageDetector.detect("ok")?.code == "en")
     }

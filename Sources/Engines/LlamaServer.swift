@@ -6,13 +6,16 @@ import TranslaterCore
 /// Keeping the model out of the app process means a crash or memory spike never takes down the shortcuts.
 public final class LlamaServer: @unchecked Sendable {
     public let modelPath: URL
+    /// Records the child's PID so a later launch can stop a server orphaned by a crash or force-quit.
+    public let pidFile: URL?
     public private(set) var port: Int = 0
 
     private var process: Process?
     private let lock = NSLock()
 
-    public init(modelPath: URL) {
+    public init(modelPath: URL, pidFile: URL? = nil) {
         self.modelPath = modelPath
+        self.pidFile = pidFile
     }
 
     deinit { stop() }
@@ -38,6 +41,7 @@ public final class LlamaServer: @unchecked Sendable {
         guard let binary = Self.findBinary() else {
             throw TranslationError.engineUnavailable("llama-server bulunamadı. `brew install llama.cpp` ile kurabilirsin.")
         }
+        if let pidFile { Self.reapStale(pidFile: pidFile) }
         let port = try Self.freePort()
         let process = Process()
         process.executableURL = binary
@@ -54,6 +58,7 @@ public final class LlamaServer: @unchecked Sendable {
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
         try process.run()
+        if let pidFile { try? String(process.processIdentifier).write(to: pidFile, atomically: true, encoding: .utf8) }
         lock.withLock {
             self.process = process
             self.port = port
@@ -80,6 +85,18 @@ public final class LlamaServer: @unchecked Sendable {
             if let process, process.isRunning { process.terminate() }
             process = nil
         }
+        if let pidFile { try? FileManager.default.removeItem(at: pidFile) }
+    }
+
+    /// Stops a llama-server left behind by a previous run. Only kills the PID if it still is a llama-server.
+    static func reapStale(pidFile: URL) {
+        defer { try? FileManager.default.removeItem(at: pidFile) }
+        guard let text = try? String(contentsOf: pidFile, encoding: .utf8),
+              let pid = pid_t(text.trimmingCharacters(in: .whitespacesAndNewlines)), pid > 0 else { return }
+        var buffer = [CChar](repeating: 0, count: Int(MAXPATHLEN))
+        guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0,
+              String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self).hasSuffix("/llama-server") else { return }
+        kill(pid, SIGTERM)
     }
 
     public var isRunning: Bool { lock.withLock { process?.isRunning ?? false } }

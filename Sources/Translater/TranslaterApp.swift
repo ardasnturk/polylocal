@@ -13,7 +13,17 @@ struct TranslaterApp: App {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var signalSources: [DispatchSourceSignal] = []
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // SIGTERM/SIGINT skip applicationWillTerminate; route them through it so llama-server is stopped too.
+        for sig in [SIGTERM, SIGINT] {
+            signal(sig, SIG_IGN)
+            let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
+            source.setEventHandler { NSApp.terminate(nil) }
+            source.resume()
+            signalSources.append(source)
+        }
         // Menu bar only; also set in Info.plist (LSUIElement) for the bundled app.
         NSApp.setActivationPolicy(.accessory)
         MainActor.assumeIsolated { AppModel.shared.start() }
