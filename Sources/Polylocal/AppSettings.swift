@@ -39,6 +39,11 @@ final class AppSettings {
     var meetingFontSize: Double { didSet { save(meetingFontSize, "meetingFontSize") } }
     /// The app last used for meeting mode, offered first next time.
     var meetingLastApp: String? { didSet { save(meetingLastApp, "meetingLastApp") } }
+    /// Off by default, like history: transcribing other people is the user's decision.
+    var meetingSaveNotes: Bool { didSet { save(meetingSaveNotes, "meetingSaveNotes") } }
+    /// nil = ~/Documents/Polylocal Meetings.
+    var meetingNotesFolder: String? { didSet { save(meetingNotesFolder, "meetingNotesFolder") } }
+    var meetingSummarize: Bool { didSet { save(meetingSummarize, "meetingSummarize") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -67,6 +72,9 @@ final class AppSettings {
         meetingShowOriginal = defaults.object(forKey: "meetingShowOriginal") as? Bool ?? true
         meetingFontSize = defaults.object(forKey: "meetingFontSize") as? Double ?? 22
         meetingLastApp = defaults.string(forKey: "meetingLastApp")
+        meetingSaveNotes = defaults.bool(forKey: "meetingSaveNotes")
+        meetingNotesFolder = defaults.string(forKey: "meetingNotesFolder")
+        meetingSummarize = defaults.object(forKey: "meetingSummarize") as? Bool ?? true
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

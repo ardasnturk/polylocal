@@ -1,9 +1,11 @@
+import AppKit
 import SwiftUI
 import PolylocalCore
 
 /// Settings → Meeting: speech model, languages and subtitle options.
 struct MeetingSettingsView: View {
     let app: AppModel
+    @State private var showConsent = false
 
     var body: some View {
         @Bindable var settings = app.settings
@@ -20,7 +22,7 @@ struct MeetingSettingsView: View {
             } header: {
                 Text("Speech recognition")
             } footer: {
-                Text("Live subtitles for what the other participants say, translated into \(settings.primaryLanguage.localizedName). Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac; nothing is recorded or sent.")
+                Text("Live subtitles for what the other participants say, translated into \(settings.primaryLanguage.localizedName). Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac and never saved or sent; text is saved only if you turn on notes below.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -34,6 +36,33 @@ struct MeetingSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
+            Section {
+                Toggle("Save meeting notes", isOn: Binding(
+                    get: { settings.meetingSaveNotes },
+                    set: { on in
+                        if on, !settings.meetingSaveNotes { showConsent = true } else { settings.meetingSaveNotes = on }
+                    }))
+                LabeledContent("Folder") {
+                    Text(app.meeting.notesRoot.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
+                        .lineLimit(1).truncationMode(.middle).foregroundStyle(.secondary)
+                    Button("Choose…", action: chooseFolder)
+                    Button("Open") { openFolder(app.meeting.notesRoot) }
+                }
+                Toggle("Write a summary after the meeting", isOn: $settings.meetingSummarize)
+                    .disabled(!settings.meetingSaveNotes)
+            } header: {
+                Text("Notes")
+            } footer: {
+                Text("Each meeting gets a folder with the original and translated transcript (Markdown and JSON) and, optionally, a summary with decisions and action items, written by the local model. Audio is never saved.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .alert("Save meeting notes?", isPresented: $showConsent) {
+                Button("Save notes") { settings.meetingSaveNotes = true }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Polylocal will save what the other participants say as text on this Mac. In many places, transcribing a conversation requires the consent of everyone in it. Let the other participants know.")
+            }
+
             Section("Subtitles") {
                 Toggle("Show the original under the translation", isOn: $settings.meetingShowOriginal)
                 LabeledContent("Text size") {
@@ -44,5 +73,20 @@ struct MeetingSettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func chooseFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.directoryURL = app.meeting.notesRoot.deletingLastPathComponent()
+        panel.prompt = String(localized: "Choose")
+        if panel.runModal() == .OK, let url = panel.url { app.settings.meetingNotesFolder = url.path }
+    }
+
+    private func openFolder(_ url: URL) {
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        NSWorkspace.shared.open(url)
     }
 }

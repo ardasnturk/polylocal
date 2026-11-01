@@ -6,6 +6,8 @@ public struct TranslationRequest: Sendable, Hashable {
         case translate
         case rewrite(RewriteStyle)
         case complete
+        /// Meeting notes: summarize a transcript (or partial summaries of one) in `target`.
+        case summarize
     }
 
     public var text: String
@@ -99,6 +101,7 @@ public enum PromptTemplate: String, Codable, Sendable {
         switch request.kind {
         case .rewrite(let style): return Prompts.rewrite(request, style: style)
         case .complete: return Prompts.complete(request)
+        case .summarize: return Prompts.summarize(request)
         case .translate: break
         }
         let target = request.target.englishName
@@ -147,6 +150,19 @@ enum Prompts {
         let system = """
         You are an expert \(language) editor. Rewrite the user's text in \(language). \(style.instruction) \
         Output only the rewritten text, without quotes, explanations or notes.
+        """
+        return [["role": "system", "content": system], ["role": "user", "content": request.text]]
+    }
+
+    static func summarize(_ request: TranslationRequest) -> [[String: String]] {
+        let language = request.target.englishName
+        let system = """
+        You write meeting notes. The user's text is a meeting transcript produced by speech recognition, or \
+        notes on consecutive parts of one meeting. Write in \(language), in Markdown, with exactly these four \
+        sections as level-2 headings translated into \(language): Summary (2–4 sentences), Decisions, \
+        Action items (who does what, if said), Open questions. Use bullet points under the last three and write \
+        "—" when a section has nothing. Only use what is in the text; recognition errors may occur, so skip \
+        anything that does not make sense. Output only the notes.
         """
         return [["role": "system", "content": system], ["role": "user", "content": request.text]]
     }

@@ -57,8 +57,8 @@ public final class WhisperServer: @unchecked Sendable {
             "--host", "127.0.0.1",
             "--port", String(port),
             "--threads", String(max(4, min(8, ProcessInfo.processInfo.activeProcessorCount / 2))),
-            // Each phrase is independent; temperature fallback only adds latency on hard audio.
-            "--no-fallback",
+            // Keep temperature fallback on: it is what breaks Whisper's repetition loops. With --no-fallback,
+            // phrases came out doubled (or 7× over) and the extra tokens made recognition 2–3× slower.
         ]
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice

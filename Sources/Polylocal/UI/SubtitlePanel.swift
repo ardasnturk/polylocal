@@ -68,6 +68,11 @@ private struct SubtitleView: View {
         HStack(spacing: 6) {
             Circle().fill(statusColor).frame(width: 7, height: 7)
             Text(statusText).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            if meeting.isSavingNotes {
+                // Always visible while notes are written: the user (and anyone looking) can see it.
+                Label("Saving notes", systemImage: "doc.text").font(.caption).foregroundStyle(.secondary)
+                    .labelStyle(.titleAndIcon)
+            }
             Spacer()
             if hovering {
                 Button { app.settings.meetingFontSize = max(14, fontSize - 2) } label: { Image(systemName: "textformat.size.smaller") }

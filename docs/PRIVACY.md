@@ -41,8 +41,9 @@ Polylocal uses the macOS Accessibility API.
 Meeting subtitles (Settings → Meeting, menu bar → Meeting subtitles) listen to **one app you pick**, such as Zoom or your browser, through a Core Audio process tap. macOS asks for permission ("System Audio Recording Only") the first time.
 
 - Audio is captured only while meeting subtitles are on, and only from the selected app and its helper processes, never the microphone.
-- Audio is cut into phrases in memory, transcribed by the bundled `whisper-server` on `127.0.0.1`, translated by the local engine, then discarded. Nothing is written to disk and nothing leaves the Mac.
-- The subtitles themselves are kept only in memory (the last 50 phrases) and disappear when you stop. Saving meeting notes is a planned, opt-in feature.
+- Audio is cut into phrases in memory, transcribed by the bundled `whisper-server` on `127.0.0.1`, translated by the local engine, then discarded. Audio is never written to disk, and nothing leaves the Mac.
+- Subtitles are kept only in memory (the last 50 phrases) and disappear when you stop.
+- **Meeting notes** are off by default. When you turn them on (Settings → Meeting → Notes, after a consent reminder), each meeting's text (the original and the translation, with times) is saved to a folder, by default `~/Documents/Polylocal Meetings`. Folders and files are readable only by your user account (0700/0600). The subtitle bar shows "Saving notes" the whole time. An optional summary is written by the local translation model after the meeting.
 - Transcribing other people may require their consent where you live; you are responsible for that.
 
 ## Clipboard

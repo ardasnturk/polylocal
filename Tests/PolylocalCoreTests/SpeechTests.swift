@@ -79,7 +79,15 @@ import Testing
         #expect(vote.dominant == nil)   // 3 s is not enough yet
         vote.record(en, duration: 3.6)
         #expect(vote.hint(forDuration: 1.5) == en)
-        #expect(vote.hint(forDuration: 3) == nil)  // longer phrases are still detected
+    }
+
+    @Test func rechecksEveryFourthLongPhrase() {
+        var vote = LanguageVote()
+        vote.record(en, duration: 6)
+        let hints = (0..<8).map { _ in vote.hint(forDuration: 5) }
+        #expect(hints == [en, en, en, nil, en, en, en, nil])
+        // Short phrases are never used for a check.
+        #expect((0..<5).allSatisfy { _ in vote.hint(forDuration: 1) == en })
     }
 
     @Test func noDominantLanguageInMixedMeetings() {
@@ -98,11 +106,10 @@ import Testing
 }
 
 @Suite struct WhisperTests {
-    @Test func audioContextFitsThePhrase() {
-        #expect(Whisper.audioContext(forDuration: 2) == 512)  // floor: smaller windows repeat short phrases
-        #expect(Whisper.audioContext(forDuration: 12) == 704)
-        #expect(Whisper.audioContext(forDuration: 40) == 1500)
-        #expect(Whisper.audioContext(forDuration: 3) % 64 == 0)
+    @Test func audioContextUsesOnlySizesThatWork() {
+        #expect(Whisper.audioContext(forDuration: 2) == 768)
+        #expect(Whisper.audioContext(forDuration: 7) == 768)
+        #expect(Whisper.audioContext(forDuration: 20) == 1500)
     }
 
     @Test func mapsLanguageNames() {
@@ -126,5 +133,13 @@ import Testing
         #expect(TranscriptFilter.clean("...") == nil)
         #expect(TranscriptFilter.clean("Gut, (lacht) dann machen wir das so.") == "Gut, dann machen wir das so.")
         #expect(TranscriptFilter.clean("Yeni sürüm hazır.") == "Yeni sürüm hazır.")
+    }
+
+    @Test func removesWhisperRepetitionLoops() {
+        let sentence = "Die neue Version ist fertig, und wir können sie nächste Woche ausliefern."
+        #expect(TranscriptFilter.clean("\(sentence) \(sentence)") == sentence)
+        #expect(TranscriptFilter.clean("Guten Morgen. Guten Morgen. Guten Morgen. Mhm.") == "Guten Morgen. Mhm.")
+        // Different sentences, and a repeat that is not consecutive, stay.
+        #expect(TranscriptFilter.clean("Ja. Nein. Ja.") == "Ja. Nein. Ja.")
     }
 }

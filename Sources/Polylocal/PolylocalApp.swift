@@ -81,6 +81,12 @@ private struct MenuContent: View {
                 Button("Meeting settings…") { app.windows.showSettings(tab: .meeting) }
             }
         }
+        if app.meeting.isSummarizing {
+            Text("Writing the meeting summary…")
+        }
+        if let folder = app.meeting.lastNotesFolder {
+            Button("Open last meeting notes") { NSWorkspace.shared.open(folder) }
+        }
     }
 
     private var shortcutToggleTitle: String {

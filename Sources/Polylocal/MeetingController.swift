@@ -72,8 +72,16 @@ final class MeetingController {
     }
     private(set) var lines: [Line] = []
     private(set) var source: MeetingApp?
+    /// The folder of the last meeting whose notes were saved.
+    private(set) var lastNotesFolder: URL?
+    private(set) var isSummarizing = false
+    private(set) var isSavingNotes = false
 
     var isActive: Bool { state != .idle }
+
+    var notesRoot: URL {
+        app.settings.meetingNotesFolder.map { URL(fileURLWithPath: $0, isDirectory: true) } ?? MeetingNotesWriter.defaultRoot
+    }
 
     @ObservationIgnored private unowned let app: AppModel
     @ObservationIgnored private var whisper: WhisperServer?
@@ -82,6 +90,7 @@ final class MeetingController {
     @ObservationIgnored private var phrases: AsyncStream<[Float]>.Continuation?
     @ObservationIgnored private var watchTimer: Timer?
     @ObservationIgnored private var languageVote = LanguageVote()
+    @ObservationIgnored private var notes: MeetingNotesWriter?
     @ObservationIgnored private lazy var panel = SubtitlePanel(app: app)
 
     init(app: AppModel) {
@@ -106,6 +115,11 @@ final class MeetingController {
         app.settings.meetingLastApp = source.bundleID
         lines = []
         languageVote = LanguageVote()
+        if app.settings.meetingSaveNotes {
+            notes = MeetingNotesWriter(root: notesRoot, app: source.name, started: Date(),
+                                       targetLanguage: app.settings.primaryLanguage)
+        }
+        isSavingNotes = notes != nil
         state = .starting(String(localized: "Loading speech recognition…"))
         panel.show()
 
@@ -142,6 +156,12 @@ final class MeetingController {
         pipeline = nil
         whisper?.stop()
         whisper = nil
+        if let notes {
+            if let folder = notes.finish() { lastNotesFolder = folder }
+            if app.settings.meetingSummarize, notes.transcript.segments.count >= 3 { summarize(notes) }
+        }
+        notes = nil
+        isSavingNotes = false
         state = .idle
         panel.hide()
     }
@@ -219,6 +239,9 @@ final class MeetingController {
                         isOwnLanguage: ownLanguage, isTranslating: !ownLanguage)
         lines.append(line)
         if lines.count > 50 { lines.removeFirst(lines.count - 50) }
+        let notes = self.notes
+        notes?.add(line.id, .init(time: asrStart.addingTimeInterval(-duration), language: result.language?.code,
+                                  original: text, translation: nil))
         Log.meeting.notice("phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms lang=\(result.language?.code ?? "?", privacy: .public)\(expected == nil ? "" : " (given)", privacy: .public) chars=\(text.count, privacy: .public)")
         guard !ownLanguage else { return }
 
@@ -238,8 +261,45 @@ final class MeetingController {
                 update(id) { $0.translation = "" }
             }
             update(id) { $0.isTranslating = false }
+            let translation = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+            notes?.setTranslation(id, translation.isEmpty ? nil : translation)
             Log.meeting.notice("translated in \(Int(Date().timeIntervalSince(asrStart) * 1000) - asrMS, privacy: .public)ms chars=\(buffer.count, privacy: .public)")
         }
+    }
+
+    // MARK: - Summary
+
+    /// Writes summary.md with the local model once the meeting ends: decisions, action items, open questions.
+    /// Long meetings are summarized in parts first, then the parts are combined.
+    private func summarize(_ notes: MeetingNotesWriter) {
+        let target = Language.code(notes.transcript.targetLanguage) ?? app.settings.primaryLanguage
+        isSummarizing = true
+        Task {
+            defer { isSummarizing = false }
+            // Let translations still streaming for the last phrases land first.
+            try? await Task.sleep(for: .seconds(2))
+            let started = Date()
+            do {
+                let chunks = notes.transcript.summaryChunks()
+                var text = chunks.joined(separator: "\n")
+                if chunks.count > 1 {
+                    var parts: [String] = []
+                    for chunk in chunks { parts.append(try await complete(.init(text: chunk, source: nil, target: target, kind: .summarize))) }
+                    text = parts.joined(separator: "\n\n")
+                }
+                let summary = try await complete(.init(text: text, source: nil, target: target, kind: .summarize))
+                notes.writeSummary(summary)
+                Log.meeting.notice("summary in \(Int(Date().timeIntervalSince(started) * 1000), privacy: .public)ms parts=\(chunks.count, privacy: .public)")
+            } catch {
+                Log.meeting.error("summary failed: \(error.localizedDescription, privacy: .public)")
+            }
+        }
+    }
+
+    private func complete(_ request: TranslationRequest) async throws -> String {
+        var output = ""
+        for try await token in app.engine.translate(request) { output += token }
+        return output.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func update(_ id: UUID, _ change: (inout Line) -> Void) {

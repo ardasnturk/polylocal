@@ -160,12 +160,11 @@ public struct SpeechSegmenter: Sendable {
 
 public enum Whisper {
     /// Encoder window (`audio_ctx`) for a phrase. Whisper always encodes a fixed window (1500 = 30 s), so a
-    /// window fitted to the phrase is the main speed lever: ~0.6 s instead of ~1.25 s per phrase on an M4 Pro.
-    /// 50 per second, 2 s of headroom (smaller windows clip the end), rounded up to a multiple of 64,
-    /// and at least 512: below that Whisper starts repeating short phrases.
+    /// smaller one is the main speed lever: ~0.6 s instead of ~1.25 s per phrase on an M4 Pro.
+    /// 768 (~15 s) fits every phrase (they are capped at 7 s) with room to spare: ~0.33 s per phrase on an M4 Pro.
+    /// Reduced windows only work with temperature fallback on (see WhisperServer); without it, 512 and 640 looped.
     public static func audioContext(forDuration seconds: TimeInterval) -> Int {
-        let needed = Int(((seconds + 2) * 50).rounded(.up))
-        return min(1500, max(512, (needed + 63) / 64 * 64))
+        seconds <= 12 ? 768 : 1500
     }
 
     /// whisper.cpp reports detected languages by English name ("turkish").
@@ -180,6 +179,7 @@ public struct LanguageVote: Sendable {
     /// Phrases at least this long are detected per phrase and count as votes.
     public static let reliableDuration: TimeInterval = 2.5
     private var votes: [(language: Language, duration: TimeInterval)] = []
+    private var givenSinceCheck = 0
 
     public init() {}
 
@@ -199,9 +199,17 @@ public struct LanguageVote: Sendable {
         return best.key
     }
 
-    /// The language to pass to Whisper for a phrase: nil (detect) for long phrases or while unsure.
-    public func hint(forDuration duration: TimeInterval) -> Language? {
-        duration < Self.reliableDuration ? dominant : nil
+    /// The language to pass to Whisper for a phrase, nil to let it detect. Detection costs ~0.3 s, so once the
+    /// meeting language is known it is passed on, and only every fourth long phrase is checked again,
+    /// so a meeting that switches language is still followed.
+    public mutating func hint(forDuration duration: TimeInterval) -> Language? {
+        guard let dominant else { return nil }
+        if duration >= Self.reliableDuration, givenSinceCheck >= 3 {
+            givenSinceCheck = 0
+            return nil
+        }
+        givenSinceCheck += 1
+        return dominant
     }
 }
 
@@ -239,6 +247,21 @@ public enum TranscriptFilter {
         guard text.contains(where: \.isLetter) else { return nil }
         let lower = text.lowercased()
         if hallucinations.contains(where: lower.contains) { return nil }
-        return text
+        return removingRepetition(text)
+    }
+
+    /// Whisper sometimes loops and writes a sentence again (or several times). Keeps the first of
+    /// consecutive identical sentences.
+    static func removingRepetition(_ text: String) -> String {
+        var sentences: [String] = []
+        text.enumerateSubstrings(in: text.startIndex..., options: .bySentences) { sentence, _, _, _ in
+            guard let sentence = sentence?.trimmingCharacters(in: .whitespaces), !sentence.isEmpty else { return }
+            if sentences.last.map({ normalized($0) == normalized(sentence) }) != true { sentences.append(sentence) }
+        }
+        return sentences.isEmpty ? text : sentences.joined(separator: " ")
+    }
+
+    private static func normalized(_ sentence: String) -> String {
+        sentence.lowercased().filter { $0.isLetter || $0.isNumber }
     }
 }

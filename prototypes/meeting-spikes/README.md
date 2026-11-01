@@ -36,6 +36,8 @@ swift run TTSRoute tr-TR "Yeni sürüm hazır." --device "MacBook Pro"
 | same, `--audio-ctx 512` (≈10 s window) | tr / de | 2–12 s | — | 390–460 ms | 0.04–0.18 | Short phrases fine; 11 s clips cut off at the end |
 | any of the above, `language=auto` | tr / de | 2–3 s | — | +180–280 ms | — | Language detected correctly |
 
+> **Correction (L2 testing):** the second and third benchmark rounds above ran `whisper-server` with `-nf` (no temperature fallback). That made Whisper loop: phrases came out doubled or repeated many times, and the extra tokens made recognition slower. With fallback on, `--audio-ctx` 512, 640 and 768 were all correct on 5–8 s clips, at 220–340 ms per phrase. The app uses fallback and `audio_ctx` 768.
+
 - SpeechAnalyzer covers en, de, fr, es, it, pt, ja, ko, zh, hi and some other Indic languages, but **not Turkish**.
 - So whisper.cpp must be the default engine, as planned. SpeechAnalyzer stays as a fast path when the language is supported.
 - whisper.cpp v1.9.5 (static, Metal embedded), `whisper-server`, warm, 6 threads, flash attention, `temperature=0`. Latency is per request over local HTTP and includes the full transcription.
