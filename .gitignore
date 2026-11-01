@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+xcuserdata/
+__pycache__/
+.venv/
+*.gguf
+*.safetensors
