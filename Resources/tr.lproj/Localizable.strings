@@ -186,3 +186,61 @@
 "Download and install updates automatically" = "Güncellemeleri otomatik indir ve kur";
 "Updates are checked once a day. Only the list of versions is downloaded from GitHub; no personal data is sent." = "Güncellemeler günde bir kez denetlenir. GitHub'dan yalnızca sürüm listesi indirilir; kişisel veri gönderilmez.";
 "Last checked: %@" = "Son denetim: %@";
+
+/* Meeting mode */
+"Meeting" = "Toplantı";
+"Meeting subtitles" = "Toplantı altyazıları";
+"Meeting settings…" = "Toplantı ayarları…";
+"No meeting app is running" = "Çalışan bir toplantı uygulaması yok";
+"Stop meeting subtitles (%@)" = "Toplantı altyazılarını durdur (%@)";
+"Stop meeting mode" = "Toplantı modunu durdur";
+"Speech recognition" = "Konuşma tanıma";
+"Languages" = "Diller";
+"They speak" = "Karşı taraf";
+"Subtitles in" = "Altyazı dili";
+"Subtitles" = "Altyazılar";
+"Text size" = "Yazı boyutu";
+"%lld pt" = "%lld pt";
+"Show the original under the translation" = "Orijinali çevirinin altında göster";
+"Choosing the language is a little faster and more reliable than detecting it. The subtitle language is your primary language (General)." = "Dili seçmek, otomatik algılamaktan biraz daha hızlı ve güvenilirdir. Altyazı dili, birincil dilindir (Genel).";
+"Live subtitles for what the other participants say, translated into %@. Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac and never saved or sent; text is saved only if you turn on notes below." = "Diğer katılımcıların söylediklerinin %@ diline çevrilmiş canlı altyazısı. Menü çubuğundan başlat: Toplantı altyazıları. Ses bu Mac'te işlenir, asla kaydedilmez veya gönderilmez; metin yalnızca aşağıdan notları açarsan kaydedilir.";
+"Meeting mode needs macOS 14.2 or later and a build that includes whisper-server." = "Toplantı modu için macOS 14.2 veya üstü ve whisper-server içeren bir derleme gerekir.";
+"Loading speech recognition…" = "Konuşma tanıma yükleniyor…";
+"Listening…" = "Dinleniyor…";
+"Waiting for audio from %@…" = "%@ uygulamasından ses bekleniyor…";
+"%@ · not listening yet" = "%@ · henüz dinlenmiyor";
+"%@ · stopped" = "%@ · durdu";
+"The app has not played any audio yet. Join the call first, then try again." = "Uygulama henüz ses çalmadı. Önce görüşmeye katıl, sonra tekrar dene.";
+"Could not capture the app's audio (%@, error %lld)." = "Uygulamanın sesi yakalanamadı (%@, hata %lld).";
+"Speech recognition failed." = "Konuşma tanıma başarısız oldu.";
+"whisper-server not found. In a development build, run scripts/build-whisper-server.sh." = "whisper-server bulunamadı. Geliştirme derlemesinde scripts/build-whisper-server.sh komutunu çalıştır.";
+"whisper-server exited while starting (exit code %lld)." = "whisper-server başlarken kapandı (çıkış kodu %lld).";
+"whisper-server was not ready within %lld seconds." = "whisper-server %lld saniye içinde hazır olmadı.";
+"Speech recognition for meeting mode. 99 languages including Turkish and German, ~0.5 s per phrase, ~1.5 GB memory." = "Toplantı modu için konuşma tanıma. Türkçe ve Almanca dahil 99 dil, cümle başına ~0,5 sn, ~1,5 GB bellek.";
+
+/* Meeting notes */
+"Notes" = "Notlar";
+"Save meeting notes" = "Toplantı notlarını kaydet";
+"Folder" = "Klasör";
+"Choose" = "Seç";
+"Open" = "Aç";
+"Write a summary after the meeting" = "Toplantıdan sonra özet yaz";
+"Each meeting gets a folder with the original and translated transcript (Markdown and JSON) and, optionally, a summary with decisions and action items, written by the local model. Audio is never saved." = "Her toplantı için bir klasör açılır: orijinal ve çevrilmiş döküm (Markdown ve JSON) ve isteğe bağlı olarak yerel modelin yazdığı, kararları ve yapılacakları içeren bir özet. Ses asla kaydedilmez.";
+"Save meeting notes?" = "Toplantı notları kaydedilsin mi?";
+"Save notes" = "Notları kaydet";
+"Polylocal will save what the other participants say as text on this Mac. In many places, transcribing a conversation requires the consent of everyone in it. Let the other participants know." = "Polylocal, diğer katılımcıların söylediklerini bu Mac'e metin olarak kaydedecek. Birçok yerde bir konuşmanın yazıya dökülmesi için tüm katılımcıların onayı gerekir. Diğer katılımcıları bilgilendir.";
+"Saving notes" = "Notlar kaydediliyor";
+"Writing the meeting summary…" = "Toplantı özeti yazılıyor…";
+"Open last meeting notes" = "Son toplantı notlarını aç";
+
+/* Meeting: hear the translation */
+"Hear the translation" = "Çeviriyi dinle";
+"Hear the translation instead of the original" = "Orijinal yerine çeviriyi dinle";
+"Voice" = "Ses";
+"None installed" = "Yüklü değil";
+"Only the basic %@ voice is installed. Enhanced and Premium voices sound much more natural." = "Yalnızca temel %@ sesi yüklü. Geliştirilmiş ve Premium sesler çok daha doğal duyulur.";
+"Get voices…" = "Ses indir…";
+"The meeting app goes silent for you and Polylocal speaks the translation, about two seconds behind. Use headphones, or the others will hear the translation through your microphone. You can switch back to the original in the subtitle bar." = "Toplantı uygulaması senin için sessize alınır ve Polylocal çeviriyi yaklaşık iki saniye geriden seslendirir. Kulaklık kullan, yoksa diğerleri çeviriyi senin mikrofonundan duyar. Altyazı çubuğundan istediğin zaman orijinale dönebilirsin.";
+"Hearing translation" = "Çeviri dinleniyor";
+"Hearing original" = "Orijinal dinleniyor";
+"Switch between the original audio and the spoken translation" = "Orijinal ses ile seslendirilen çeviri arasında geçiş yap";

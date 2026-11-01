@@ -25,7 +25,8 @@ final class WindowManager {
         }
     }
 
-    func showSettings() {
+    func showSettings(tab: SettingsTab? = nil) {
+        if let tab { app.settingsTab = tab }
         show("settings", title: String(localized: "Polylocal Settings"), size: NSSize(width: 620, height: 480), resizable: false) {
             SettingsView(app: self.app)
         }

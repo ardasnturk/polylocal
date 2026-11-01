@@ -86,7 +86,7 @@ struct OnboardingView: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    ForEach(app.store.catalog.filter { $0.minRAMGB <= max(Hardware.memoryGB, 8) }) {
+                    ForEach(app.store.models(.translation).filter { $0.minRAMGB <= max(Hardware.memoryGB, 8) }) {
                         ModelRow(app: app, model: $0)
                         Divider()
                     }
@@ -95,7 +95,7 @@ struct OnboardingView: View {
             Text(app.engine.status.message).font(.caption).foregroundStyle(.secondary)
         }
         .task { await app.refreshOllama() }
-        .onChange(of: app.store.installedModels.map(\.id)) { _, installed in
+        .onChange(of: app.store.installedModels(.translation).map(\.id)) { _, installed in
             // Use a freshly downloaded model right away if nothing is configured yet.
             if !app.engine.status.isReady, let first = installed.first {
                 app.settings.engineKind = .builtIn

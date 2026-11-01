@@ -33,6 +33,10 @@ if [ ! -x "$ROOT/build/llama-server/llama-server" ] && [ "${ALLOW_NO_LLAMA:-0}" 
     echo "error: build/llama-server/llama-server missing; run scripts/build-llama-server.sh first" >&2
     exit 1
 fi
+if [ ! -x "$ROOT/build/whisper-server/whisper-server" ] && [ "${ALLOW_NO_WHISPER:-0}" != 1 ]; then
+    echo "error: build/whisper-server/whisper-server missing; run scripts/build-whisper-server.sh first" >&2
+    exit 1
+fi
 
 VERSION="$VERSION" SIGN_IDENTITY="$IDENTITY" "$ROOT/scripts/build-app.sh" release
 codesign --verify --strict --verbose=2 "$APP"

@@ -51,6 +51,8 @@ private struct MenuContent: View {
             get: { app.settings.hotkeysEnabled },
             set: { app.settings.hotkeysEnabled = $0 }))
         Divider()
+        meetingMenu
+        Divider()
         Button("Settings…") { app.windows.showSettings() }
             .keyboardShortcut(",")
         Button("Setup assistant…") { app.windows.showOnboarding() }
@@ -61,6 +63,30 @@ private struct MenuContent: View {
         Divider()
         Button("Quit Polylocal") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
+    }
+
+    @ViewBuilder private var meetingMenu: some View {
+        if app.meeting.isActive {
+            Button(String(localized: "Stop meeting subtitles (\(app.meeting.source?.name ?? ""))")) { app.meeting.stop() }
+        } else if MeetingController.isSupported {
+            Menu("Meeting subtitles") {
+                let apps = MeetingApp.candidates()
+                if apps.isEmpty {
+                    Text("No meeting app is running")
+                }
+                ForEach(apps) { source in
+                    Button(source.name) { app.meeting.start(source) }
+                }
+                Divider()
+                Button("Meeting settings…") { app.windows.showSettings(tab: .meeting) }
+            }
+        }
+        if app.meeting.isSummarizing {
+            Text("Writing the meeting summary…")
+        }
+        if let folder = app.meeting.lastNotesFolder {
+            Button("Open last meeting notes") { NSWorkspace.shared.open(folder) }
+        }
     }
 
     private var shortcutToggleTitle: String {

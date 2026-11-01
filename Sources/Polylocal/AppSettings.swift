@@ -33,6 +33,19 @@ final class AppSettings {
     /// nil = off. Opens the popup in rewrite (DeepL Write) mode instead of translating.
     var rewriteShortcut: Shortcut? { didSet { saveShortcut(rewriteShortcut, "rewriteShortcut") } }
     var defaultRewriteStyle: RewriteStyle { didSet { save(defaultRewriteStyle.rawValue, "defaultRewriteStyle") } }
+    /// Meeting mode: the language the other participants speak; nil = detect per phrase.
+    var meetingTheirLanguage: Language? { didSet { save(meetingTheirLanguage?.code, "meetingTheirLanguage") } }
+    var meetingShowOriginal: Bool { didSet { save(meetingShowOriginal, "meetingShowOriginal") } }
+    var meetingFontSize: Double { didSet { save(meetingFontSize, "meetingFontSize") } }
+    /// The app last used for meeting mode, offered first next time.
+    var meetingLastApp: String? { didSet { save(meetingLastApp, "meetingLastApp") } }
+    /// Off by default, like history: transcribing other people is the user's decision.
+    var meetingSaveNotes: Bool { didSet { save(meetingSaveNotes, "meetingSaveNotes") } }
+    /// nil = ~/Documents/Polylocal Meetings.
+    var meetingNotesFolder: String? { didSet { save(meetingNotesFolder, "meetingNotesFolder") } }
+    var meetingSummarize: Bool { didSet { save(meetingSummarize, "meetingSummarize") } }
+    /// Level 3: mute the meeting app for the user and speak the translation instead.
+    var meetingHearTranslation: Bool { didSet { save(meetingHearTranslation, "meetingHearTranslation") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -57,6 +70,14 @@ final class AppSettings {
         glossary = defaults.data(forKey: "glossary").flatMap { try? JSONDecoder().decode([GlossaryEntry].self, from: $0) } ?? []
         rewriteShortcut = Self.loadShortcut(defaults, "rewriteShortcut", default: nil)
         defaultRewriteStyle = defaults.string(forKey: "defaultRewriteStyle").flatMap(RewriteStyle.init) ?? .correct
+        meetingTheirLanguage = defaults.string(forKey: "meetingTheirLanguage").flatMap(Language.code)
+        meetingShowOriginal = defaults.object(forKey: "meetingShowOriginal") as? Bool ?? true
+        meetingFontSize = defaults.object(forKey: "meetingFontSize") as? Double ?? 22
+        meetingLastApp = defaults.string(forKey: "meetingLastApp")
+        meetingSaveNotes = defaults.bool(forKey: "meetingSaveNotes")
+        meetingNotesFolder = defaults.string(forKey: "meetingNotesFolder")
+        meetingSummarize = defaults.object(forKey: "meetingSummarize") as? Bool ?? true
+        meetingHearTranslation = defaults.bool(forKey: "meetingHearTranslation")
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

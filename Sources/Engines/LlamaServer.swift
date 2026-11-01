@@ -88,14 +88,14 @@ public final class LlamaServer: @unchecked Sendable {
         if let pidFile { try? FileManager.default.removeItem(at: pidFile) }
     }
 
-    /// Stops a llama-server left behind by a previous run. Only kills the PID if it still is a llama-server.
-    static func reapStale(pidFile: URL) {
+    /// Stops a helper server left behind by a previous run. Only kills the PID if it still runs `executableName`.
+    static func reapStale(pidFile: URL, executableName: String = "llama-server") {
         defer { try? FileManager.default.removeItem(at: pidFile) }
         guard let text = try? String(contentsOf: pidFile, encoding: .utf8),
               let pid = pid_t(text.trimmingCharacters(in: .whitespacesAndNewlines)), pid > 0 else { return }
         var buffer = [CChar](repeating: 0, count: Int(MAXPATHLEN))
         guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0,
-              String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self).hasSuffix("/llama-server") else { return }
+              String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self).hasSuffix("/" + executableName) else { return }
         kill(pid, SIGTERM)
     }
 

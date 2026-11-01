@@ -19,6 +19,7 @@ final class AppModel {
     let engine = EngineController()
     let history = HistoryStore()
     let updater = Updater()
+    var settingsTab: SettingsTab = .general
     let mainTranslator: TranslatorModel
     private(set) var accessibilityTrusted = Permissions.isAccessibilityTrusted
     private(set) var ollamaModels: [String]?
@@ -27,6 +28,7 @@ final class AppModel {
     @ObservationIgnored private(set) lazy var popup = PopupController(app: self)
     @ObservationIgnored private(set) lazy var windows = WindowManager(app: self)
     @ObservationIgnored private(set) lazy var inline = InlineSuggestionController(app: self)
+    @ObservationIgnored private(set) lazy var meeting = MeetingController(app: self)
     @ObservationIgnored private var permissionTimer: Timer?
 
     private init() {
@@ -54,6 +56,11 @@ final class AppModel {
             chooseDefaultEngineIfNeeded()
             applyEngine()
             if needsSetup { windows.showOnboarding() }
+            // Development aid: start meeting mode for an app without the menu, e.g. for end-to-end tests.
+            if let source = ProcessInfo.processInfo.environment["POLYLOCAL_MEETING_SOURCE"] {
+                let name = NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == source }?.localizedName
+                meeting.start(MeetingApp(bundleID: source, name: name ?? source))
+            }
         }
     }
 
@@ -78,6 +85,7 @@ final class AppModel {
     }
 
     func shutdown() {
+        meeting.stop()
         engine.shutdown()
     }
 
@@ -120,7 +128,7 @@ final class AppModel {
     /// First launch: prefer an already-installed built-in model, then an Ollama model, so it works without a download.
     private func chooseDefaultEngineIfNeeded() {
         guard settings.builtInModelID == nil, settings.ollamaModel == nil else { return }
-        if let installed = store.installedModels.first {
+        if let installed = store.installedModels(.translation).first {
             settings.engineKind = .builtIn
             settings.builtInModelID = installed.id
         } else if let models = ollamaModels, let pick = Self.preferredOllamaModel(models) {

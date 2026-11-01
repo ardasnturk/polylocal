@@ -3,16 +3,21 @@ import ServiceManagement
 import SwiftUI
 import PolylocalCore
 
+enum SettingsTab: Hashable {
+    case general, models, inline, meeting, glossary, about
+}
+
 struct SettingsView: View {
-    let app: AppModel
+    @Bindable var app: AppModel
 
     var body: some View {
-        TabView {
-            GeneralSettings(app: app).tabItem { Label("General", systemImage: "gearshape") }
-            ModelSettings(app: app).tabItem { Label("Models", systemImage: "cpu") }
-            InlineSettingsView(app: app).tabItem { Label("Inline", systemImage: "text.cursor") }
-            GlossarySettingsView(app: app).tabItem { Label("Glossary", systemImage: "character.book.closed") }
-            AboutView(app: app).tabItem { Label("About", systemImage: "info.circle") }
+        TabView(selection: $app.settingsTab) {
+            GeneralSettings(app: app).tabItem { Label("General", systemImage: "gearshape") }.tag(SettingsTab.general)
+            ModelSettings(app: app).tabItem { Label("Models", systemImage: "cpu") }.tag(SettingsTab.models)
+            InlineSettingsView(app: app).tabItem { Label("Inline", systemImage: "text.cursor") }.tag(SettingsTab.inline)
+            MeetingSettingsView(app: app).tabItem { Label("Meeting", systemImage: "captions.bubble") }.tag(SettingsTab.meeting)
+            GlossarySettingsView(app: app).tabItem { Label("Glossary", systemImage: "character.book.closed") }.tag(SettingsTab.glossary)
+            AboutView(app: app).tabItem { Label("About", systemImage: "info.circle") }.tag(SettingsTab.about)
         }
         .padding(20)
         .frame(width: 620, height: 480)
@@ -160,7 +165,7 @@ private struct ModelSettings: View {
             }
             if settings.engineKind == .builtIn {
                 Section {
-                    ForEach(app.store.catalog) { ModelRow(app: app, model: $0) }
+                    ForEach(app.store.models(.translation)) { ModelRow(app: app, model: $0) }
                 } header: {
                     Text("Models")
                 } footer: {

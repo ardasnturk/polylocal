@@ -55,6 +55,16 @@ else
     echo "note: no bundled llama-server (run scripts/build-llama-server.sh); using Homebrew's at runtime"
 fi
 
+WHISPER="$ROOT/build/whisper-server/whisper-server"
+if [ -x "$WHISPER" ]; then
+    mkdir -p "$APP/Contents/Helpers"
+    cp "$WHISPER" "$APP/Contents/Helpers/whisper-server"
+    cp "$ROOT/build/whisper-server/LICENSE" "$APP/Contents/Resources/whisper.cpp-LICENSE"
+    echo "Bundled whisper-server $(cat "$ROOT/build/whisper-server/VERSION" 2>/dev/null)"
+else
+    echo "note: no bundled whisper-server (run scripts/build-whisper-server.sh); meeting mode will be unavailable"
+fi
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -73,6 +83,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+    <key>NSAudioCaptureUsageDescription</key><string>Meeting mode listens to the meeting app's audio to show live subtitles. Audio is processed on this Mac and never stored or sent anywhere.</string>
     <key>SUFeedURL</key><string>$FEED_URL</string>
     <key>SUPublicEDKey</key><string>+3vnPcaIqjwbAO4UT9Og6ognigF7VEgo2l+xIvEB8dI=</string>
     <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Arda Senturk. MIT License.</string>
@@ -86,9 +97,11 @@ IDENTITY="${IDENTITY:--}"
 TIMESTAMP="--timestamp=none"
 [[ "$IDENTITY" == "Developer ID"* ]] && TIMESTAMP="--timestamp"
 # Sign inside-out: the helper first, then the app (no --deep).
-if [ -f "$APP/Contents/Helpers/llama-server" ]; then
-    codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP/Contents/Helpers/llama-server" >/dev/null
-fi
+for helper in llama-server whisper-server; do
+    if [ -f "$APP/Contents/Helpers/$helper" ]; then
+        codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP/Contents/Helpers/$helper" >/dev/null
+    fi
+done
 SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Autoupdate" >/dev/null
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Updater.app" >/dev/null

@@ -52,6 +52,19 @@
       "promptTemplate": "translategemma",
       "license": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms", "requiresAcceptance": true },
       "summary": "Translation-specific model. Behind Gemma 4 E4B for Turkish in our benchmark (chrF++ 69.9)."
+    },
+    {
+      "id": "whisper-large-v3-turbo-q5_0",
+      "name": "Whisper large-v3 turbo",
+      "family": "Whisper",
+      "kind": "speech",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+      "sizeBytes": 574041195,
+      "minRAMGB": 8,
+      "tier": "fast",
+      "license": { "name": "MIT", "url": "https://github.com/openai/whisper/blob/main/LICENSE", "requiresAcceptance": false },
+      "summary": "Speech recognition for meeting mode. 99 languages including Turkish and German, ~0.5 s per phrase, ~1.5 GB memory."
     }
   ]
 }
