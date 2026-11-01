@@ -9,8 +9,12 @@ struct ModelRow: View {
     @State private var showLicense = false
 
     private var state: ModelStore.State { app.store.state(of: model) }
+    /// A speech model has nothing to choose between: in use once installed.
     private var isSelected: Bool {
-        app.settings.engineKind == .builtIn && app.settings.builtInModelID == model.id
+        switch model.kind {
+        case .translation: app.settings.engineKind == .builtIn && app.settings.builtInModelID == model.id
+        case .speech: state == .installed
+        }
     }
 
     var body: some View {
@@ -73,8 +77,10 @@ struct ModelRow: View {
                 }
                 Menu {
                     Button("Delete", role: .destructive) {
+                        if model.kind == .speech { app.meeting.stop() }
+                        let wasSelected = isSelected
                         app.store.delete(model)
-                        if isSelected { app.applyEngine() }
+                        if wasSelected, model.kind == .translation { app.applyEngine() }
                     }
                 } label: { Image(systemName: "ellipsis.circle") }
                     .menuStyle(.borderlessButton)

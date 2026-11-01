@@ -33,6 +33,12 @@ final class AppSettings {
     /// nil = off. Opens the popup in rewrite (DeepL Write) mode instead of translating.
     var rewriteShortcut: Shortcut? { didSet { saveShortcut(rewriteShortcut, "rewriteShortcut") } }
     var defaultRewriteStyle: RewriteStyle { didSet { save(defaultRewriteStyle.rawValue, "defaultRewriteStyle") } }
+    /// Meeting mode: the language the other participants speak; nil = detect per phrase.
+    var meetingTheirLanguage: Language? { didSet { save(meetingTheirLanguage?.code, "meetingTheirLanguage") } }
+    var meetingShowOriginal: Bool { didSet { save(meetingShowOriginal, "meetingShowOriginal") } }
+    var meetingFontSize: Double { didSet { save(meetingFontSize, "meetingFontSize") } }
+    /// The app last used for meeting mode, offered first next time.
+    var meetingLastApp: String? { didSet { save(meetingLastApp, "meetingLastApp") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -57,6 +63,10 @@ final class AppSettings {
         glossary = defaults.data(forKey: "glossary").flatMap { try? JSONDecoder().decode([GlossaryEntry].self, from: $0) } ?? []
         rewriteShortcut = Self.loadShortcut(defaults, "rewriteShortcut", default: nil)
         defaultRewriteStyle = defaults.string(forKey: "defaultRewriteStyle").flatMap(RewriteStyle.init) ?? .correct
+        meetingTheirLanguage = defaults.string(forKey: "meetingTheirLanguage").flatMap(Language.code)
+        meetingShowOriginal = defaults.object(forKey: "meetingShowOriginal") as? Bool ?? true
+        meetingFontSize = defaults.object(forKey: "meetingFontSize") as? Double ?? 22
+        meetingLastApp = defaults.string(forKey: "meetingLastApp")
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

@@ -13,6 +13,7 @@ Polylocal is a free, open-source macOS menu-bar app that translates and rewrites
 - **Formal / informal address** (e.g. Sie/du, siz/sen).
 - **Inline suggestions:** add a rule for an app or website; when you type in another language there, a translation suggestion appears below the caret. Tab accepts, Esc dismisses, ⌥Tab inserts a real tab.
 - **Sentence completion:** optionally, per rule, suggests the rest of a sentence while you type in the target language (only at word boundaries).
+- **Meeting subtitles (preview):** live, translated subtitles for what others say in Zoom, Meet, Teams or any other app: speech recognition with Whisper, all on this Mac. Menu bar → Meeting subtitles. See [docs/MEETING_MODE.md](docs/MEETING_MODE.md).
 - **Writing assistant:** rewrite text in one of five styles: Correct, Fluent, Formal, Casual, Concise. Available in the popup, in the main window, or via an optional shortcut.
 - **Glossary:** make specific terms always translate the same way; import from CSV.
 - **Updates:** checks for new versions once a day (Sparkle) and can download and install them; Settings → About.
@@ -38,6 +39,7 @@ The user interface is available in English and Turkish. It follows the macOS lan
 git clone https://github.com/ardasnturk/polylocal.git
 cd polylocal
 scripts/build-llama-server.sh   # builds llama.cpp's llama-server (static, Metal)
+scripts/build-whisper-server.sh # builds whisper.cpp's whisper-server for meeting mode
 scripts/build-app.sh            # builds build/Polylocal.app (release), bundling llama-server
 open build/Polylocal.app
 ```

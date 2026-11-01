@@ -9,6 +9,14 @@ Release builds of Polylocal include a `llama-server` binary built from
 `scripts/build-llama-server.sh`). It is distributed under the MIT License;
 the full license text ships in the app as `Contents/Resources/llama.cpp-LICENSE`.
 
+### whisper.cpp (`whisper-server`)
+
+Meeting mode uses a `whisper-server` binary built from
+[ggml-org/whisper.cpp](https://github.com/ggml-org/whisper.cpp) (pinned tag in
+`scripts/build-whisper-server.sh`), distributed under the MIT License; the
+license text ships in the app as `Contents/Resources/whisper.cpp-LICENSE`. The
+Whisper model weights (OpenAI, MIT License) are downloaded by the user, not bundled.
+
 ### Sparkle
 
 Polylocal uses [Sparkle](https://sparkle-project.org) for updates, bundled as

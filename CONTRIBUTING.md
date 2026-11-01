@@ -8,6 +8,7 @@ Requirements: Apple Silicon Mac, macOS 14+, Xcode 16+ (Swift 6), and `cmake` (`b
 
 ```bash
 scripts/build-llama-server.sh   # build the bundled llama-server (llama.cpp, static, Metal)
+scripts/build-whisper-server.sh # build the bundled whisper-server (whisper.cpp) for meeting mode
 scripts/build-app.sh            # build/Polylocal.app (release); pass "debug" for a debug build
 open build/Polylocal.app
 ```

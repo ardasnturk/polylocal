@@ -1,6 +1,8 @@
 # Meeting mode — plan
 
-Status: planning. Nothing here is implemented yet.
+Status: **L1 (live subtitles) implemented** on the `feature/meeting-mode` branch; L2–L5 planned. Spike results that shaped the decisions below are in [prototypes/meeting-spikes](../prototypes/meeting-spikes/README.md).
+
+Measured end to end (M4 Pro, German → Turkish, synthesized speech played in QuickTime): recognition 0.6–0.7 s and translation 0.3–0.5 s per phrase. Including ~0.6 s to notice the pause, a subtitle appears about 1.7 s after the speaker finishes a sentence.
 
 Meeting mode turns Polylocal into a local, two-way interpreter for video calls (Zoom, Google Meet, Teams, Slack huddles, FaceTime…). Everything — speech recognition, translation, speech synthesis — runs on the Mac, like the rest of the app.
 

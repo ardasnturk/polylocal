@@ -45,6 +45,14 @@ public final class ModelStore {
         catalog.filter { state(of: $0) == .installed }
     }
 
+    public func models(_ kind: CatalogModel.Kind) -> [CatalogModel] {
+        catalog.filter { $0.kind == kind }
+    }
+
+    public func installedModels(_ kind: CatalogModel.Kind) -> [CatalogModel] {
+        installedModels.filter { $0.kind == kind }
+    }
+
     /// A file counts as installed once it passed verification; the `.verified` marker avoids re-hashing GBs on launch.
     public func refresh() {
         for model in catalog where tasks[model.id] == nil {
