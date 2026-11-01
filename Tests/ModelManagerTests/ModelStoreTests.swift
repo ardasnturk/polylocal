@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 @testable import ModelManager
-import TranslaterCore
+import PolylocalCore
 
 @MainActor
 @Suite struct ModelStoreTests {
@@ -15,7 +15,7 @@ import TranslaterCore
         summary: "")
 
     func tempDirectory() -> URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("translater-tests-\(UUID().uuidString)")
+        FileManager.default.temporaryDirectory.appendingPathComponent("polylocal-tests-\(UUID().uuidString)")
     }
 
     @Test func sha256MatchesKnownValue() throws {
@@ -34,7 +34,7 @@ import TranslaterCore
         #expect(store.state(of: Self.smallModel) == .notInstalled)
     }
 
-    @Test(.enabled(if: ProcessInfo.processInfo.environment["TRANSLATER_NETWORK_TESTS"] == "1"))
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["POLYLOCAL_NETWORK_TESTS"] == "1"))
     func downloadsAndVerifies() async throws {
         let dir = tempDirectory()
         defer { try? FileManager.default.removeItem(at: dir) }

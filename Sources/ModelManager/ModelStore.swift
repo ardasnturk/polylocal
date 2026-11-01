@@ -1,7 +1,7 @@
 import CryptoKit
 import Foundation
 import Observation
-import TranslaterCore
+import PolylocalCore
 
 /// Owns the model catalog and the models on disk: download with progress, SHA-256 check, delete.
 @MainActor
@@ -30,7 +30,7 @@ public final class ModelStore {
 
     public static var defaultDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Translater/Models", isDirectory: true)
+            .appendingPathComponent("Polylocal/Models", isDirectory: true)
     }
 
     public func state(of model: CatalogModel) -> State {

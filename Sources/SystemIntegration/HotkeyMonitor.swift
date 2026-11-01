@@ -1,6 +1,6 @@
 import AppKit
 import ApplicationServices
-import TranslaterCore
+import PolylocalCore
 
 /// Listens system-wide for the configured shortcuts (default ⌘C C and ⌘⇧C C).
 ///

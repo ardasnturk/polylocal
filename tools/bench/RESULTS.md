@@ -1,32 +1,32 @@
-# Karşılaştırma Sonuçları
+# Benchmark Results
 
-Donanım: Apple M4 Pro, 24 GB · macOS 27.0.1 · test seti: 30 cümle × 6 yön · sıcaklık 0
+Hardware: Apple M4 Pro, 24 GB · macOS 27.0.1 · test set: 30 sentences × 6 directions · temperature 0
 Ollama 0.20.3 (Q4_K_M) · llama.cpp/llama-server 0.8.0 (Q4_0, Metal)
 
-| Model | Şablon | tr-en chrF++ | en-tr chrF++ | tr-de chrF++ | de-tr chrF++ | en-de chrF++ | de-en chrF++ | Ort. chrF++ | TTFT (ms) | tok/s | Bellek |
+| Model | Template | tr-en chrF++ | en-tr chrF++ | tr-de chrF++ | de-tr chrF++ | en-de chrF++ | de-en chrF++ | Avg. chrF++ | TTFT (ms) | tok/s | Memory |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | gemma4-e4b-q4_0-llamacpp | generic | 81.1 | 77.9 | 75.3 | 79.5 | 78.5 | 77.1 | **78.2** | 120 | 60 | 5.2 GB |
 | gemma4-e4b-ollama | generic | 80.0 | 77.2 | 73.7 | 78.2 | 77.4 | 79.7 | **77.7** | 188 | 53 | 10.7 GB |
 | translategemma-4b-ollama | translategemma | 71.3 | 69.3 | 67.5 | 65.6 | 69.5 | 75.9 | **69.9** | 169 | 69 | 4.3 GB |
 | qwen3-4b-instruct-ollama | generic | 68.5 | 56.0 | 60.3 | 53.7 | 69.4 | 75.0 | **63.8** | 110 | 71 | 3.5 GB |
 
-Bellek: Ollama için `/api/ps`, llama.cpp için `llama-server` sürecinin RSS değeri.
+Memory: `/api/ps` for Ollama; RSS of the `llama-server` process for llama.cpp.
 
-## Notlar
+## Notes
 
-- **gemma4-e4b (llama.cpp, Q4_0):** Uygulamanın yerleşik motoru. Ollama'daki aynı modelle kalite aynı seviyede (fark ölçüm gürültüsü içinde), ama:
-  - İlk kelime ~120 ms (Ollama'da ~190 ms).
-  - Üretim hızı ~60 tok/s (Ollama'da ~53).
-  - Bellek ~5 GB (Ollama'da 10,7 GB). Ollama modelin görüntü ve ses bileşenlerini de yüklüyor; llama.cpp yalnızca metin modelini yüklüyor.
-- **gemma4-e4b (Ollama):** Deyimleri kelimesi kelimesine çeviriyor ("Ayağını yorganına göre uzat" → "Stretch your leg according to your blanket"). Bu sorun llama.cpp sürümünde de var.
-- **translategemma-4b:** Kendi prompt formatıyla ölçüldü. Gemma 3 tabanlı olduğu için daha yeni Gemma 4'ün gerisinde kalıyor. Hatalarına örnekler:
-  - Bir cümlede tekrar döngüsüne girdi ("Trenç, trenç, trenç…").
-  - "Saat üç"ü "13'e" çevirdi.
-  - Olmayan kelimeler ekledi ("Sundaki teklifimizi…").
-- **qwen3-4b-instruct (2507):** En hızlısı, ama Türkçe çıktıları dilbilgisi açısından sık sık bozuk ("Bizi sabah üçte birlikte toplantıya taşıyabilir misiniz?"). EN↔DE yönlerinde kabul edilebilir.
+- **gemma4-e4b (llama.cpp, Q4_0):** the app's built-in engine. Quality matches the same model on Ollama (the difference is within measurement noise), but:
+  - First token in ~120 ms (~190 ms on Ollama).
+  - Generation at ~60 tok/s (~53 on Ollama).
+  - ~5 GB memory (10.7 GB on Ollama). Ollama also loads the model's vision and audio components; llama.cpp loads only the text model.
+- **gemma4-e4b (Ollama):** translates idioms word for word ("Ayağını yorganına göre uzat" → "Stretch your leg according to your blanket"). The llama.cpp build has the same problem.
+- **translategemma-4b:** measured with its own prompt format. Being based on Gemma 3, it falls behind the newer Gemma 4. Examples of its errors:
+  - Got stuck in a repetition loop in one sentence ("Trenç, trenç, trenç…").
+  - Translated "three o'clock" ("Saat üç") as "13".
+  - Added words that do not exist ("Sundaki teklifimizi…").
+- **qwen3-4b-instruct (2507):** the fastest, but its Turkish output is often grammatically broken ("Bizi sabah üçte birlikte toplantıya taşıyabilir misiniz?"). Acceptable for EN↔DE.
 
-## Kararlar
+## Decisions
 
-- **Varsayılan model: Gemma 4 E4B (Q4_0).**
-- **Varsayılan motor: llama.cpp (`llama-server`).** Aynı kalitede daha hızlı ve yarı bellekle çalışıyor. Ollama, zaten kullananlar için ikinci seçenek olarak kalıyor.
-- Sırada ölçülecekler: Gemma 4 26B-A4B ve TranslateGemma 12B (kalite modu adayları), MLX.
+- **Default model: Gemma 4 E4B (Q4_0).**
+- **Default engine: llama.cpp (`llama-server`).** Same quality, faster, and about half the memory. Ollama remains a second option for people who already use it.
+- To measure next: Gemma 4 26B-A4B and TranslateGemma 12B (quality-mode candidates), MLX.

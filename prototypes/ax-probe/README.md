@@ -1,39 +1,39 @@
 # ax-probe
 
-Faz 0 prototipi. Mimarideki sistem entegrasyonu kısmını doğrular: global kısayol, seçili metni okuma, yerine yazma ve yerel modelle çeviri.
+Phase 0 prototype. Validates the system-integration part of the architecture: a global shortcut, reading the selected text, replacing it, and translating with a local model.
 
-| Kısayol | Ne yapar |
+| Shortcut | What it does |
 |---|---|
-| ⌘C+C | Seçili metni okur, TR↔EN çevirir ve terminale yazar |
-| ⌘⇧C+C | Seçili metni çevirir ve uygulamadaki metnin yerine yazar |
+| ⌘C C | Reads the selected text, translates TR↔EN, and prints it to the terminal |
+| ⇧⌘C C | Translates the selected text and replaces it in the app |
 
-## Çalıştırma
+## Running
 
 ```bash
 cd prototypes/ax-probe
-swift run ax-probe            # kısayolları dinle
-swift run ax-probe --dry      # yalnızca yakala, model çağırma
-swift run ax-probe --inspect  # 3 sn sonra odaktaki elemanın tüm AX özelliklerini döker
+swift run ax-probe            # listen for shortcuts
+swift run ax-probe --dry      # capture only, do not call the model
+swift run ax-probe --inspect  # after 3 s, dump all AX attributes of the focused element
 ```
 
-Terminal uygulamana **Accessibility** izni vermen gerekir (Sistem Ayarları → Gizlilik ve Güvenlik → Erişilebilirlik). Bazı sistemlerde **Input Monitoring** izni de istenir.
+Your terminal app needs the **Accessibility** permission (System Settings → Privacy & Security → Accessibility). Some systems also ask for **Input Monitoring**.
 
-Ortam değişkenleri:
+Environment variables:
 
-| Değişken | Varsayılan |
+| Variable | Default |
 |---|---|
-| `TRANSLATER_BASE_URL` | `http://localhost:11434/v1` (Ollama) |
-| `TRANSLATER_MODEL` | `gemma4` |
-| `TRANSLATER_PAIR` | `tr,en` (dil algılanır, diğer dile çevrilir) |
+| `POLYLOCAL_BASE_URL` | `http://localhost:11434/v1` (Ollama) |
+| `POLYLOCAL_MODEL` | `gemma4` |
+| `POLYLOCAL_PAIR` | `tr,en` (the language is detected and translated into the other one) |
 
-## Bulgular (2026-11-01, macOS 27.0.1, M4 Pro)
+## Findings (2026-11-01, macOS 27.0.1, M4 Pro)
 
-- **Çift ⌘C algılama** yalnızca dinleyen (`listenOnly`) bir event tap ile güvenilir çalışıyor. Uygulamanın kendi kopyalama davranışı bozulmuyor.
-- **Sistem geneli odak sorgusu** (`AXUIElementCreateSystemWide` → `kAXFocusedUIElementAttribute`) `-25204` (`kAXErrorCannotComplete`) hatası veriyor. **Öndeki uygulamanın** `AXUIElement`'ine sormak çalışıyor. Uygulama bu sırayı izlemeli.
-- TextEdit'te okuma, seçim konumu ve AX ile yerine yazma çalışıyor.
-- Model soğukken ilk çeviri ~1,1 sn sürdü, ısınınca ilk kelime ~380 ms'de geldi. Uygulamada modeli önceden ısıtmak gerekiyor.
+- **Double ⌘C detection** is reliable only with a listen-only (`listenOnly`) event tap. The app's own copy behavior is not affected.
+- **The system-wide focus query** (`AXUIElementCreateSystemWide` → `kAXFocusedUIElementAttribute`) fails with `-25204` (`kAXErrorCannotComplete`). Asking the **frontmost app's** `AXUIElement` works. The app should follow that order.
+- In TextEdit, reading, the selection position, and replacing via AX all work.
+- With a cold model, the first translation took ~1.1 s; once warm, the first token arrived in ~380 ms. The app needs to warm up the model in advance.
 
-## Bilinen eksikler
+## Known gaps
 
-- ⌘⇧C+C'de AX seçimi okuyamazsa yedek yol yok. Uygulama sahte bir ⌘C gönderip panodan okumalı.
-- Çeviri yalnızca terminale yazılıyor, popup yok (Faz 1).
+- If AX cannot read the selection for ⇧⌘C C, there is no fallback. The app should send a synthetic ⌘C and read the clipboard.
+- The translation is only printed to the terminal; there is no popup (Phase 1).

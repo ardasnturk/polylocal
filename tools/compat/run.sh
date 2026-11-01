@@ -6,7 +6,7 @@
 #   tools/compat/run.sh pages
 #   tools/compat/run.sh vscode
 #
-# Requires: Translater running (with a ready engine) and Accessibility access for the terminal.
+# Requires: Polylocal running (with a ready engine) and Accessibility access for the terminal.
 # Never point this at messaging apps: a stray ↩ could send a real message.
 # The clipboard is overwritten during the test and restored (text only) at the end.
 set -euo pipefail
@@ -17,7 +17,7 @@ FIELD="${2:-textarea}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PAGE="file://$ROOT/tools/compat/testpage.html?f=$FIELD"
 TEXT="Können wir das Meeting auf morgen um drei Uhr verschieben?"
-SCRATCH="${TMPDIR:-/tmp}/translater-compat.txt"
+SCRATCH="${TMPDIR:-/tmp}/polylocal-compat.txt"
 SAVED_CLIPBOARD="$(pbpaste 2>/dev/null || true)"
 SINCE="$(date '+%Y-%m-%d %H:%M:%S')"
 
@@ -132,6 +132,6 @@ teardown
 if [ "$RESULT" = "$SAVED_CLIPBOARD" ]; then echo "field: could not read back"
 elif [ "$RESULT" = "$TEXT" ]; then echo "field: unchanged"
 else echo "field: $RESULT"; fi
-/usr/bin/log show --style compact --predicate 'subsystem == "dev.translater.app"' --start "$SINCE" 2>/dev/null \
+/usr/bin/log show --style compact --predicate 'subsystem == "dev.polylocal.app"' --start "$SINCE" 2>/dev/null \
     | sed -n 's/.*\] //p' | grep -E '^(capture|replace)' || echo "(no log lines)"
 printf '%s' "$SAVED_CLIPBOARD" | pbcopy

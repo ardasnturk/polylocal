@@ -1,6 +1,6 @@
 import Foundation
 import Darwin
-import TranslaterCore
+import PolylocalCore
 
 /// Runs `llama-server` as a child process for one model file.
 /// Keeping the model out of the app process means a crash or memory spike never takes down the shortcuts.
@@ -22,16 +22,15 @@ public final class LlamaServer: @unchecked Sendable {
 
     public var baseURL: URL { URL(string: "http://127.0.0.1:\(port)/v1")! }
 
-    /// Bundled binary first, then common install locations. `TRANSLATER_LLAMA_SERVER` overrides both.
+    /// `POLYLOCAL_LLAMA_SERVER` first, then the copy bundled in Contents/Helpers (release builds),
+    /// then Homebrew locations (development builds without a bundled server).
     public static func findBinary() -> URL? {
         let fm = FileManager.default
         var candidates: [URL] = []
-        if let override = ProcessInfo.processInfo.environment["TRANSLATER_LLAMA_SERVER"] {
+        if let override = ProcessInfo.processInfo.environment["POLYLOCAL_LLAMA_SERVER"] {
             candidates.append(URL(fileURLWithPath: override))
         }
-        if let bundled = Bundle.main.resourceURL?.appendingPathComponent("llama/llama-server") {
-            candidates.append(bundled)
-        }
+        candidates.append(Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/llama-server"))
         candidates += ["/opt/homebrew/bin/llama-server", "/usr/local/bin/llama-server"].map(URL.init(fileURLWithPath:))
         return candidates.first { fm.isExecutableFile(atPath: $0.path) }
     }
@@ -39,7 +38,8 @@ public final class LlamaServer: @unchecked Sendable {
     /// Starts the server and waits until it answers `/health`.
     public func start(contextSize: Int = 4096, timeout: TimeInterval = 90) async throws {
         guard let binary = Self.findBinary() else {
-            throw TranslationError.engineUnavailable("llama-server bulunamadı. `brew install llama.cpp` ile kurabilirsin.")
+            // Release builds bundle it; this only happens in development builds without scripts/build-llama-server.sh.
+            throw TranslationError.engineUnavailable("llama-server bulunamadı. Geliştirme derlemesinde scripts/build-llama-server.sh çalıştır ya da `brew install llama.cpp` ile kur.")
         }
         if let pidFile { Self.reapStale(pidFile: pidFile) }
         let port = try Self.freePort()

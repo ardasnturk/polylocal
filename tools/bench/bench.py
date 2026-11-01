@@ -2,7 +2,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["httpx>=0.27", "sacrebleu>=2.4"]
 # ///
-"""Translater model benchmark.
+"""Polylocal model benchmark.
 
 Talks to any OpenAI-compatible server (Ollama, llama-server, mlx_lm.server),
 streams each translation and records quality (chrF++, BLEU) and speed

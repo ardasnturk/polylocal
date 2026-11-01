@@ -2,28 +2,28 @@
 import PackageDescription
 
 let package = Package(
-    name: "Translater",
+    name: "Polylocal",
     defaultLocalization: "tr",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Translater", targets: ["Translater"]),
+        .executable(name: "Polylocal", targets: ["Polylocal"]),
     ],
     targets: [
         // Pure logic: languages, prompts, engine protocol, catalog types. No AppKit.
-        .target(name: "TranslaterCore"),
+        .target(name: "PolylocalCore"),
         // Translation backends: OpenAI-compatible streaming client, llama-server process, Ollama.
-        .target(name: "Engines", dependencies: ["TranslaterCore"]),
+        .target(name: "Engines", dependencies: ["PolylocalCore"]),
         // Model catalog, downloads, SHA-256 verification.
-        .target(name: "ModelManager", dependencies: ["TranslaterCore"]),
+        .target(name: "ModelManager", dependencies: ["PolylocalCore"]),
         // Global shortcuts, Accessibility text capture/replace, permissions.
-        .target(name: "SystemIntegration", dependencies: ["TranslaterCore"]),
+        .target(name: "SystemIntegration", dependencies: ["PolylocalCore"]),
         // Menu bar app.
         .executableTarget(
-            name: "Translater",
-            dependencies: ["TranslaterCore", "Engines", "ModelManager", "SystemIntegration"]
+            name: "Polylocal",
+            dependencies: ["PolylocalCore", "Engines", "ModelManager", "SystemIntegration"]
         ),
-        .testTarget(name: "TranslaterCoreTests", dependencies: ["TranslaterCore", "Engines"]),
+        .testTarget(name: "PolylocalCoreTests", dependencies: ["PolylocalCore", "Engines"]),
         .testTarget(name: "ModelManagerTests", dependencies: ["ModelManager"]),
-        .testTarget(name: "TranslaterAppTests", dependencies: ["Translater", "TranslaterCore"]),
+        .testTarget(name: "PolylocalAppTests", dependencies: ["Polylocal", "PolylocalCore"]),
     ]
 )

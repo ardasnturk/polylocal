@@ -1,6 +1,6 @@
-# Model karşılaştırma aracı
+# Model benchmark
 
-Çeviri modellerini aynı test setiyle kalite ve hız açısından karşılaştırır. OpenAI uyumlu her sunucuyla çalışır: Ollama, `llama-server` (llama.cpp), `mlx_lm.server`.
+Compares translation models for quality and speed on the same test set. Works with any OpenAI-compatible server: Ollama, `llama-server` (llama.cpp), `mlx_lm.server`.
 
 ```bash
 # Ollama
@@ -10,26 +10,26 @@ uv run tools/bench/bench.py --model gemma4 --label gemma4-e4b-ollama
 llama-server -m model.gguf --port 8080 &
 uv run tools/bench/bench.py --base-url http://localhost:8080/v1 --model x --label translategemma-4b-llamacpp --template translategemma
 
-# Tablo
+# Table
 uv run tools/bench/report.py > tools/bench/RESULTS.md
 ```
 
-| Seçenek | Açıklama |
+| Option | Description |
 |---|---|
-| `--template` | `generic` (sistem talimatı) veya `translategemma` (model kartındaki prompt) |
-| `--pairs` | Varsayılan `tr-en,en-tr,tr-de,de-tr,en-de,de-en` |
-| `--limit N` | Yalnızca ilk N cümle |
-| `--think` | Düşünme modunu açık bırak (varsayılan: kapalı) |
+| `--template` | `generic` (system instruction) or `translategemma` (the prompt from the model card) |
+| `--pairs` | Default `tr-en,en-tr,tr-de,de-tr,en-de,de-en` |
+| `--limit N` | Only the first N sentences |
+| `--think` | Leave thinking mode on (default: off) |
 
-## Ölçülenler
+## Metrics
 
-- **chrF++ / BLEU** (sacrebleu): Referans çeviriye benzerlik. chrF++ Türkçe gibi eklemeli dillerde BLEU'dan daha anlamlıdır.
-- **TTFT:** İlk kelimenin gelme süresi (medyan). Popup ve satır içi öneri hissini belirler.
-- **tok/s:** Üretim hızı (medyan).
-- **Bellek:** Yalnızca Ollama için (`/api/ps`).
+- **chrF++ / BLEU** (sacrebleu): similarity to the reference translation. chrF++ is more meaningful than BLEU for agglutinative languages such as Turkish.
+- **TTFT:** time to first token (median). Determines how responsive the popup and inline suggestions feel.
+- **tok/s:** generation speed (median).
+- **Memory:** Ollama only (`/api/ps`).
 
-## Test seti
+## Test set
 
-[`data/testset.jsonl`](data/testset.jsonl): TR/EN/DE dillerinde 30 paralel cümle. Alanlar: sohbet, e-posta, arayüz metni, teknik, iş, deyim, sayı/tarih biçimi, paragraf.
+[`data/testset.jsonl`](data/testset.jsonl): 30 parallel sentences in TR/EN/DE. Domains: chat, email, UI text, technical, business, idioms, number/date formats, paragraphs.
 
-Sınırlar: Her cümle için tek referans var ve referanslar bu proje için yazıldı. Deyimlerde doğru ama farklı çeviriler düşük puan alır. Kesin karar için FLORES+ gibi büyük bir set ve COMET metriği eklenmeli.
+Limitations: each sentence has a single reference, and the references were written for this project. Correct but different translations of idioms score low. For a definitive decision, a large set such as FLORES+ and the COMET metric should be added.

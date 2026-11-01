@@ -16,9 +16,9 @@ import NaturalLanguage
 // MARK: - Config
 
 let env = ProcessInfo.processInfo.environment
-let baseURL = env["TRANSLATER_BASE_URL"] ?? "http://localhost:11434/v1"
-let model = env["TRANSLATER_MODEL"] ?? "gemma4"
-let pair = (env["TRANSLATER_PAIR"] ?? "tr,en").split(separator: ",").map(String.init)
+let baseURL = env["POLYLOCAL_BASE_URL"] ?? "http://localhost:11434/v1"
+let model = env["POLYLOCAL_MODEL"] ?? "gemma4"
+let pair = (env["POLYLOCAL_PAIR"] ?? "tr,en").split(separator: ",").map(String.init)
 let dryRun = CommandLine.arguments.contains("--dry")
 let doublePressWindow: TimeInterval = 0.4
 

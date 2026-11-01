@@ -1,5 +1,5 @@
 import Foundation
-import TranslaterCore
+import PolylocalCore
 
 /// Streams chat completions from any OpenAI-compatible server (llama-server, Ollama, mlx_lm.server).
 public struct OpenAICompatibleEngine: TranslationEngine {
