@@ -71,3 +71,9 @@ To add a language:
 
 When you add UI text, write it in English; use `String(localized:)` for strings that are not passed directly to a
 SwiftUI view, and add the Turkish entry to `Resources/tr.lproj/Localizable.strings`.
+
+## App icon
+
+The icon is drawn in code by `scripts/make-icon.swift` and committed as `Resources/AppIcon.icns`.
+After changing the script, run `swift scripts/make-icon.swift --preview` (the preview lands in
+`build/AppIcon-1024.png`) and commit the new `.icns`.
