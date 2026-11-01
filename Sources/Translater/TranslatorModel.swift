@@ -1,0 +1,94 @@
+import Foundation
+import Observation
+import TranslaterCore
+
+/// State of one translation surface (the popup or the main window): input, direction, streamed output.
+@MainActor
+@Observable
+final class TranslatorModel {
+    var input = "" { didSet { if input != oldValue { scheduleTranslation() } } }
+    /// nil = detect automatically.
+    var sourceOverride: Language? { didSet { scheduleTranslation(immediately: true) } }
+    /// nil = derive from the language pair.
+    var targetOverride: Language? { didSet { scheduleTranslation(immediately: true) } }
+
+    private(set) var output = ""
+    private(set) var detectedSource: Language?
+    private(set) var isTranslating = false
+    private(set) var error: String?
+
+    var debounce: Duration = .milliseconds(450)
+
+    private let settings: AppSettings
+    private let engine: EngineController
+    @ObservationIgnored private var task: Task<Void, Never>?
+
+    init(settings: AppSettings, engine: EngineController) {
+        self.settings = settings
+        self.engine = engine
+    }
+
+    var source: Language? { sourceOverride ?? detectedSource }
+
+    var target: Language {
+        targetOverride ?? settings.pair.target(forSource: source)
+    }
+
+    func swap() {
+        let newSource = target
+        let newTarget = source ?? settings.pair.secondary
+        sourceOverride = newSource
+        targetOverride = newTarget
+        if !output.isEmpty { input = output }
+    }
+
+    func reset(input text: String) {
+        task?.cancel()
+        sourceOverride = nil
+        targetOverride = nil
+        output = ""
+        error = nil
+        input = text
+        scheduleTranslation(immediately: true)
+    }
+
+    func retry() { scheduleTranslation(immediately: true) }
+
+    private func scheduleTranslation(immediately: Bool = false) {
+        task?.cancel()
+        let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            output = ""
+            detectedSource = nil
+            isTranslating = false
+            error = nil
+            return
+        }
+        let delay = immediately ? .zero : debounce
+        task = Task { [weak self] in
+            if delay > .zero { try? await Task.sleep(for: delay) }
+            guard let self, !Task.isCancelled else { return }
+            await self.run(text)
+        }
+    }
+
+    private func run(_ text: String) async {
+        detectedSource = LanguageDetector.detect(text, preferring: [settings.primaryLanguage, settings.secondaryLanguage])
+        let request = TranslationRequest(text: text, source: source, target: target)
+        isTranslating = true
+        error = nil
+        var buffer = ""
+        defer { if !Task.isCancelled { isTranslating = false } }
+        do {
+            for try await token in engine.translate(request) {
+                if Task.isCancelled { return }
+                buffer += token
+                output = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        } catch is CancellationError {
+        } catch let urlError as URLError where urlError.code == .cancelled {
+        } catch {
+            if !Task.isCancelled { self.error = error.localizedDescription }
+        }
+    }
+}

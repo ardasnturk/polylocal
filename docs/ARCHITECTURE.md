@@ -98,7 +98,9 @@ flowchart LR
   MM --> Helper
 ```
 
-### Neden ayrı bir XPC süreci?
+> **Faz 1 uygulaması:** XPC servisi yerine uygulama, `llama-server`'ı (llama.cpp) bir **alt süreç** olarak başlatıp yerel bir HTTP portu üzerinden konuşuyor. Ollama da aynı OpenAI uyumlu arayüzle ikinci bir motor seçeneği. Aşağıdaki gerekçeler bu yapı için de geçerli; XPC'ye geçiş, llama.cpp kütüphane olarak gömülürse yeniden değerlendirilecek.
+
+### Neden ayrı bir süreç?
 - Model 2–20 GB bellek kullanabilir. Çökme ya da bellek taşması (OOM) ana uygulamayı ve kısayolları düşürmemeli.
 - Model, boşta kalınca bellekten bağımsız olarak boşaltılabilir.
 - Çalıştırma altyapısı (llama.cpp veya MLX) ileride uygulamaya dokunmadan değiştirilebilir.
@@ -177,7 +179,8 @@ struct TranslationRequest: Sendable {
 
 | Uygulama | Durum | Not |
 |---|---|---|
-| `LlamaCppEngine` | **MVP** | GGUF modeller, Metal hızlandırma. llama.cpp XCFramework + Swift sarmalayıcı. Platformlar arası taşınabilir olduğu için ana motor. |
+| `LlamaCppEngine` | **MVP** | GGUF modeller, Metal hızlandırma. Faz 1'de `llama-server` alt süreci + `OpenAICompatibleEngine` olarak uygulandı. Platformlar arası taşınabilir olduğu için ana motor. |
+| Ollama | **MVP** | Kullanıcının Ollama'daki modellerini indirme yapmadan kullanır. Not: Ollama'nın model dosyaları llama.cpp ile uyumlu değil, bu yüzden paylaşılamıyor. |
 | `MLXEngine` | Faz 2 | `mlx-swift` / MLXLLM. Apple Silicon'da en hızlısı olabilir; karşılaştırmalı ölçümle karar verilir. |
 | `AppleTranslationEngine` | Faz 2 | macOS 15+ `Translation` framework'ü. Sıfır indirme yedeği. API kısıtları yüzünden yalnızca seçenek olarak sunulur. |
 | `CTranslate2Engine` | Değerlendirme | Opus-MT / MADLAD için. Mod C'de gecikme sorun olursa eklenir. |
@@ -287,27 +290,26 @@ FocusWatcher(valueChanged) → debounce 400ms
 
 ## 7. Proje yapısı
 
+Faz 1'de Xcode projesi yerine tek bir SwiftPM paketi kullanılıyor. `scripts/build-app.sh` bunu imzalı bir `.app` paketine dönüştürür. Paket Xcode'da da açılabilir (`Package.swift`).
+
 ```
 translater/
-├── Translater.xcodeproj
-├── App/                      # @main, MenuBarExtra, AppDelegate, onboarding
-├── Packages/
-│   ├── TranslaterCore/       # modeller (Language, TranslationRequest), protokoller
-│   ├── SystemIntegration/    # HotkeyService, TextCapture, FocusWatcher, AppQuirks
-│   ├── TranslationUI/        # Popup, SuggestionPanel, MainWindow, Settings
-│   ├── ModelManager/         # katalog, indirme, doğrulama, donanım önerisi
-│   └── Engines/
-│       ├── EngineXPC/        # XPC arayüzü (Codable mesajlar, akış)
-│       ├── LlamaCppEngine/
-│       └── MLXEngine/
-├── TranslaterEngine/         # XPC service target
-├── models/catalog.json
-├── tools/bench/              # model karşılaştırma aracı (CLI)
-├── docs/                     # ARCHITECTURE.md, CONTRIBUTING.md, PRIVACY.md
-└── .github/workflows/        # build, test, release (imzalama + notarize)
+├── Package.swift
+├── Sources/
+│   ├── TranslaterCore/       # Language, TranslationRequest, PromptTemplate, DoublePressDetector, katalog tipleri
+│   ├── Engines/              # OpenAICompatibleEngine (akış), LlamaServer (alt süreç), Ollama
+│   ├── ModelManager/         # ModelStore: katalog, indirme, SHA-256 doğrulama, donanım bilgisi
+│   ├── SystemIntegration/    # HotkeyMonitor (event tap), TextCapture (AX + pano), Permissions
+│   └── Translater/           # Menü çubuğu uygulaması: AppModel, EngineController, UI/
+├── Tests/                    # Swift Testing; ağ ve model testleri ortam değişkeniyle açılır
+├── models/catalog.json       # Model kataloğu (uygulamaya gömülür)
+├── scripts/build-app.sh      # build/Translater.app üretir ve imzalar
+├── prototypes/ax-probe/      # Faz 0 prototipi
+├── tools/bench/              # Model karşılaştırma aracı
+└── docs/
 ```
 
-**Teknoloji:** Swift 6, SwiftUI + AppKit, Swift Concurrency, llama.cpp (Metal), GRDB, Sparkle, KeyboardShortcuts.
+**Teknoloji:** Swift 6, SwiftUI + AppKit, Swift Concurrency, Swift Testing, llama.cpp (`llama-server`). Planlananlar: GRDB (geçmiş), Sparkle (güncelleme), özelleştirilebilir kısayollar.
 
 ---
 

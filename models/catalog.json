@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "gemma-4-e4b-q4_0",
+      "name": "Gemma 4 E4B",
+      "family": "Gemma 4",
+      "url": "https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_0.gguf",
+      "sha256": "a555b900214b477d8880e7832e0b8925e139b0159640036b09fe472b6f2097f2",
+      "sizeBytes": 4590807392,
+      "minRAMGB": 12,
+      "tier": "fast",
+      "promptTemplate": "generic",
+      "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
+      "summary": "Önerilen. Faz 0 karşılaştırmasında en iyi kalite (chrF++ 77.7), ilk kelime ~190 ms."
+    },
+    {
+      "id": "gemma-4-e2b-q4_0",
+      "name": "Gemma 4 E2B",
+      "family": "Gemma 4",
+      "url": "https://huggingface.co/ggml-org/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q4_0.gguf",
+      "sha256": "8e30dff3ac4c8434c49a7036fa15564bdbb6044e42bf04550bf1a096ad7e6a52",
+      "sizeBytes": 2841481184,
+      "minRAMGB": 8,
+      "tier": "light",
+      "promptTemplate": "generic",
+      "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
+      "summary": "8 GB RAM'li Mac'ler için hafif seçenek."
+    },
+    {
+      "id": "gemma-4-26b-a4b-q4_0",
+      "name": "Gemma 4 26B-A4B",
+      "family": "Gemma 4",
+      "url": "https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF/resolve/main/gemma-4-26B-A4B-it-Q4_0.gguf",
+      "sha256": "d208665ab1cd3a69f7a9a4bc59430e8448c8093d9b06334f566ac59d6d504a03",
+      "sizeBytes": 14618145824,
+      "minRAMGB": 24,
+      "tier": "quality",
+      "promptTemplate": "generic",
+      "license": { "name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0", "requiresAcceptance": false },
+      "summary": "Kalite modu. Daha yavaş ve çok bellek ister; henüz karşılaştırılmadı."
+    },
+    {
+      "id": "translategemma-4b-q4_k_m",
+      "name": "TranslateGemma 4B",
+      "family": "TranslateGemma",
+      "url": "https://huggingface.co/bullerwins/translategemma-4b-it-GGUF/resolve/main/translategemma-4b-it-Q4_K_M.gguf",
+      "sha256": "7f7357c14abd9da4eb200b38b05da502cd6e10d7e1d403fbc9f78c19f3209b72",
+      "sizeBytes": 2489909312,
+      "minRAMGB": 8,
+      "tier": "light",
+      "promptTemplate": "translategemma",
+      "license": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms", "requiresAcceptance": true },
+      "summary": "Çeviriye özel model. Faz 0'da Türkçede Gemma 4 E4B'nin gerisinde kaldı (chrF++ 69.9)."
+    }
+  ]
+}
