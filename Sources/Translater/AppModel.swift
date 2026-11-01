@@ -22,6 +22,7 @@ final class AppModel {
     @ObservationIgnored private let hotkeys = HotkeyMonitor()
     @ObservationIgnored private(set) lazy var popup = PopupController(app: self)
     @ObservationIgnored private(set) lazy var windows = WindowManager(app: self)
+    @ObservationIgnored private(set) lazy var inline = InlineSuggestionController(app: self)
     @ObservationIgnored private var permissionTimer: Timer?
 
     private init() {
@@ -38,6 +39,9 @@ final class AppModel {
     func start() {
         hotkeys.onTrigger = { [weak self] trigger in
             Task { await self?.handle(trigger) }
+        }
+        hotkeys.interceptor = { [weak self] key in
+            self?.inline.intercept(key) ?? false
         }
         applyShortcuts()
         watchAccessibility()
@@ -64,6 +68,10 @@ final class AppModel {
         shortcuts[.translate] = settings.translateShortcut
         shortcuts[.replace] = settings.replaceShortcut
         hotkeys.setShortcuts(shortcuts)
+    }
+
+    func applyInlineRules() {
+        inline.rulesChanged(accessibilityTrusted: accessibilityTrusted)
     }
 
     /// While recording a new shortcut in Settings, the old one must not fire.
@@ -116,6 +124,7 @@ final class AppModel {
         accessibilityTrusted = Permissions.isAccessibilityTrusted
         if accessibilityTrusted, !hotkeys.isRunning { hotkeys.start() }
         hotkeysRunning = hotkeys.isRunning
+        inline.update(accessibilityTrusted: accessibilityTrusted)
     }
 
     private func handle(_ trigger: HotkeyMonitor.Trigger) async {

@@ -22,6 +22,28 @@ public final class HotkeyMonitor {
     }
 
     public var onTrigger: ((Trigger) -> Void)?
+
+    public struct KeyPress: Sendable {
+        public let keyCode: UInt16
+        public let modifiers: Shortcut.Modifiers
+    }
+
+    /// Sees every key press first; returning true swallows it (inline suggestions use this for Tab/Esc).
+    public var interceptor: ((KeyPress) -> Bool)?
+
+    /// Marks events we post ourselves so the tap lets them through untouched.
+    nonisolated static let syntheticMarker: Int64 = 0x7472_616E  // "tran"
+
+    /// Posts a plain Tab that bypasses our own interception (for ⌥Tab = "really insert a tab").
+    public static func postPlainTab() {
+        let source = CGEventSource(stateID: .combinedSessionState)
+        for down in [true, false] {
+            guard let event = CGEvent(keyboardEventSource: source, virtualKey: 48, keyDown: down) else { continue }
+            event.flags = []
+            event.setIntegerValueField(.eventSourceUserData, value: syntheticMarker)
+            event.post(tap: .cgSessionEventTap)
+        }
+    }
     public private(set) var isRunning = false
 
     /// Set to false while the user records a new shortcut in Settings.
@@ -70,6 +92,7 @@ public final class HotkeyMonitor {
         let keyCode: Int64
         let isRepeat: Bool
         let flags: CGEventFlags
+        let isSynthetic: Bool
     }
 
     /// Returns true when the event should be swallowed.
@@ -78,17 +101,20 @@ public final class HotkeyMonitor {
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
             return false
         }
-        guard key.type == .keyDown, !key.isRepeat, !isPaused else { return false }
+        guard key.type == .keyDown, !key.isSynthetic, !isPaused else { return false }
 
         var modifiers: Shortcut.Modifiers = []
         if key.flags.contains(.maskControl) { modifiers.insert(.control) }
         if key.flags.contains(.maskAlternate) { modifiers.insert(.option) }
         if key.flags.contains(.maskShift) { modifiers.insert(.shift) }
         if key.flags.contains(.maskCommand) { modifiers.insert(.command) }
+        let keyCode = UInt16(truncatingIfNeeded: key.keyCode)
+        if let interceptor, interceptor(KeyPress(keyCode: keyCode, modifiers: modifiers)) { return true }
+        guard !key.isRepeat else { return false }
         // Plain keys go through the matcher too: typing between two ⌘C presses must break the double press.
 
         let changeCount = NSPasteboard.general.changeCount
-        switch matcher.press(keyCode: UInt16(truncatingIfNeeded: key.keyCode), modifiers: modifiers,
+        switch matcher.press(keyCode: keyCode, modifiers: modifiers,
                              at: ProcessInfo.processInfo.systemUptime) {
         case .none:
             return false
@@ -113,7 +139,8 @@ private func hotkeyTapCallback(proxy: CGEventTapProxy, type: CGEventType, event:
         type: type,
         keyCode: event.getIntegerValueField(.keyboardEventKeycode),
         isRepeat: event.getIntegerValueField(.keyboardEventAutorepeat) != 0,
-        flags: event.flags)
+        flags: event.flags,
+        isSynthetic: event.getIntegerValueField(.eventSourceUserData) == HotkeyMonitor.syntheticMarker)
     // The tap's run loop source lives on the main run loop.
     let swallow = MainActor.assumeIsolated { monitor.handle(key) }
     return swallow ? nil : Unmanaged.passUnretained(event)

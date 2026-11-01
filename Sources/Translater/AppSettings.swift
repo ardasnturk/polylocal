@@ -26,6 +26,9 @@ final class AppSettings {
     var defaultFormality: Formality { didSet { save(defaultFormality.rawValue, "defaultFormality") } }
     /// Off by default: translated text may be sensitive, so keeping it is the user's choice.
     var historyEnabled: Bool { didSet { save(historyEnabled, "historyEnabled") } }
+    /// Inline suggestions only run in apps/sites that have a rule; this is the master switch.
+    var inlineEnabled: Bool { didSet { save(inlineEnabled, "inlineEnabled") } }
+    var inlineRules: [InlineRule] { didSet { defaults.set(try? JSONEncoder().encode(inlineRules), forKey: "inlineRules") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -45,6 +48,8 @@ final class AppSettings {
         replaceShortcut = Self.loadShortcut(defaults, "replaceShortcut", default: .defaultReplace)
         defaultFormality = defaults.string(forKey: "defaultFormality").flatMap(Formality.init) ?? .automatic
         historyEnabled = defaults.bool(forKey: "historyEnabled")
+        inlineEnabled = defaults.object(forKey: "inlineEnabled") as? Bool ?? true
+        inlineRules = defaults.data(forKey: "inlineRules").flatMap { try? JSONDecoder().decode([InlineRule].self, from: $0) } ?? []
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut) -> Shortcut? {

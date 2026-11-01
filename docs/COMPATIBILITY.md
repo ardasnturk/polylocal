@@ -15,6 +15,13 @@ log stream --predicate 'subsystem == "dev.translater.app"'
 | Pages | — | — | — | — | Test edilmedi |
 | WhatsApp, Discord, Mesajlar, Mail | — | — | — | — | Otomatik test edilmedi: yanlış bir ↩ gerçek bir mesaj gönderebilir. Elle denenmeli |
 
+### Satır içi öneri (Mod C)
+
+| Uygulama | Öneri | ⇥ ile değiştirme | Not |
+|---|---|---|---|
+| TextEdit | ✅ | ✅ AX | Esc ve ⌥⇥ doğrulandı; hedef dildeki metinde öneri çıkmıyor |
+| Safari, Chrome, VS Code | — | — | Test edilmedi. Web alanlarında değiştirme yapıştırma yedeğiyle yapılacak; `AXValueChanged` bildiriminin gelip gelmediği kontrol edilmeli |
+
 **Simgeler:** ✅ AX ile çalışıyor · 🟡 yalnızca pano/yapıştırma yedeğiyle · ❌ çalışmıyor · — test edilmedi
 
 Test: 2026-11-01, macOS 27.0.1, Gemma 4 E4B (llama.cpp).

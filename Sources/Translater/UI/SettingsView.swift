@@ -9,6 +9,7 @@ struct SettingsView: View {
         TabView {
             GeneralSettings(app: app).tabItem { Label("Genel", systemImage: "gearshape") }
             ModelSettings(app: app).tabItem { Label("Modeller", systemImage: "cpu") }
+            InlineSettingsView(app: app).tabItem { Label("Satır içi", systemImage: "text.cursor") }
             AboutView().tabItem { Label("Hakkında", systemImage: "info.circle") }
         }
         .padding(20)

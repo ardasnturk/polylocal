@@ -9,9 +9,9 @@ macOS için açık kaynaklı, ücretsiz ve **tamamen yerel** çalışan bir çev
 - İsteğe bağlı çeviri geçmişi; yalnızca bu Mac'te, yalnızca kullanıcının okuyabildiği bir dosyada.
 - Menü çubuğundan açılan iki panelli çeviri penceresi: yazarken çevirir, dili otomatik algılar.
 - Çeviriler bilgisayarına indirdiğin bir AI modeliyle yapılır; metinlerin cihazdan çıkmaz.
-- Yazarken satır içi çeviri önerisi (Cotypist tarzı) planlanıyor.
+- **Satır içi öneri** (Cotypist tarzı): Kural eklediğin uygulamada ya da sitede başka bir dilde yazınca imlecin altında çeviri önerisi çıkar; ⇥ ile paragraf çeviriyle değişir.
 
-> Durum: **Faz 2 (geliştirme aşamasında).**
+> Durum: **Faz 3 (geliştirme aşamasında).**
 
 ## Gereksinimler
 

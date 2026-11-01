@@ -83,6 +83,22 @@ public enum TextCapture {
         return .paste
     }
 
+    /// Replaces `range` (UTF-16, as AX reports it) in a watched field. Used by inline suggestions.
+    @discardableResult
+    public static func replace(range: NSRange, in field: FocusedField, with text: String) async -> ReplaceResult {
+        let element = field.element
+        guard AX.setRange(element, range) else { return .failed }
+        let before: String? = attribute(element, kAXValueAttribute)
+        if isSettable(element, kAXSelectedTextAttribute),
+           AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, text as CFString) == .success {
+            let after: String? = attribute(element, kAXValueAttribute)
+            if before == nil || before != after { return .accessibility }
+        }
+        // Range is selected; a paste replaces it in web views that ignore AX writes.
+        await paste(text)
+        return .paste
+    }
+
     // MARK: Pasteboard helpers
 
     private static func copyViaSimulatedShortcut() async -> String? {
