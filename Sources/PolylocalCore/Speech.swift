@@ -175,10 +175,10 @@ public enum Whisper {
 }
 
 /// Learns which language a meeting is in, for phrases too short to detect reliably.
-/// In a real call Whisper took 1.4–1.8 s English phrases for Portuguese and Spanish; longer ones were right.
+/// In real calls Whisper took 0.8–1.8 s phrases for Portuguese, Spanish, Arabic or English; from ~2.2 s on it was right.
 public struct LanguageVote: Sendable {
     /// Phrases at least this long are detected per phrase and count as votes.
-    public static let reliableDuration: TimeInterval = 4
+    public static let reliableDuration: TimeInterval = 2.5
     private var votes: [(language: Language, duration: TimeInterval)] = []
 
     public init() {}
@@ -190,10 +190,10 @@ public struct LanguageVote: Sendable {
         while votes.dropFirst().reduce(0, { $0 + $1.duration }) > 60 { votes.removeFirst() }
     }
 
-    /// The language holding at least 70 % of the recent speech, once there are 8 s of it.
+    /// The language holding at least 70 % of the recent speech, once there are 5 s of it (two phrases or so).
     public var dominant: Language? {
         let total = votes.reduce(0) { $0 + $1.duration }
-        guard total >= 8 else { return nil }
+        guard total >= 5 else { return nil }
         let byLanguage = Dictionary(grouping: votes, by: \.language).mapValues { $0.reduce(0) { $0 + $1.duration } }
         guard let best = byLanguage.max(by: { $0.value < $1.value }), best.value / total >= 0.7 else { return nil }
         return best.key

@@ -74,12 +74,12 @@ import Testing
     @Test func learnsTheMeetingLanguageFromLongPhrases() {
         var vote = LanguageVote()
         #expect(vote.hint(forDuration: 1.5) == nil)  // nothing learned yet: detect
-        vote.record(en, duration: 5)
+        vote.record(en, duration: 3)
         vote.record(pt, duration: 1.4)  // too short to count
-        #expect(vote.dominant == nil)   // 5 s is not enough yet
-        vote.record(en, duration: 6)
+        #expect(vote.dominant == nil)   // 3 s is not enough yet
+        vote.record(en, duration: 3.6)
         #expect(vote.hint(forDuration: 1.5) == en)
-        #expect(vote.hint(forDuration: 6) == nil)  // long phrases are still detected
+        #expect(vote.hint(forDuration: 3) == nil)  // longer phrases are still detected
     }
 
     @Test func noDominantLanguageInMixedMeetings() {
