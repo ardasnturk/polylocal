@@ -81,6 +81,7 @@ final class MeetingController {
     @ObservationIgnored private var pipeline: Task<Void, Never>?
     @ObservationIgnored private var phrases: AsyncStream<[Float]>.Continuation?
     @ObservationIgnored private var watchTimer: Timer?
+    @ObservationIgnored private var languageVote = LanguageVote()
     @ObservationIgnored private lazy var panel = SubtitlePanel(app: app)
 
     init(app: AppModel) {
@@ -104,6 +105,7 @@ final class MeetingController {
         self.source = source
         app.settings.meetingLastApp = source.bundleID
         lines = []
+        languageVote = LanguageVote()
         state = .starting(String(localized: "Loading speech recognition…"))
         panel.show()
 
@@ -120,6 +122,8 @@ final class MeetingController {
                 return
             }
             guard !Task.isCancelled else { return }
+            // The first request pays for loading the weights onto the GPU (~1 s); pay it before anyone speaks.
+            _ = try? await server.transcribe([Float](repeating: 0, count: Int(SpeechAudio.sampleRate)), language: nil)
             startCapture()
             for await phrase in stream {
                 await recognize(phrase, with: server)
@@ -188,9 +192,10 @@ final class MeetingController {
     // MARK: - Recognition and translation
 
     private func recognize(_ phrase: [Float], with server: WhisperServer) async {
-        let expected = app.settings.meetingTheirLanguage
-        let asrStart = Date()
         let duration = Double(phrase.count) / SpeechAudio.sampleRate
+        let chosen = app.settings.meetingTheirLanguage
+        let expected = chosen ?? languageVote.hint(forDuration: duration)
+        let asrStart = Date()
         let result: Transcription
         do {
             result = try await server.transcribe(phrase, language: expected)
@@ -199,6 +204,9 @@ final class MeetingController {
             return
         }
         guard !Task.isCancelled else { return }
+        if chosen == nil, expected == nil, let detected = result.language {
+            languageVote.record(detected, duration: duration)
+        }
         let asrMS = Int(Date().timeIntervalSince(asrStart) * 1000)
         // Never log the text itself.
         guard let text = TranscriptFilter.clean(result.text) else {
@@ -211,7 +219,7 @@ final class MeetingController {
                         isOwnLanguage: ownLanguage, isTranslating: !ownLanguage)
         lines.append(line)
         if lines.count > 50 { lines.removeFirst(lines.count - 50) }
-        Log.meeting.notice("phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms lang=\(result.language?.code ?? "?", privacy: .public) chars=\(text.count, privacy: .public)")
+        Log.meeting.notice("phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms lang=\(result.language?.code ?? "?", privacy: .public)\(expected == nil ? "" : " (given)", privacy: .public) chars=\(text.count, privacy: .public)")
         guard !ownLanguage else { return }
 
         // Recognition continues while this phrase translates.

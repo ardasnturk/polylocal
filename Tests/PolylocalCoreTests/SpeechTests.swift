@@ -49,7 +49,7 @@ import Testing
         let monologue = (0..<60).flatMap { _ in tone(0.4) + noise(0.1) }
         let phrases = feed(&segmenter, noise(0.5) + monologue)
         #expect(phrases.count >= 2)
-        #expect(phrases.allSatisfy { Double($0.count) / Double(rate) <= 12.1 })
+        #expect(phrases.allSatisfy { Double($0.count) / Double(rate) <= 7.1 })
         #expect(segmenter.flush() != nil)
     }
 
@@ -65,6 +65,35 @@ import Testing
         // Steady background hum well above the absolute minimum is not speech.
         #expect(feed(&segmenter, noise(4, amplitude: 0.02)).isEmpty)
         #expect(feed(&segmenter, tone(1.5, amplitude: 0.4) + noise(1, amplitude: 0.02)).count == 1)
+    }
+}
+
+@Suite struct LanguageVoteTests {
+    let en = Language.code("en")!, de = Language.code("de")!, pt = Language.code("pt")!
+
+    @Test func learnsTheMeetingLanguageFromLongPhrases() {
+        var vote = LanguageVote()
+        #expect(vote.hint(forDuration: 1.5) == nil)  // nothing learned yet: detect
+        vote.record(en, duration: 5)
+        vote.record(pt, duration: 1.4)  // too short to count
+        #expect(vote.dominant == nil)   // 5 s is not enough yet
+        vote.record(en, duration: 6)
+        #expect(vote.hint(forDuration: 1.5) == en)
+        #expect(vote.hint(forDuration: 6) == nil)  // long phrases are still detected
+    }
+
+    @Test func noDominantLanguageInMixedMeetings() {
+        var vote = LanguageVote()
+        vote.record(en, duration: 6)
+        vote.record(de, duration: 6)
+        #expect(vote.dominant == nil)
+    }
+
+    @Test func followsALanguageSwitch() {
+        var vote = LanguageVote()
+        for _ in 0..<10 { vote.record(en, duration: 6) }
+        for _ in 0..<12 { vote.record(de, duration: 6) }
+        #expect(vote.dominant == de)
     }
 }
 

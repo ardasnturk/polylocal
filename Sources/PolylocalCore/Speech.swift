@@ -25,8 +25,9 @@ public struct SpeechSegmenter: Sendable {
         public var preRollFrames = 10
         /// Pause that closes a phrase (~600 ms).
         public var endSilenceFrames = 20
-        /// Longer phrases are cut (Whisper's window and latency grow with length).
-        public var maxDuration: TimeInterval = 12
+        /// Longer phrases are cut, so subtitles keep up with someone who talks without pausing
+        /// (a real call had 10–11 s phrases at 12 s). Cut at the quietest recent frame.
+        public var maxDuration: TimeInterval = 7
         /// Phrases with less speech than this (a cough, a click) are dropped. Counts speech frames only.
         public var minSpeech: TimeInterval = 0.25
         /// The first frames only measure the room (~450 ms), so a steady background is never taken for speech.
@@ -170,6 +171,37 @@ public enum Whisper {
     /// whisper.cpp reports detected languages by English name ("turkish").
     public static func language(named name: String) -> Language? {
         Language.all.first { $0.englishName.lowercased() == name.lowercased() } ?? Language.code(name)
+    }
+}
+
+/// Learns which language a meeting is in, for phrases too short to detect reliably.
+/// In a real call Whisper took 1.4–1.8 s English phrases for Portuguese and Spanish; longer ones were right.
+public struct LanguageVote: Sendable {
+    /// Phrases at least this long are detected per phrase and count as votes.
+    public static let reliableDuration: TimeInterval = 4
+    private var votes: [(language: Language, duration: TimeInterval)] = []
+
+    public init() {}
+
+    public mutating func record(_ language: Language, duration: TimeInterval) {
+        guard duration >= Self.reliableDuration else { return }
+        votes.append((language, duration))
+        // About the last minute of speech: meetings can switch language.
+        while votes.dropFirst().reduce(0, { $0 + $1.duration }) > 60 { votes.removeFirst() }
+    }
+
+    /// The language holding at least 70 % of the recent speech, once there are 8 s of it.
+    public var dominant: Language? {
+        let total = votes.reduce(0) { $0 + $1.duration }
+        guard total >= 8 else { return nil }
+        let byLanguage = Dictionary(grouping: votes, by: \.language).mapValues { $0.reduce(0) { $0 + $1.duration } }
+        guard let best = byLanguage.max(by: { $0.value < $1.value }), best.value / total >= 0.7 else { return nil }
+        return best.key
+    }
+
+    /// The language to pass to Whisper for a phrase: nil (detect) for long phrases or while unsure.
+    public func hint(forDuration duration: TimeInterval) -> Language? {
+        duration < Self.reliableDuration ? dominant : nil
     }
 }
 
