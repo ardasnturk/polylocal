@@ -105,9 +105,16 @@ final class AppModel {
             pasteboardChangeCount: trigger.pasteboardChangeCount,
             allowSimulatedCopy: trigger.action == .replace)
         else {
+            Log.capture.notice("capture app=\(NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? "?", privacy: .public) action=\(String(describing: trigger.action), privacy: .public) result=none")
             NSSound.beep()
             return
         }
+        // Never log the text itself.
+        Log.capture.notice("""
+            capture app=\(captured.bundleID ?? "?", privacy: .public) action=\(String(describing: trigger.action), privacy: .public) \
+            via=\(captured.source.rawValue, privacy: .public) role=\(captured.role ?? "-", privacy: .public) \
+            replaceable=\(captured.isReplaceable, privacy: .public) rect=\(captured.selectionRect != nil, privacy: .public)
+            """)
         popup.show(captured, mode: trigger.action == .replace ? .replace : .translate)
     }
 }

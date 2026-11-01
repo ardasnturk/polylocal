@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Translater compat</title>
+<style>
+  body { font: 18px -apple-system, sans-serif; margin: 40px; }
+  textarea, input, [contenteditable] { font: inherit; width: 600px; padding: 8px; border: 1px solid #999; }
+  textarea { height: 80px; }
+  [contenteditable] { min-height: 40px; }
+</style>
+</head>
+<body>
+<!-- ?f=textarea | input | contenteditable — the field is focused and its text selected on load. -->
+<div id="host"></div>
+<script>
+  const text = "Können wir das Meeting auf morgen um drei Uhr verschieben?";
+  const kind = new URLSearchParams(location.search).get("f") || "textarea";
+  const host = document.getElementById("host");
+  let el;
+  if (kind === "input") { el = document.createElement("input"); el.value = text; }
+  else if (kind === "contenteditable") { el = document.createElement("div"); el.contentEditable = "true"; el.textContent = text; }
+  else { el = document.createElement("textarea"); el.value = text; }
+  host.appendChild(el);
+  window.addEventListener("load", () => {
+    el.focus();
+    if (kind === "contenteditable") {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      el.select();
+    }
+  });
+</script>
+</body>
+</html>

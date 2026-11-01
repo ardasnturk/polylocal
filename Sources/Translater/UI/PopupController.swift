@@ -66,7 +66,9 @@ final class PopupController {
         Task {
             // Let key focus return to the source app before a possible paste fallback.
             try? await Task.sleep(for: .milliseconds(80))
-            if await !TextCapture.replace(captured, with: text) { NSSound.beep() }
+            let result = await TextCapture.replace(captured, with: text)
+            Log.capture.notice("replace app=\(captured.bundleID ?? "?", privacy: .public) via=\(result.rawValue, privacy: .public)")
+            if result == .failed { NSSound.beep() }
         }
     }
 
