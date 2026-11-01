@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Polylocal</title>
+    <link>https://github.com/ardasnturk/polylocal</link>
+    <!-- Newest first. Written by scripts/update-appcast.sh. -->
+    <item>
+      <title>Polylocal 0.2.0</title>
+      <pubDate>Sun, 01 Nov 2026 07:05:38 +0300</pubDate>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/ardasnturk/polylocal/releases/tag/v0.2.0</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/ardasnturk/polylocal/releases/download/v0.2.0/Polylocal-0.2.0.dmg" type="application/x-apple-diskimage" sparkle:edSignature="JdiOBIue06z1G4c0diu3sbPmDLGL8QdCVd9whpZksbsns5rZUEUaxb22ByLY7kWnUbpwN1dzryKU7CjzNwhgDg==" length="14477088"/>
+    </item>
+  </channel>
+</rss>
