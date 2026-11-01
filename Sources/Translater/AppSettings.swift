@@ -29,6 +29,10 @@ final class AppSettings {
     /// Inline suggestions only run in apps/sites that have a rule; this is the master switch.
     var inlineEnabled: Bool { didSet { save(inlineEnabled, "inlineEnabled") } }
     var inlineRules: [InlineRule] { didSet { defaults.set(try? JSONEncoder().encode(inlineRules), forKey: "inlineRules") } }
+    var glossary: [GlossaryEntry] { didSet { defaults.set(try? JSONEncoder().encode(glossary), forKey: "glossary") } }
+    /// nil = off. Opens the popup in rewrite (DeepL Write) mode instead of translating.
+    var rewriteShortcut: Shortcut? { didSet { saveShortcut(rewriteShortcut, "rewriteShortcut") } }
+    var defaultRewriteStyle: RewriteStyle { didSet { save(defaultRewriteStyle.rawValue, "defaultRewriteStyle") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -50,9 +54,12 @@ final class AppSettings {
         historyEnabled = defaults.bool(forKey: "historyEnabled")
         inlineEnabled = defaults.object(forKey: "inlineEnabled") as? Bool ?? true
         inlineRules = defaults.data(forKey: "inlineRules").flatMap { try? JSONDecoder().decode([InlineRule].self, from: $0) } ?? []
+        glossary = defaults.data(forKey: "glossary").flatMap { try? JSONDecoder().decode([GlossaryEntry].self, from: $0) } ?? []
+        rewriteShortcut = Self.loadShortcut(defaults, "rewriteShortcut", default: nil)
+        defaultRewriteStyle = defaults.string(forKey: "defaultRewriteStyle").flatMap(RewriteStyle.init) ?? .correct
     }
 
-    private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut) -> Shortcut? {
+    private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {
         guard let data = defaults.data(forKey: key) else { return value }
         // Stored as JSON; an explicit `null` means the user turned the shortcut off.
         return try? JSONDecoder().decode(Shortcut?.self, from: data)

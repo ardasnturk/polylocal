@@ -7,11 +7,14 @@ macOS için açık kaynaklı, ücretsiz ve **tamamen yerel** çalışan bir çev
 - Kısayollar Ayarlar'dan değiştirilebilir (çift basış ya da ⌃⌥C gibi tek basış).
 - Resmi/samimi hitap seçimi (siz/sen, Sie/du…).
 - İsteğe bağlı çeviri geçmişi; yalnızca bu Mac'te, yalnızca kullanıcının okuyabildiği bir dosyada.
+- **Yazım asistanı** (DeepL Write benzeri): Düzelt, Akıcı, Resmi, Samimi, Kısa stilleri; popup'ta, ana pencerede ya da ayrı bir kısayolla.
+- **Sözlük:** Belirli terimlerin her zaman aynı şekilde çevrilmesi; CSV içe aktarma.
+- **Cümle tamamlama:** Kuralda açılırsa, kuralın dilinde yazarken cümlenin devamı önerilir (Cotypist tarzı).
 - Menü çubuğundan açılan iki panelli çeviri penceresi: yazarken çevirir, dili otomatik algılar.
 - Çeviriler bilgisayarına indirdiğin bir AI modeliyle yapılır; metinlerin cihazdan çıkmaz.
 - **Satır içi öneri** (Cotypist tarzı): Kural eklediğin uygulamada ya da sitede başka bir dilde yazınca imlecin altında çeviri önerisi çıkar; ⇥ ile paragraf çeviriyle değişir.
 
-> Durum: **Faz 3 (geliştirme aşamasında).**
+> Durum: **Faz 4 (geliştirme aşamasında).**
 
 ## Gereksinimler
 

@@ -33,9 +33,11 @@ final class PopupController {
         }
     }
 
-    func show(_ captured: CapturedText, mode: Mode) {
+    func show(_ captured: CapturedText, action: HotkeyMonitor.Action) {
         self.captured = captured
-        state.mode = mode
+        // ⌘C C previews; the replace and rewrite shortcuts make ↩ write the result back.
+        state.mode = action == .translate ? .translate : .replace
+        translator.mode = action == .rewrite ? .rewrite : .translate
         state.appName = captured.appName
         state.canReplace = captured.isReplaceable
         state.copied = false

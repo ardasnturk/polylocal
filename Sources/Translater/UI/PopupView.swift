@@ -33,19 +33,29 @@ struct PopupView: View {
 
     private var header: some View {
         HStack(spacing: 6) {
-            Text(sourceLabel)
-                .foregroundStyle(.secondary)
-            Image(systemName: "arrow.right")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-            Picker("Hedef dil", selection: targetBinding) {
-                ForEach(Language.all) { Text($0.localizedName).tag($0) }
+            Picker("Mod", selection: $translator.mode) {
+                ForEach(TranslatorModel.Mode.allCases) { Text($0.title).tag($0) }
             }
             .labelsHidden()
-            .pickerStyle(.menu)
+            .pickerStyle(.segmented)
             .fixedSize()
-            if translator.target.hasFormality {
-                FormalityPicker(formality: $translator.formality)
+            if translator.mode == .translate {
+                Text(sourceLabel)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "arrow.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                Picker("Hedef dil", selection: targetBinding) {
+                    ForEach(Language.all) { Text($0.localizedName).tag($0) }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .fixedSize()
+                if translator.target.hasFormality {
+                    FormalityPicker(formality: $translator.formality)
+                }
+            } else {
+                RewriteStylePicker(style: $translator.rewriteStyle)
             }
             Spacer()
             if translator.isTranslating { ProgressView().controlSize(.small) }

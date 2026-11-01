@@ -5,8 +5,9 @@ import TranslaterCore
 /// Click, then press a key combination; press it twice quickly to record a double press (⌘C C).
 struct ShortcutRecorder: View {
     @Binding var shortcut: Shortcut?
-    let other: Shortcut?
-    let defaultValue: Shortcut
+    /// The other configured shortcuts; a new one must not reuse their keys.
+    let others: [Shortcut?]
+    let defaultValue: Shortcut?
     let onRecordingChange: (Bool) -> Void
 
     @State private var recording = false
@@ -25,7 +26,9 @@ struct ShortcutRecorder: View {
                         .foregroundStyle(recording ? Color.accentColor : .primary)
                 }
                 Menu {
-                    Button("Varsayılana dön (\(defaultValue.displayString))") { set(defaultValue) }
+                    if let defaultValue {
+                        Button("Varsayılana dön (\(defaultValue.displayString))") { set(defaultValue) }
+                    }
                     Button("Kapat") { set(nil) }
                 } label: { Image(systemName: "ellipsis.circle") }
                     .menuStyle(.borderlessButton)
@@ -97,7 +100,9 @@ struct ShortcutRecorder: View {
     private func finish(_ candidate: Shortcut) {
         finishTask?.cancel()
         stopRecording()
-        switch candidate.problem(conflictingWith: other) {
+        let issue = others.compactMap { candidate.problem(conflictingWith: $0) }.first
+            ?? candidate.problem(conflictingWith: nil)
+        switch issue {
         case .needsModifier: problem = "En az bir değiştirici tuş gerekli (⌘ ⌃ ⌥ ⇧)."
         case .reservedSystemShortcut: problem = "\(candidate.displayString) sistemde kullanılıyor; iki kez basarak kullanabilirsin."
         case .sameAsOther: problem = "Diğer kısayolla aynı tuşlar."

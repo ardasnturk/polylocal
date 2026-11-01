@@ -3,7 +3,8 @@ import SystemIntegration
 import TranslaterCore
 
 /// Mode C: while the user types in an app/site with a rule, offer the paragraph in the rule's
-/// language under the caret. Tab replaces, Esc dismisses, ⌥Tab inserts a real tab.
+/// language under the caret, or (if the rule allows) a continuation when already writing in it.
+/// Tab accepts, Esc dismisses, ⌥Tab inserts a real tab.
 @MainActor
 final class InlineSuggestionController {
     private unowned let app: AppModel
@@ -11,10 +12,18 @@ final class InlineSuggestionController {
     private let panel = SuggestionPanel()
 
     private struct Pending {
+        enum Kind { case translation, completion }
+
+        let kind: Kind
         let field: FocusedField
-        let segment: TextSegment
         let rule: InlineRule
-        var translation = ""
+        /// Text that is replaced on accept (an empty range at the caret for completions).
+        let replaceRange: NSRange
+        /// Must still be in the field at `checkRange` when accepting; otherwise the text moved on.
+        let checkRange: NSRange
+        let checkText: String
+        let sourceText: String
+        var suggestion = ""
         var isComplete = false
     }
 
@@ -109,54 +118,96 @@ final class InlineSuggestionController {
               let segment = TextSegmenter.paragraph(in: text, caretUTF16: selection.location) else { return }
         let detected = LanguageDetector.detect(segment.text,
                                                preferring: [app.settings.primaryLanguage, app.settings.secondaryLanguage])
-        guard InlinePolicy.shouldSuggest(segment, target: rule.target, detected: detected),
-              let caret = field.caretRect else { return }
+        let ns = text as NSString
+        let caret = selection.location
 
-        pending = Pending(field: field, segment: segment, rule: rule)
+        let candidate: Pending
+        let request: TranslationRequest
+        if InlinePolicy.shouldSuggest(segment, target: rule.target, detected: detected) {
+            candidate = Pending(kind: .translation, field: field, rule: rule, replaceRange: segment.range,
+                                checkRange: segment.range, checkText: segment.text, sourceText: segment.text)
+            request = TranslationRequest(text: segment.text, source: detected, target: rule.target, formality: rule.formality,
+                                         glossary: Glossary.relevant(app.settings.glossary, for: segment.text, target: rule.target))
+            panel.state.targetName = "\(detected?.localizedName ?? "?") → \(rule.target.localizedName)"
+        } else if rule.completions {
+            let lineEnd = ns.lineRange(for: NSRange(location: caret, length: 0))
+            let rest = ns.substring(with: NSRange(location: caret, length: max(0, NSMaxRange(lineEnd) - caret)))
+            let prefix = ns.substring(with: NSRange(location: segment.range.location,
+                                                    length: max(0, caret - segment.range.location)))
+            guard InlinePolicy.shouldComplete(prefix: prefix, rest: rest, target: rule.target, detected: detected)
+            else { return }
+            // Up to ~600 characters of context before the caret.
+            let contextStart = max(0, caret - 600)
+            let context = ns.substring(with: NSRange(location: contextStart, length: caret - contextStart))
+            let checkStart = max(0, caret - 40)
+            let checkRange = NSRange(location: checkStart, length: caret - checkStart)
+            candidate = Pending(kind: .completion, field: field, rule: rule,
+                                replaceRange: NSRange(location: caret, length: 0),
+                                checkRange: checkRange, checkText: ns.substring(with: checkRange), sourceText: context)
+            request = TranslationRequest(text: context, source: rule.target, target: rule.target, kind: .complete)
+            panel.state.targetName = "Tamamlama · \(rule.target.localizedName)"
+        } else {
+            return
+        }
+        guard let caretRect = field.caretRect else { return }
+
+        pending = candidate
         panel.state.text = ""
         panel.state.isLoading = true
-        panel.state.targetName = "\(detected?.localizedName ?? "?") → \(rule.target.localizedName)"
-        panel.show(below: caret)
+        if candidate.kind == .translation { panel.show(below: caretRect) }
 
-        let request = TranslationRequest(text: segment.text, source: detected, target: rule.target,
-                                         formality: rule.formality)
         var output = ""
         do {
             for try await token in app.engine.translate(request) {
                 if Task.isCancelled || pending == nil { return }
                 output += token
-                pending?.translation = output.trimmingCharacters(in: .whitespacesAndNewlines)
-                panel.state.text = pending?.translation ?? ""
-                panel.reposition(below: caret)
+                if candidate.kind == .translation {
+                    pending?.suggestion = output.trimmingCharacters(in: .whitespacesAndNewlines)
+                    panel.state.text = pending?.suggestion ?? ""
+                    panel.reposition(below: caretRect)
+                }
             }
         } catch {
             dismiss()
             return
         }
-        guard !Task.isCancelled, pending != nil, !(pending?.translation.isEmpty ?? true) else {
+        guard !Task.isCancelled, pending != nil else { return }
+        if candidate.kind == .completion {
+            // Shown only once complete: partial continuations flicker and get cleaned up anyway.
+            guard let cleaned = InlinePolicy.completionText(output, after: candidate.sourceText) else {
+                dismiss()
+                return
+            }
+            pending?.suggestion = cleaned
+            panel.state.text = "…" + cleaned
+            panel.show(below: caretRect)
+        }
+        guard !(pending?.suggestion.isEmpty ?? true) else {
             dismiss()
             return
         }
         pending?.isComplete = true
         panel.state.isLoading = false
-        panel.reposition(below: caret)
-        Log.capture.notice("inline suggest app=\(field.bundleID, privacy: .public) target=\(rule.target.code, privacy: .public)")
+        panel.reposition(below: caretRect)
+        Log.capture.notice("inline \(candidate.kind == .translation ? "suggest" : "complete", privacy: .public) app=\(field.bundleID, privacy: .public) target=\(rule.target.code, privacy: .public)")
     }
 
     private func accept(_ suggestion: Pending) {
         dismiss()
-        // The text must still be what we translated; otherwise the range points at something else.
+        // The text must still be what we looked at; otherwise the range points at something else.
         guard let text = suggestion.field.text,
-              (text as NSString).length >= NSMaxRange(suggestion.segment.range),
-              (text as NSString).substring(with: suggestion.segment.range) == suggestion.segment.text else { return }
+              (text as NSString).length >= NSMaxRange(suggestion.checkRange),
+              (text as NSString).substring(with: suggestion.checkRange) == suggestion.checkText else { return }
         ignoreEditsUntil = Date().addingTimeInterval(1.5)
         Task {
-            let result = await TextCapture.replace(range: suggestion.segment.range, in: suggestion.field,
-                                                   with: suggestion.translation)
-            Log.capture.notice("inline replace app=\(suggestion.field.bundleID, privacy: .public) via=\(result.rawValue, privacy: .public)")
-            app.record(TranslationRequest(text: suggestion.segment.text, source: nil, target: suggestion.rule.target,
-                                          formality: suggestion.rule.formality),
-                       suggestion.translation, origin: .popup, appName: suggestion.field.appName)
+            let result = await TextCapture.replace(range: suggestion.replaceRange, in: suggestion.field,
+                                                   with: suggestion.suggestion)
+            Log.capture.notice("inline accept app=\(suggestion.field.bundleID, privacy: .public) via=\(result.rawValue, privacy: .public)")
+            if suggestion.kind == .translation {
+                app.record(TranslationRequest(text: suggestion.sourceText, source: nil, target: suggestion.rule.target,
+                                              formality: suggestion.rule.formality),
+                           suggestion.suggestion, origin: .popup, appName: suggestion.field.appName)
+            }
         }
     }
 

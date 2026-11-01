@@ -335,7 +335,7 @@ translater/
 | **1 — MVP** | Menü çubuğu uygulaması, ModelManager, Mod A (⌘C+C popup), ana çeviri penceresi, ilk kurulum | v0.1 GitHub Release |
 | **2 — Yerine yazma** | Mod B (⌘⇧C+C) ✅, özelleştirilebilir kısayollar ✅, resmi/samimi hitap ✅, geçmiş ✅ · Sparkle, Homebrew (yayın aşamasına bağlı), MLX motoru (bekliyor) | v0.2 |
 | **3 — Satır içi öneri** | Mod C ✅, uygulama/alan adı kuralları ✅ (TextEdit'te doğrulandı) · tarayıcı ve Electron uyumluluğu (bekliyor) | v0.3 |
-| **4 — Yazım asistanı** | Sözlük, yeniden ifade etme ve ton değiştirme (DeepL Write benzeri), hedef dilde tamamlama | v0.4 |
+| **4 — Yazım asistanı** | Sözlük ✅, yeniden yazma ve ton (DeepL Write benzeri) ✅, hedef dilde tamamlama ✅ (TextEdit'te doğrulandı) | v0.4 |
 | **5 — Genişleme** | Ekran bağlamı (OCR), belge çevirisi, Windows/Linux (motor katmanı paylaşılır, sistem entegrasyonu yeniden yazılır) | v1.x |
 
 ---

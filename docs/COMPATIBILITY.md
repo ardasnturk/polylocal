@@ -19,7 +19,7 @@ log stream --predicate 'subsystem == "dev.translater.app"'
 
 | Uygulama | Öneri | ⇥ ile değiştirme | Not |
 |---|---|---|---|
-| TextEdit | ✅ | ✅ AX | Esc ve ⌥⇥ doğrulandı; hedef dildeki metinde öneri çıkmıyor |
+| TextEdit | ✅ | ✅ AX | Esc ve ⌥⇥ doğrulandı; hedef dildeki metinde öneri çıkmıyor. Cümle tamamlama da çalışıyor |
 | Safari, Chrome, VS Code | — | — | Test edilmedi. Web alanlarında değiştirme yapıştırma yedeğiyle yapılacak; `AXValueChanged` bildiriminin gelip gelmediği kontrol edilmeli |
 
 **Simgeler:** ✅ AX ile çalışıyor · 🟡 yalnızca pano/yapıştırma yedeğiyle · ❌ çalışmıyor · — test edilmedi

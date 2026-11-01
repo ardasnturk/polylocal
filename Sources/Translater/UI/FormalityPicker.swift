@@ -15,3 +15,18 @@ struct FormalityPicker: View {
         .help("Hitap: resmi (siz/Sie) veya samimi (sen/du)")
     }
 }
+
+/// DeepL Write-style rewrite styles.
+struct RewriteStylePicker: View {
+    @Binding var style: RewriteStyle
+
+    var body: some View {
+        Picker("Stil", selection: $style) {
+            ForEach(RewriteStyle.allCases) { Text($0.title).tag($0) }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .fixedSize()
+        .help("Yazım stili: düzelt, akıcı, resmi, samimi veya kısa")
+    }
+}

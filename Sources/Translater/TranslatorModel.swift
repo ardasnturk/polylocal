@@ -13,6 +13,15 @@ final class TranslatorModel {
     var targetOverride: Language? { didSet { scheduleTranslation(immediately: true) } }
     var formality: Formality { didSet { if formality != oldValue { scheduleTranslation(immediately: true) } } }
 
+    enum Mode: String, CaseIterable, Identifiable {
+        case translate, rewrite
+        var id: String { rawValue }
+        var title: String { self == .translate ? "Çevir" : "Yazım" }
+    }
+
+    var mode: Mode = .translate { didSet { if mode != oldValue { scheduleTranslation(immediately: true) } } }
+    var rewriteStyle: RewriteStyle { didSet { if rewriteStyle != oldValue { scheduleTranslation(immediately: true) } } }
+
     private(set) var output = ""
     private(set) var detectedSource: Language?
     private(set) var isTranslating = false
@@ -30,6 +39,7 @@ final class TranslatorModel {
         self.settings = settings
         self.engine = engine
         formality = settings.defaultFormality
+        rewriteStyle = settings.defaultRewriteStyle
     }
 
     var source: Language? { sourceOverride ?? detectedSource }
@@ -79,7 +89,16 @@ final class TranslatorModel {
 
     private func run(_ text: String) async {
         detectedSource = LanguageDetector.detect(text, preferring: [settings.primaryLanguage, settings.secondaryLanguage])
-        let request = TranslationRequest(text: text, source: source, target: target, formality: formality)
+        let request: TranslationRequest
+        switch mode {
+        case .translate:
+            request = TranslationRequest(text: text, source: source, target: target, formality: formality,
+                                         glossary: Glossary.relevant(settings.glossary, for: text, target: target))
+        case .rewrite:
+            // Rewrite stays in the text's own language.
+            let language = source ?? settings.primaryLanguage
+            request = TranslationRequest(text: text, source: language, target: language, kind: .rewrite(rewriteStyle))
+        }
         isTranslating = true
         error = nil
         var buffer = ""

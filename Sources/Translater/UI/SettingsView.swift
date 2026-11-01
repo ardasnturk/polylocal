@@ -10,6 +10,7 @@ struct SettingsView: View {
             GeneralSettings(app: app).tabItem { Label("Genel", systemImage: "gearshape") }
             ModelSettings(app: app).tabItem { Label("Modeller", systemImage: "cpu") }
             InlineSettingsView(app: app).tabItem { Label("Satır içi", systemImage: "text.cursor") }
+            GlossarySettingsView(app: app).tabItem { Label("Sözlük", systemImage: "character.book.closed") }
             AboutView().tabItem { Label("Hakkında", systemImage: "info.circle") }
         }
         .padding(20)
@@ -42,12 +43,19 @@ private struct GeneralSettings: View {
             Section {
                 Toggle("Global kısayolları kullan", isOn: $settings.hotkeysEnabled)
                 LabeledContent("Seçili metni çevir") {
-                    ShortcutRecorder(shortcut: $settings.translateShortcut, other: settings.replaceShortcut,
+                    ShortcutRecorder(shortcut: $settings.translateShortcut,
+                                     others: [settings.replaceShortcut, settings.rewriteShortcut],
                                      defaultValue: .defaultTranslate, onRecordingChange: app.setShortcutRecording)
                 }
                 LabeledContent("Çevir ve yerine yaz") {
-                    ShortcutRecorder(shortcut: $settings.replaceShortcut, other: settings.translateShortcut,
+                    ShortcutRecorder(shortcut: $settings.replaceShortcut,
+                                     others: [settings.translateShortcut, settings.rewriteShortcut],
                                      defaultValue: .defaultReplace, onRecordingChange: app.setShortcutRecording)
+                }
+                LabeledContent("Yazımı düzelt ve yerine yaz") {
+                    ShortcutRecorder(shortcut: $settings.rewriteShortcut,
+                                     others: [settings.translateShortcut, settings.replaceShortcut],
+                                     defaultValue: nil, onRecordingChange: app.setShortcutRecording)
                 }
                 if !app.accessibilityTrusted {
                     HStack {
@@ -65,10 +73,14 @@ private struct GeneralSettings: View {
             }
             .onChange(of: settings.translateShortcut) { app.applyShortcuts() }
             .onChange(of: settings.replaceShortcut) { app.applyShortcuts() }
+            .onChange(of: settings.rewriteShortcut) { app.applyShortcuts() }
 
             Section("Çeviri") {
                 Picker("Varsayılan hitap", selection: $settings.defaultFormality) {
                     ForEach(Formality.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("Varsayılan yazım stili", selection: $settings.defaultRewriteStyle) {
+                    ForEach(RewriteStyle.allCases) { Text($0.title).tag($0) }
                 }
                 Toggle("Çeviri geçmişini kaydet", isOn: $settings.historyEnabled)
                 if !app.history.entries.isEmpty {

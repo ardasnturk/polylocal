@@ -67,6 +67,7 @@ final class AppModel {
         var shortcuts: [HotkeyMonitor.Action: Shortcut] = [:]
         shortcuts[.translate] = settings.translateShortcut
         shortcuts[.replace] = settings.replaceShortcut
+        shortcuts[.rewrite] = settings.rewriteShortcut
         hotkeys.setShortcuts(shortcuts)
     }
 
@@ -148,6 +149,6 @@ final class AppModel {
             via=\(captured.source.rawValue, privacy: .public) role=\(captured.role ?? "-", privacy: .public) \
             replaceable=\(captured.isReplaceable, privacy: .public) rect=\(captured.selectionRect != nil, privacy: .public)
             """)
-        popup.show(captured, mode: trigger.action == .replace ? .replace : .translate)
+        popup.show(captured, action: trigger.action)
     }
 }

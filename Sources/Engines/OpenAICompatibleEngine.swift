@@ -51,7 +51,7 @@ public struct OpenAICompatibleEngine: TranslationEngine {
             "messages": template.messages(for: request),
             "stream": true,
             "temperature": 0,
-            "max_tokens": max(64, request.text.count * 2),
+            "max_tokens": request.kind == .complete ? 32 : max(64, request.text.count * 2),
             // Translation never needs a reasoning trace. Ollama reads the first, llama-server the second.
             "reasoning_effort": "none",
             "chat_template_kwargs": ["enable_thinking": false],

@@ -10,9 +10,11 @@ public struct InlineRule: Codable, Hashable, Sendable, Identifiable {
     public var target: Language
     public var formality: Formality
     public var isEnabled: Bool
+    /// Also suggest how to continue the sentence when already writing in `target` (Cotypist-style).
+    public var completions: Bool
 
     public init(id: UUID = UUID(), bundleID: String, appName: String, domain: String? = nil,
-                target: Language, formality: Formality = .automatic, isEnabled: Bool = true) {
+                target: Language, formality: Formality = .automatic, isEnabled: Bool = true, completions: Bool = false) {
         self.id = id
         self.bundleID = bundleID
         self.appName = appName
@@ -20,6 +22,20 @@ public struct InlineRule: Codable, Hashable, Sendable, Identifiable {
         self.target = target
         self.formality = formality
         self.isEnabled = isEnabled
+        self.completions = completions
+    }
+
+    // Rules saved before `completions` existed must still load.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        bundleID = try c.decode(String.self, forKey: .bundleID)
+        appName = try c.decode(String.self, forKey: .appName)
+        domain = try c.decodeIfPresent(String.self, forKey: .domain)
+        target = try c.decode(Language.self, forKey: .target)
+        formality = try c.decodeIfPresent(Formality.self, forKey: .formality) ?? .automatic
+        isEnabled = try c.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        completions = try c.decodeIfPresent(Bool.self, forKey: .completions) ?? false
     }
 
     /// "https://www.Slack.com/x" → "slack.com"
@@ -102,6 +118,38 @@ public enum TextSegmenter {
 public enum InlinePolicy {
     public static let minimumWords = 3
     public static let maximumLength = 1500
+
+    static let sentenceEnders: Set<Character> = [".", "!", "?", "…", ":", ";"]
+
+    /// Completion: the caret is at the end of its line, right after a space or comma, inside an unfinished
+    /// sentence that is already in the target language. Mid-word pauses are skipped: whether the model would
+    /// finish the word or start a new one is ambiguous.
+    /// - Parameters:
+    ///   - prefix: paragraph text from its start up to the caret (untrimmed).
+    ///   - rest: text from the caret to the end of the line.
+    public static func shouldComplete(prefix: String, rest: String, target: Language, detected: Language?) -> Bool {
+        guard detected == target, rest.trimmingCharacters(in: .whitespaces).isEmpty,
+              let lastChar = prefix.last, lastChar.isWhitespace || lastChar == ",",
+              let lastVisible = prefix.last(where: { !$0.isWhitespace }), !sentenceEnders.contains(lastVisible)
+        else { return false }
+        return prefix.split { $0.isWhitespace }.count >= minimumWords
+    }
+
+    /// Cleans a model continuation: first line only, no echo of the prompt, a joining space when needed.
+    public static func completionText(_ raw: String, after prefix: String) -> String? {
+        guard var text = raw.split(whereSeparator: \.isNewline).first.map(String.init) else { return nil }
+        text = text.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "\"“”"))
+        // Some models echo the tail of the input before continuing.
+        let tail = prefix.split { $0.isWhitespace }.suffix(3).joined(separator: " ")
+        if !tail.isEmpty, text.lowercased().hasPrefix(tail.lowercased()) {
+            text = String(text.dropFirst(tail.count)).trimmingCharacters(in: .whitespaces)
+        }
+        guard !text.isEmpty else { return nil }
+        if text.count > 160 { text = String(text.prefix(160)) }
+        let needsSpace = !(prefix.last?.isWhitespace ?? true)
+            && !(text.first.map { ",.;:!?)…".contains($0) } ?? false)
+        return needsSpace ? " " + text : text
+    }
 
     /// Suggest only for real sentences that are not already in the target language.
     public static func shouldSuggest(_ segment: TextSegment, target: Language, detected: Language?) -> Bool {

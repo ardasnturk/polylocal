@@ -12,6 +12,7 @@ public final class HotkeyMonitor {
     public enum Action: Hashable, Sendable {
         case translate
         case replace
+        case rewrite
     }
 
     public struct Trigger: Sendable {

@@ -13,7 +13,7 @@ struct InlineSettingsView: View {
                 Toggle("Satır içi çeviri önerileri", isOn: $settings.inlineEnabled)
                     .onChange(of: settings.inlineEnabled) { app.applyInlineRules() }
             } footer: {
-                Text("Kural eklediğin uygulamada başka bir dilde yazınca, imlecin altında çeviri önerisi çıkar. ⇥ ile paragrafı çeviriyle değiştirir, Esc ile kapatır, ⌥⇥ gerçek bir sekme ekler. Yalnızca kural olan uygulamalardaki metin okunur.")
+                Text("Kural eklediğin uygulamada başka bir dilde yazınca, imlecin altında çeviri önerisi çıkar. \"Tamamla\" açıksa, kuralın dilinde yazarken cümlenin devamı önerilir. ⇥ kabul eder, Esc kapatır, ⌥⇥ gerçek bir sekme ekler. Yalnızca kural olan uygulamalardaki metin okunur.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -62,6 +62,9 @@ private struct RuleRow: View {
             if rule.target.hasFormality {
                 FormalityPicker(formality: $rule.formality)
             }
+            Toggle("Tamamla", isOn: $rule.completions)
+                .toggleStyle(.checkbox)
+                .help("Bu dilde yazarken cümlenin devamını öner")
             Button(role: .destructive, action: onDelete) { Image(systemName: "trash") }
                 .buttonStyle(.borderless)
                 .help("Kuralı sil")
@@ -78,6 +81,7 @@ private struct AddRuleSheet: View {
     @State private var bundleID = ""
     @State private var domain = ""
     @State private var target: Language?
+    @State private var completions = false
 
     static let browsers: Set<String> = [
         "com.apple.Safari", "com.google.Chrome", "org.mozilla.firefox", "company.thebrowser.Browser",
@@ -101,6 +105,7 @@ private struct AddRuleSheet: View {
                     get: { target ?? defaultTarget }, set: { target = $0 })) {
                     ForEach(Language.all) { Text($0.localizedName).tag($0) }
                 }
+                Toggle("Bu dilde yazarken cümle tamamlama öner", isOn: $completions)
             }
             .formStyle(.grouped)
             HStack {
@@ -110,7 +115,7 @@ private struct AddRuleSheet: View {
                     let name = apps.first { $0.bundleIdentifier == bundleID }?.localizedName ?? bundleID
                     let site = domain.trimmingCharacters(in: .whitespaces)
                     onAdd(InlineRule(bundleID: bundleID, appName: name, domain: site.isEmpty ? nil : site,
-                                     target: target ?? defaultTarget))
+                                     target: target ?? defaultTarget, completions: completions))
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)

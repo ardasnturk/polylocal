@@ -70,6 +70,12 @@ struct MainWindowView: View {
 
     private var sourcePicker: some View {
         HStack {
+            Picker("Mod", selection: $translator.mode) {
+                ForEach(TranslatorModel.Mode.allCases) { Text($0.title).tag($0) }
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .fixedSize()
             Picker("Kaynak", selection: $translator.sourceOverride) {
                 Text(autoLabel).tag(Language?.none)
                 Divider()
@@ -86,7 +92,19 @@ struct MainWindowView: View {
         }
     }
 
+    @ViewBuilder
     private var targetPicker: some View {
+        if translator.mode == .rewrite {
+            HStack {
+                RewriteStylePicker(style: $translator.rewriteStyle)
+                Spacer()
+            }
+        } else {
+            translationTargetPicker
+        }
+    }
+
+    private var translationTargetPicker: some View {
         HStack {
             Picker("Hedef", selection: Binding(get: { translator.target }, set: { translator.targetOverride = $0 })) {
                 ForEach(Language.all) { Text($0.localizedName).tag($0) }
