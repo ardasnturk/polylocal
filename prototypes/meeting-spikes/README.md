@@ -21,7 +21,7 @@ swift run TTSRoute tr-TR "Yeni sürüm hazır." --device "MacBook Pro"
   - Output: 48 kHz stereo Float32; first buffer after 33–36 ms.
   - The signal is steady (about −31 dBFS at a 0.2 player volume).
   - No crackles in the recorded WAV.
-- The tapped audio arrives normally with `muteBehavior = .mutedWhenTapped`. **Still to confirm by ear:** whether the app is actually silent on the speakers. This needs a person listening; see "Open" below.
+- With `muteBehavior = .mutedWhenTapped` the tapped audio still arrives normally, and the app is silent on the speakers. This was confirmed by ear during the L3 test: QuickTime playing German, only the Turkish voice audible.
 - No permission prompt appeared, because the shell was already allowed. The app will need `NSAudioCaptureUsageDescription`.
 - Processes are matched by bundle-ID prefix, so `com.google.Chrome` also covers `com.google.Chrome.helper`, where browser audio actually plays.
 
@@ -54,6 +54,5 @@ swift run TTSRoute tr-TR "Yeni sürüm hazır." --device "MacBook Pro"
 
 ## Open
 
-- S1: listen-test that `--mute` silences the app on the speakers.
 - S2: real meeting audio (several speakers, noise, compression) instead of synthesized voices; M1/M2 timing; whether `audio_ctx` can be set per request or needs linking libwhisper directly.
 - S3 (spoken-phrase translation prompt), S5 (virtual microphone), S6 (echo) — later.
