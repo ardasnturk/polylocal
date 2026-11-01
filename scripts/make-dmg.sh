@@ -8,6 +8,8 @@
 # NOTARY_PROFILE is a notarytool keychain profile, created once with:
 #   xcrun notarytool store-credentials polylocal --apple-id <apple-id> --team-id <team-id>
 # SIGN_IDENTITY defaults to the first "Developer ID Application" identity in the keychain.
+# The styled window (background, icon layout) needs dmgbuild: `uv tool install dmgbuild` or `pipx install dmgbuild`.
+# Regenerate the background with scripts/make-dmg-background.swift.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -21,6 +23,11 @@ if [[ "$IDENTITY" != "Developer ID Application"* ]]; then
     exit 1
 fi
 
+if ! command -v dmgbuild >/dev/null; then
+    echo "error: dmgbuild not found (uv tool install dmgbuild)" >&2
+    exit 1
+fi
+
 # A release must run without Homebrew.
 if [ ! -x "$ROOT/build/llama-server/llama-server" ] && [ "${ALLOW_NO_LLAMA:-0}" != 1 ]; then
     echo "error: build/llama-server/llama-server missing; run scripts/build-llama-server.sh first" >&2
@@ -30,12 +37,8 @@ fi
 VERSION="$VERSION" SIGN_IDENTITY="$IDENTITY" "$ROOT/scripts/build-app.sh" release
 codesign --verify --strict --verbose=2 "$APP"
 
-STAGE="$(mktemp -d)"
-trap 'rm -rf "$STAGE"' EXIT
-cp -R "$APP" "$STAGE/"
-ln -s /Applications "$STAGE/Applications"
 rm -f "$DMG"
-hdiutil create -quiet -volname "Polylocal" -srcfolder "$STAGE" -fs HFS+ -format UDZO "$DMG"
+dmgbuild -s "$ROOT/scripts/dmg-settings.py" -D app="$APP" -D root="$ROOT" "Polylocal" "$DMG"
 codesign --force --timestamp --sign "$IDENTITY" "$DMG"
 
 if [ -n "${NOTARY_PROFILE:-}" ]; then

@@ -15,6 +15,7 @@ Polylocal is a free, open-source macOS menu-bar app that translates and rewrites
 - **Sentence completion:** optionally, per rule, suggests the rest of a sentence while you type in the target language (only at word boundaries).
 - **Writing assistant:** rewrite text in one of five styles: Correct, Fluent, Formal, Casual, Concise. Available in the popup, in the main window, or via an optional shortcut.
 - **Glossary:** make specific terms always translate the same way; import from CSV.
+- **Updates:** checks for new versions once a day (Sparkle) and can download and install them; Settings → About.
 - **Optional history:** off by default; stored only on this Mac, readable only by your user account.
 
 The user interface is available in English and Turkish. It follows the macOS language order; Settings → General → Interface language overrides it.
@@ -43,11 +44,14 @@ open build/Polylocal.app
 
 `scripts/build-app.sh debug` builds a debug configuration. Set `SIGN_IDENTITY` to sign with a specific identity; otherwise the first "Apple Development" identity is used, or ad-hoc signing as a last resort. A stable signing identity matters during development because macOS ties the Accessibility permission to the code signature.
 
-To produce a signed DMG (Developer ID, hardened runtime), with optional notarization through a `notarytool` keychain profile:
+To produce a signed DMG (Developer ID, hardened runtime) with the styled installer window, with optional notarization through a `notarytool` keychain profile (needs [dmgbuild](https://github.com/dmgbuild/dmgbuild): `uv tool install dmgbuild`):
 
 ```bash
-NOTARY_PROFILE=<profile-name> scripts/make-dmg.sh
+VERSION=<x.y.z> NOTARY_PROFILE=<profile-name> scripts/make-dmg.sh
+VERSION=<x.y.z> scripts/update-appcast.sh   # adds the release to appcast.xml (Sparkle feed)
 ```
+
+Releasing: build and notarize the DMG, update `appcast.xml`, publish the GitHub release with the DMG as `Polylocal-<x.y.z>.dmg` under tag `v<x.y.z>`, then commit and push `appcast.xml`. Installed apps read the feed from the `main` branch.
 
 ### Tests
 
@@ -117,13 +121,14 @@ Benchmark results: [tools/bench/RESULTS.md](tools/bench/RESULTS.md).
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture and roadmap |
 | [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | App compatibility matrix |
 | [docs/PRIVACY.md](docs/PRIVACY.md) | What data the app touches and where it goes |
+| [docs/MEETING_MODE.md](docs/MEETING_MODE.md) | Plan for meeting mode (subtitles, notes, spoken interpretation) |
 | [tools/bench](tools/bench) | Translation model benchmark |
 | [tools/compat](tools/compat) | Semi-automatic compatibility test |
 | [prototypes/ax-probe](prototypes/ax-probe) | Phase 0 shortcut and Accessibility prototype |
 
 ## Roadmap
 
-Not done yet: prebuilt releases on GitHub, Sparkle auto-update, a Homebrew cask, English UI, and verified inline suggestions in browsers and Electron apps. See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
+Not done yet: a Homebrew cask, verified inline suggestions in browsers and Electron apps, and meeting mode ([plan](docs/MEETING_MODE.md)). See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
 
 ## Contributing
 

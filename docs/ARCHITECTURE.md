@@ -288,11 +288,11 @@ FocusWatcher(valueChanged) → debounce 400ms
 |---|---|---|
 | Accessibility | Reading/writing text, event tap | Yes |
 | Input Monitoring | Keyboard monitoring on some systems | Depends |
-| Network | Model downloads only (and update checks, once implemented) | To download models |
+| Network | Model downloads and update checks | To download models |
 | Screen Recording | OCR for surrounding context (later phase) | No |
 
 - **Distribution outside the App Store:** Accessibility and event taps are practically incompatible with the App Sandbox. The app is signed with Developer ID (hardened runtime) and distributed as a **notarized DMG** via GitHub Releases. `scripts/make-dmg.sh` signs and builds the DMG; notarization is optional and uses a `notarytool` keychain profile given in `NOTARY_PROFILE`.
-- TODO: updates via **Sparkle 2** (EdDSA-signed appcast on GitHub Pages) and a Homebrew cask (`brew install --cask polylocal`). Both depend on GitHub releases existing.
+- Updates via **Sparkle 2**: an EdDSA-signed `appcast.xml` on the `main` branch, written by `scripts/update-appcast.sh`, pointing at DMGs on GitHub Releases. The private signing key lives in the maintainer's login keychain (account `polylocal`). TODO: a Homebrew cask (`brew install --cask polylocal`).
 - Minimum: **macOS 14 Sonoma** and **Apple Silicon**. Intel is not supported (same as Cotypist).
 
 ---
@@ -322,7 +322,7 @@ polylocal/
 └── docs/
 ```
 
-**Technology:** Swift 6, SwiftUI + AppKit, Swift Concurrency, Swift Testing, llama.cpp (`llama-server`). Planned: Sparkle (updates).
+**Technology:** Swift 6, SwiftUI + AppKit, Swift Concurrency, Swift Testing, llama.cpp (`llama-server`). Sparkle 2 (updates).
 
 ---
 
@@ -346,10 +346,11 @@ polylocal/
 |---|---|---|
 | **0 — Validation** | Model benchmark CLI ✅; AX prototype (read/write selected text) ✅; llama.cpp vs MLX speed comparison (pending) | Model and engine decision ✅ |
 | **1 — MVP** | Menu bar app, ModelManager, Mode A (⌘C C popup), main translation window, onboarding ✅; bundled `llama-server` ✅ | v0.1 GitHub release (TODO) |
-| **2 — Replace** | Mode B (⇧⌘C C) ✅, customizable shortcuts ✅, formal/informal address ✅, history ✅, signed DMG + notarization script ✅ · Sparkle, Homebrew cask (depend on releases), MLX engine (pending) | v0.2 |
+| **2 — Replace** | Mode B (⇧⌘C C) ✅, customizable shortcuts ✅, formal/informal address ✅, history ✅, signed DMG + notarization script ✅, styled DMG ✅, Sparkle updates ✅ · Homebrew cask, MLX engine (pending) | v0.2 |
 | **3 — Inline suggestions** | Mode C ✅, app/domain rules ✅ (verified in TextEdit) · browser and Electron compatibility (pending) | v0.3 |
 | **4 — Writing assistant** | Glossary with CSV import ✅, rewrite styles (DeepL Write-style) ✅, target-language completion ✅ (verified in TextEdit) | v0.4 |
-| **5 — Expansion** | Screen context (OCR), document translation, Windows/Linux (engine layer shared, system integration rewritten) | v1.x |
+| **5 — Meeting mode** | Live subtitles, meeting notes, two-way spoken interpretation ([plan](MEETING_MODE.md)) | v0.5–v0.7 |
+| **6 — Expansion** | Screen context (OCR), document translation, Windows/Linux (engine layer shared, system integration rewritten) | v1.x |
 
 ---
 

@@ -18,6 +18,7 @@ final class AppModel {
     let store = ModelStore(catalog: ModelStore.bundledCatalog())
     let engine = EngineController()
     let history = HistoryStore()
+    let updater = Updater()
     let mainTranslator: TranslatorModel
     private(set) var accessibilityTrusted = Permissions.isAccessibilityTrusted
     private(set) var ollamaModels: [String]?
@@ -52,9 +53,27 @@ final class AppModel {
             await refreshOllama()
             chooseDefaultEngineIfNeeded()
             applyEngine()
+            if needsSetup { windows.showOnboarding() }
         }
-        if !settings.hasCompletedOnboarding {
-            windows.showOnboarding()
+    }
+
+    /// The setup assistant opens on launch until it was finished once *and* the app can actually work:
+    /// a reinstall over stale settings, a revoked permission or a deleted model brings it back.
+    var needsSetup: Bool {
+        Self.needsSetup(completedOnboarding: settings.hasCompletedOnboarding, accessibilityTrusted: accessibilityTrusted,
+                        hasUsableModel: hasUsableModel)
+    }
+
+    nonisolated static func needsSetup(completedOnboarding: Bool, accessibilityTrusted: Bool, hasUsableModel: Bool) -> Bool {
+        !completedOnboarding || !accessibilityTrusted || !hasUsableModel
+    }
+
+    private var hasUsableModel: Bool {
+        switch settings.engineKind {
+        case .builtIn:
+            store.installedModels.contains { $0.id == settings.builtInModelID }
+        case .ollama:
+            settings.ollamaModel.map { ollamaModels?.contains($0) ?? false } ?? false
         }
     }
 

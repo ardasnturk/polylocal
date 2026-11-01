@@ -54,6 +54,10 @@ private struct MenuContent: View {
         Button("Settings…") { app.windows.showSettings() }
             .keyboardShortcut(",")
         Button("Setup assistant…") { app.windows.showOnboarding() }
+        if app.updater.isAvailable {
+            Button("Check for Updates…") { app.updater.checkForUpdates() }
+                .disabled(!app.updater.canCheckForUpdates)
+        }
         Divider()
         Button("Quit Polylocal") { NSApp.terminate(nil) }
             .keyboardShortcut("q")

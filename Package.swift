@@ -8,6 +8,10 @@ let package = Package(
     products: [
         .executable(name: "Polylocal", targets: ["Polylocal"]),
     ],
+    dependencies: [
+        // Auto-update (MIT). Bundled into Contents/Frameworks by scripts/build-app.sh.
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.6.0"),
+    ],
     targets: [
         // Pure logic: languages, prompts, engine protocol, catalog types. No AppKit.
         .target(name: "PolylocalCore"),
@@ -20,7 +24,8 @@ let package = Package(
         // Menu bar app.
         .executableTarget(
             name: "Polylocal",
-            dependencies: ["PolylocalCore", "Engines", "ModelManager", "SystemIntegration"]
+            dependencies: ["PolylocalCore", "Engines", "ModelManager", "SystemIntegration",
+                           .product(name: "Sparkle", package: "Sparkle")]
         ),
         .testTarget(name: "PolylocalCoreTests", dependencies: ["PolylocalCore", "Engines"]),
         .testTarget(name: "ModelManagerTests", dependencies: ["ModelManager"]),

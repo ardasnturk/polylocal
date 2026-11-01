@@ -180,3 +180,9 @@
 "System default" = "Sistem varsayılanı";
 "Restart Polylocal to apply the new language." = "Yeni dilin geçerli olması için Polylocal'ı yeniden başlat.";
 "Restart now" = "Şimdi yeniden başlat";
+"Check for Updates…" = "Güncellemeleri Denetle…";
+"Check for updates automatically" = "Güncellemeleri otomatik denetle";
+"Check Now" = "Şimdi Denetle";
+"Download and install updates automatically" = "Güncellemeleri otomatik indir ve kur";
+"Updates are checked once a day. Only the list of versions is downloaded from GitHub; no personal data is sent." = "Güncellemeler günde bir kez denetlenir. GitHub'dan yalnızca sürüm listesi indirilir; kişisel veri gönderilmez.";
+"Last checked: %@" = "Son denetim: %@";

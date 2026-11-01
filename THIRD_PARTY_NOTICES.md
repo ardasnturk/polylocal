@@ -9,6 +9,13 @@ Release builds of Polylocal include a `llama-server` binary built from
 `scripts/build-llama-server.sh`). It is distributed under the MIT License;
 the full license text ships in the app as `Contents/Resources/llama.cpp-LICENSE`.
 
+### Sparkle
+
+Polylocal uses [Sparkle](https://sparkle-project.org) for updates, bundled as
+`Contents/Frameworks/Sparkle.framework`. Sparkle is distributed under the MIT
+License (with notices for its own bundled components); the license text ships
+in the app as `Contents/Resources/Sparkle-LICENSE`.
+
 ## Models (not bundled)
 
 Polylocal does not ship any model weights. Models are downloaded by the user

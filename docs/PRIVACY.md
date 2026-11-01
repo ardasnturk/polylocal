@@ -8,7 +8,12 @@ All translation, rewriting, and completion runs on-device, using a model on your
 
 ## Network
 
-The app's only network access is downloading models from Hugging Face (the URLs in [models/catalog.json](../models/catalog.json)). Downloads are verified with SHA-256. If you use Ollama, any model downloads it performs are handled by Ollama itself.
+The app makes two kinds of network requests:
+
+- **Model downloads** from Hugging Face (the URLs in [models/catalog.json](../models/catalog.json)), only when you start one. Downloads are verified with SHA-256.
+- **Update checks** (Sparkle): once a day, if you allow it, the app downloads the version list `appcast.xml` from `raw.githubusercontent.com`, and the update DMG from GitHub Releases when you install one. Sparkle's anonymous system profile is not enabled; the request carries only the usual app name and version in its user agent. Updates are verified with an EdDSA signature and Apple's code signature before they are installed. You can turn checking off in Settings → About.
+
+No text you translate is ever part of these requests. If you use Ollama, any model downloads it performs are handled by Ollama itself.
 
 There is no telemetry, analytics, or crash reporting.
 

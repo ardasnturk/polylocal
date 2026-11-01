@@ -16,17 +16,31 @@ CONFIG="${1:-release}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/build/Polylocal.app"
 VERSION="${VERSION:-0.1.0}"
+# Sparkle update feed; override only to test updates against a local feed.
+FEED_URL="${FEED_URL:-https://raw.githubusercontent.com/ardasnturk/polylocal/main/appcast.xml}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(git -C "$ROOT" rev-list --count HEAD 2>/dev/null || echo 1)}"
 
 cd "$ROOT"
 swift build -c "$CONFIG" --product Polylocal
-BIN="$(swift build -c "$CONFIG" --show-bin-path)/Polylocal"
+BIN_DIR="$(swift build -c "$CONFIG" --show-bin-path)"
+BIN="$BIN_DIR/Polylocal"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/Polylocal"
+
+# Sparkle (auto-update). The app is not sandboxed, so Sparkle's XPC services are not needed.
+mkdir -p "$APP/Contents/Frameworks"
+cp -R "$BIN_DIR/Sparkle.framework" "$APP/Contents/Frameworks/"
+rm -rf "$APP/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices" "$APP/Contents/Frameworks/Sparkle.framework/XPCServices"
+# Load it from the bundle, and drop SwiftPM's absolute build-directory rpath.
+install_name_tool -add_rpath @executable_path/../Frameworks "$APP/Contents/MacOS/Polylocal"
+for rpath in $(otool -l "$APP/Contents/MacOS/Polylocal" | awk '/LC_RPATH/{getline; getline; print $2}' | grep "^$ROOT/" || true); do
+    install_name_tool -delete_rpath "$rpath" "$APP/Contents/MacOS/Polylocal"
+done
 cp "$ROOT/models/catalog.json" "$APP/Contents/Resources/catalog.json"
 cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$APP/Contents/Resources/"
+cp "$ROOT/.build/artifacts/sparkle/Sparkle/LICENSE" "$APP/Contents/Resources/Sparkle-LICENSE"
 # UI translations: English strings are the keys in code; other languages live in Resources/<lang>.lproj.
 cp -R "$ROOT"/Resources/*.lproj "$APP/Contents/Resources/"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"  # regenerate with scripts/make-icon.swift
@@ -59,6 +73,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+    <key>SUFeedURL</key><string>$FEED_URL</string>
+    <key>SUPublicEDKey</key><string>+3vnPcaIqjwbAO4UT9Og6ognigF7VEgo2l+xIvEB8dI=</string>
     <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Arda Senturk. MIT License.</string>
 </dict>
 </plist>
@@ -73,5 +89,9 @@ TIMESTAMP="--timestamp=none"
 if [ -f "$APP/Contents/Helpers/llama-server" ]; then
     codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP/Contents/Helpers/llama-server" >/dev/null
 fi
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Autoupdate" >/dev/null
+codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Updater.app" >/dev/null
+codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE" >/dev/null
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP" >/dev/null
 echo "Built $APP ($CONFIG, signed: $IDENTITY)"

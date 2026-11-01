@@ -12,7 +12,7 @@ struct SettingsView: View {
             ModelSettings(app: app).tabItem { Label("Models", systemImage: "cpu") }
             InlineSettingsView(app: app).tabItem { Label("Inline", systemImage: "text.cursor") }
             GlossarySettingsView(app: app).tabItem { Label("Glossary", systemImage: "character.book.closed") }
-            AboutView().tabItem { Label("About", systemImage: "info.circle") }
+            AboutView(app: app).tabItem { Label("About", systemImage: "info.circle") }
         }
         .padding(20)
         .frame(width: 620, height: 480)
@@ -177,8 +177,11 @@ private struct ModelSettings: View {
 }
 
 private struct AboutView: View {
+    let app: AppModel
+
     var body: some View {
         VStack(spacing: 10) {
+            Spacer()
             Image(systemName: "character.bubble").font(.system(size: 44)).foregroundStyle(.tint)
             Text("Polylocal").font(.title2.weight(.semibold))
             Text("Version \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? String(localized: "development"))")
@@ -186,7 +189,35 @@ private struct AboutView: View {
             Text("Open-source, free and fully local translation.\nYour text never leaves this Mac.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
+            Spacer()
+            if app.updater.isAvailable { UpdateSettings(updater: app.updater) }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct UpdateSettings: View {
+    @Bindable var updater: Updater
+
+    var body: some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Toggle("Check for updates automatically", isOn: $updater.automaticallyChecks)
+                    Spacer()
+                    Button("Check Now") { updater.checkForUpdates() }
+                        .disabled(!updater.canCheckForUpdates)
+                }
+                Toggle("Download and install updates automatically", isOn: $updater.automaticallyDownloads)
+                    .disabled(!updater.automaticallyChecks)
+                Text(lastCheckText).font(.caption).foregroundStyle(.secondary)
+            }
+            .padding(4)
+        }
+    }
+
+    private var lastCheckText: String {
+        guard let date = updater.lastCheck else { return String(localized: "Updates are checked once a day. Only the list of versions is downloaded from GitHub; no personal data is sent.") }
+        return String(localized: "Last checked: \(date.formatted(date: .abbreviated, time: .shortened))")
     }
 }
