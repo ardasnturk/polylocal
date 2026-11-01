@@ -5,6 +5,15 @@
     <link>https://github.com/ardasnturk/polylocal</link>
     <!-- Newest first. Written by scripts/update-appcast.sh. -->
     <item>
+      <title>Polylocal 0.3.0</title>
+      <pubDate>Sun, 01 Nov 2026 09:51:56 +0300</pubDate>
+      <sparkle:version>24</sparkle:version>
+      <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://github.com/ardasnturk/polylocal/releases/tag/v0.3.0</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/ardasnturk/polylocal/releases/download/v0.3.0/Polylocal-0.3.0.dmg" type="application/x-apple-diskimage" sparkle:edSignature="URRWIrG1s4NSoCSf45m0S/uMCTAqTwWPdAd1j7hpbnvZUx4pwK6zboh98bfiOLhT7iAkpjvZYHSdsEFFpuVBBQ==" length="17179864"/>
+    </item>
+    <item>
       <title>Polylocal 0.2.0</title>
       <pubDate>Sun, 01 Nov 2026 07:05:38 +0300</pubDate>
       <sparkle:version>12</sparkle:version>
