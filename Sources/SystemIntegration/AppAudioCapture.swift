@@ -1,3 +1,4 @@
+import AppKit
 import AVFoundation
 import CoreAudio
 import Foundation
@@ -12,7 +13,14 @@ public final class AppAudioCapture: @unchecked Sendable {
         public let objectID: AudioObjectID
         public let pid: pid_t
         public let bundleID: String
+        /// The app responsible for the process. Safari and other WebKit apps play web audio from a shared-name
+        /// helper (`com.apple.WebKit.GPU`, one per app); this tells whose it is.
+        public let ownerBundleID: String?
         public let isOutputting: Bool
+
+        public func belongs(to bundleIDPrefix: String) -> Bool {
+            bundleID.hasPrefix(bundleIDPrefix) || ownerBundleID?.hasPrefix(bundleIDPrefix) == true
+        }
     }
 
     public enum CaptureError: LocalizedError {
@@ -56,16 +64,19 @@ public final class AppAudioCapture: @unchecked Sendable {
     public static func processes() -> [AudioProcess] {
         let system = AudioObjectID(kAudioObjectSystemObject)
         return CoreAudioProperty.array(system, kAudioHardwarePropertyProcessObjectList, AudioObjectID.self).map { id in
-            AudioProcess(objectID: id,
-                         pid: CoreAudioProperty.value(id, kAudioProcessPropertyPID, pid_t(0)) ?? 0,
-                         bundleID: CoreAudioProperty.string(id, kAudioProcessPropertyBundleID) ?? "",
-                         isOutputting: (CoreAudioProperty.value(id, kAudioProcessPropertyIsRunningOutput, UInt32(0)) ?? 0) != 0)
+            let pid = CoreAudioProperty.value(id, kAudioProcessPropertyPID, pid_t(0)) ?? 0
+            return AudioProcess(objectID: id, pid: pid,
+                                bundleID: CoreAudioProperty.string(id, kAudioProcessPropertyBundleID) ?? "",
+                                ownerBundleID: Responsibility.owner(of: pid).flatMap {
+                                    NSRunningApplication(processIdentifier: $0)?.bundleIdentifier
+                                },
+                                isOutputting: (CoreAudioProperty.value(id, kAudioProcessPropertyIsRunningOutput, UInt32(0)) ?? 0) != 0)
         }
     }
 
     /// Audio processes belonging to the app (its own bundle ID or a helper's, e.g. `com.google.Chrome.helper`).
     public func matchingProcesses() -> Set<AudioObjectID> {
-        Set(Self.processes().filter { $0.bundleID.hasPrefix(bundleIDPrefix) }.map(\.objectID))
+        Set(Self.processes().filter { $0.belongs(to: bundleIDPrefix) }.map(\.objectID))
     }
 
     public func start() throws {
@@ -176,6 +187,21 @@ public final class AppAudioCapture: @unchecked Sendable {
 private extension AppAudioCapture.CaptureError {
     static func from(_ status: OSStatus, _ step: String) -> Self? {
         status == noErr ? nil : .coreAudio(step, status)
+    }
+}
+
+/// macOS records which app is responsible for each helper process (what Activity Monitor and privacy
+/// prompts use). The call is not in the public SDK, so it is looked up at runtime; without it, only
+/// bundle IDs are matched and Safari's web audio is missed.
+enum Responsibility {
+    private typealias Function = @convention(c) (pid_t) -> pid_t
+    private static let function: Function? = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "responsibility_get_pid_responsible_for_pid")
+        .map { unsafeBitCast($0, to: Function.self) }
+
+    static func owner(of pid: pid_t) -> pid_t? {
+        guard pid > 0, let function else { return nil }
+        let owner = function(pid)
+        return owner > 0 && owner != pid ? owner : nil
     }
 }
 

@@ -24,7 +24,7 @@ struct MeetingApp: Identifiable, Hashable {
     static func candidates() -> [MeetingApp] {
         let playing: Set<String>
         if #available(macOS 14.2, *) {
-            playing = Set(AppAudioCapture.processes().filter(\.isOutputting).map(\.bundleID))
+            playing = Set(AppAudioCapture.processes().filter(\.isOutputting).flatMap { [$0.bundleID, $0.ownerBundleID].compactMap { $0 } })
         } else {
             playing = []
         }
