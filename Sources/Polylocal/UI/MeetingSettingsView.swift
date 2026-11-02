@@ -147,10 +147,21 @@ private struct SpeakTranslationSection: View {
             if let error = driver.error {
                 Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.orange).font(.caption)
             }
-            Toggle("Translate what I say and speak it to the others", isOn: $settings.meetingSpeakTranslation)
+            Toggle("Start automatically when a meeting app uses Polylocal Microphone", isOn: $settings.meetingAutoStart)
                 .disabled(!driver.isInstalled)
-            LabeledContent("They hear", value: settings.meetingTheirLanguage?.localizedName
-                           ?? String(localized: "\(their.localizedName), or the language they speak"))
+            Toggle("Also when I start meeting subtitles from the menu bar", isOn: $settings.meetingSpeakTranslation)
+                .disabled(!driver.isInstalled)
+            // The same setting as "They speak" above: the others hear their own language.
+            Picker("They hear", selection: $settings.meetingTheirLanguage) {
+                Text("The language they speak (until known: \(their.localizedName))").tag(Language?.none)
+                Divider()
+                ForEach(Language.all) { Text($0.localizedName).tag(Language?.some($0)) }
+            }
+            if settings.meetingTheirLanguage == nil {
+                Label("Choose their language so your first sentences are not spoken in \(their.localizedName).",
+                      systemImage: "info.circle")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             LabeledContent("Voice") {
                 Text(MeetingVoice.voice(for: their)?.name ?? String(localized: "None installed"))
                     .foregroundStyle(.secondary)
@@ -169,8 +180,16 @@ private struct SpeakTranslationSection: View {
                     .background(.orange.opacity(0.2), in: Capsule()).foregroundStyle(.orange)
             }
         } footer: {
-            Text("Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice.")
-                .font(.caption).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("How to use it:").fontWeight(.semibold)
+                Text("1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly).")
+                Text("2. Choose the language they speak above.")
+                Text("3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call.")
+                Text("4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard.")
+                Text("Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back.")
+                    .padding(.top, 2)
+            }
+            .font(.caption).foregroundStyle(.secondary)
         }
         .onAppear { driver.refresh() }
     }

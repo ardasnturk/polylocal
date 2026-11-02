@@ -17,6 +17,9 @@ public final class AppAudioCapture: @unchecked Sendable {
         /// helper (`com.apple.WebKit.GPU`, one per app); this tells whose it is.
         public let ownerBundleID: String?
         public let isOutputting: Bool
+        public var isInputting = false
+        /// The input devices the process has open.
+        public var inputDevices: [AudioDeviceID] = []
 
         public func belongs(to bundleIDPrefix: String) -> Bool {
             bundleID.hasPrefix(bundleIDPrefix) || ownerBundleID?.hasPrefix(bundleIDPrefix) == true
@@ -65,12 +68,18 @@ public final class AppAudioCapture: @unchecked Sendable {
         let system = AudioObjectID(kAudioObjectSystemObject)
         return CoreAudioProperty.array(system, kAudioHardwarePropertyProcessObjectList, AudioObjectID.self).map { id in
             let pid = CoreAudioProperty.value(id, kAudioProcessPropertyPID, pid_t(0)) ?? 0
-            return AudioProcess(objectID: id, pid: pid,
-                                bundleID: CoreAudioProperty.string(id, kAudioProcessPropertyBundleID) ?? "",
-                                ownerBundleID: Responsibility.owner(of: pid).flatMap {
-                                    NSRunningApplication(processIdentifier: $0)?.bundleIdentifier
-                                },
-                                isOutputting: (CoreAudioProperty.value(id, kAudioProcessPropertyIsRunningOutput, UInt32(0)) ?? 0) != 0)
+            var process = AudioProcess(objectID: id, pid: pid,
+                                       bundleID: CoreAudioProperty.string(id, kAudioProcessPropertyBundleID) ?? "",
+                                       ownerBundleID: Responsibility.owner(of: pid).flatMap {
+                                           NSRunningApplication(processIdentifier: $0)?.bundleIdentifier
+                                       },
+                                       isOutputting: (CoreAudioProperty.value(id, kAudioProcessPropertyIsRunningOutput, UInt32(0)) ?? 0) != 0)
+            process.isInputting = (CoreAudioProperty.value(id, kAudioProcessPropertyIsRunningInput, UInt32(0)) ?? 0) != 0
+            if process.isInputting {
+                process.inputDevices = CoreAudioProperty.array(id, kAudioProcessPropertyDevices, AudioDeviceID.self,
+                                                               scope: kAudioObjectPropertyScopeInput)
+            }
+            return process
         }
     }
 
@@ -212,8 +221,10 @@ enum CoreAudioProperty {
                                    mElement: kAudioObjectPropertyElementMain)
     }
 
-    static func array<T>(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector, _: T.Type) -> [T] {
+    static func array<T>(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector, _: T.Type,
+                         scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal) -> [T] {
         var addr = address(selector)
+        addr.mScope = scope
         var size: UInt32 = 0
         guard AudioObjectGetPropertyDataSize(object, &addr, 0, nil, &size) == noErr, size > 0 else { return [] }
         let count = Int(size) / MemoryLayout<T>.stride

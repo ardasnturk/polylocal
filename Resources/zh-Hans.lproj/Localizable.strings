@@ -267,10 +267,7 @@
 "Install…" = "安装…";
 "Uninstall…" = "卸载…";
 "Not included in this build" = "此版本未包含";
-"Translate what I say and speak it to the others" = "翻译我说的话并说给其他人听";
 "They hear" = "对方听到";
-"%@, or the language they speak" = "%@，或对方所说的语言";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Polylocal 会聆听你的麦克风，将你说的话翻译成其他人的语言，并通过“Polylocal Microphone”说出。请在会议 App 中选择 Polylocal Microphone 作为麦克风。安装时需要输入一次管理员密码，并会短暂重启 Mac 的音频。请使用耳机；字幕栏中的“直接说话”可让你用自己的声音说话。";
 "Speaking translation" = "正在说出译文";
 "Speaking directly" = "正在直接说话";
 "Switch between speaking through the translation and speaking in your own voice" = "在通过译文说话和用自己的声音说话之间切换";
@@ -281,3 +278,17 @@
 "Primary language (%@)" = "主要语言（%@）";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "字幕、笔记和朗读的译文都使用此语言；当 Polylocal 替你说出译文时，这也是你所说的语言。选择对方所说的语言比自动检测更快、更可靠。";
 "Subtitle language" = "字幕语言";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "会议 App 使用 Polylocal Microphone 时自动启动";
+"Also when I start meeting subtitles from the menu bar" = "从菜单栏启动会议字幕时也启用";
+"The language they speak (until known: %@)" = "对方说的语言（识别前：%@）";
+"Choose their language so your first sentences are not spoken in %@." = "请选择对方的语言，以免你的前几句话用%@说出。";
+"How to use it:" = "使用方法：";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. 安装 Polylocal Microphone（只需输入一次管理员密码；Mac 的音频会短暂重启）。";
+"2. Choose the language they speak above." = "2. 在上方选择对方说的语言。";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. 在 Zoom、Meet 或 Teams 中，将麦克风选为“Polylocal Microphone”，然后加入通话。";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Polylocal 会自动启动：说你的语言，对方约 3 秒后就能听到译文。字幕栏会显示对方听到的内容。";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "请使用耳机。点按字幕栏中的“正在说出译文”可切换到你自己的声音，再次点按即可切换回来。";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "%@ 正在使用 Polylocal Microphone，但会议模式未开启：其他人只能听到静音。";
+"Start meeting mode" = "启动会议模式";

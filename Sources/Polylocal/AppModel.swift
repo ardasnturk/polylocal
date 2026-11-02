@@ -58,6 +58,7 @@ final class AppModel {
         }
         applyShortcuts()
         watchAccessibility()
+        meeting.watchMicrophone()
         Task {
             await refreshOllama()
             chooseDefaultEngineIfNeeded()

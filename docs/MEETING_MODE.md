@@ -115,6 +115,8 @@ The meeting app must receive the translated voice as a microphone. macOS has no 
 As built ([Driver/Driver.cpp](../Driver/Driver.cpp)):
 
 - One plug-in, two devices that share a ring buffer inside the audio server: the visible input **"Polylocal Microphone"** (what meeting apps select) and the hidden output **"Polylocal Voice"**. Polylocal plays into the hidden device by UID with an ordinary `AVAudioEngine`; whatever it plays comes out of the microphone. No shared memory or IPC with the app, which keeps the driver within the audio server's sandbox. 48 kHz mono float; at most 100 ms buffered.
+- Meeting mode follows the device: when an app starts reading Polylocal Microphone (Core Audio process objects tell which), meeting mode starts for that app with the translation spoken, and stops ~10 s after the app lets go. The first real call showed why: choosing the microphone alone, without starting meeting mode, sent only silence.
+- The microphone lane always lets Whisper detect the language and keeps only the user's: forced to the user's language, room noise came out as made-up sentences that would be spoken to the meeting. Its segmenter also wants a clearer margin over the room and at least 0.5 s of speech.
 - Between phrases the microphone is silent. "Speak directly" in the subtitle bar sends the user's real microphone through unchanged instead.
 - The driver ships inside the app (`Contents/Resources`), signed and notarized with it. Settings → Meeting installs and uninstalls it with `do shell script … with administrator privileges` (macOS asks for the password) and restarts `coreaudiod`; a `.pkg` was not needed.
 

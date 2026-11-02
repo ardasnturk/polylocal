@@ -54,6 +54,8 @@ final class AppSettings {
     var meetingHearTranslation: Bool { didSet { save(meetingHearTranslation, "meetingHearTranslation") } }
     /// Level 4: translate what the user says and speak it into the Polylocal Microphone.
     var meetingSpeakTranslation: Bool { didSet { save(meetingSpeakTranslation, "meetingSpeakTranslation") } }
+    /// Start meeting mode (speaking the translation) when a meeting app opens Polylocal Microphone.
+    var meetingAutoStart: Bool { didSet { save(meetingAutoStart, "meetingAutoStart") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -97,6 +99,7 @@ final class AppSettings {
         meetingSummarize = defaults.object(forKey: "meetingSummarize") as? Bool ?? true
         meetingHearTranslation = defaults.bool(forKey: "meetingHearTranslation")
         meetingSpeakTranslation = defaults.bool(forKey: "meetingSpeakTranslation")
+        meetingAutoStart = defaults.object(forKey: "meetingAutoStart") as? Bool ?? true
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

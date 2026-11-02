@@ -172,6 +172,20 @@ struct MenuBarPanel: View {
     }
 
     @ViewBuilder private var meetingRows: some View {
+        if !app.meeting.isActive, let client = app.meeting.microphoneClient {
+            // The meeting app sends Polylocal Microphone to the call, but nothing speaks into it.
+            VStack(alignment: .leading, spacing: 6) {
+                Label("\(client.name) uses Polylocal Microphone, but meeting mode is off: the others hear silence.",
+                      systemImage: "mic.slash")
+                    .font(.callout)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Start meeting mode") { app.meeting.start(client, speak: true) }
+                    .controlSize(.small)
+            }
+            .padding(8)
+            .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+        }
         if app.meeting.isActive {
             PanelRow(title: String(localized: "Stop meeting subtitles (\(app.meeting.source?.name ?? ""))"),
                      systemImage: "stop.circle", tint: .red) { app.meeting.stop() }

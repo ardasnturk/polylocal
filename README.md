@@ -50,7 +50,7 @@ Live subtitles, in the language you choose, for what others say in Zoom, Google 
 
 - **Notes:** saves the original and translated transcript to a folder and writes a summary with decisions and action items after the meeting.
 - **Hear the translation:** mutes the meeting app for you only and speaks the translation instead.
-- **Speak the translation (beta):** translates what you say into the others' language and speaks it through **Polylocal Microphone**, a virtual microphone you pick in the meeting app. Installed from Settings → Meeting with your administrator password; “Speak directly” switches back to your own voice.
+- **Speak the translation (beta):** translates what you say into the others' language and speaks it through **Polylocal Microphone**, a virtual microphone. Install it once from Settings → Meeting (administrator password), choose it as the microphone in Zoom, Meet or Teams, and Polylocal starts by itself when the call begins. The subtitle bar switches back to your own voice at any time.
 
 See [docs/MEETING_MODE.md](docs/MEETING_MODE.md) for how it works and what comes next.
 

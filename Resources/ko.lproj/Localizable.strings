@@ -267,10 +267,7 @@
 "Install…" = "설치…";
 "Uninstall…" = "제거…";
 "Not included in this build" = "이 빌드에 포함되지 않음";
-"Translate what I say and speak it to the others" = "내 말을 번역하여 다른 참가자에게 말하기";
 "They hear" = "상대방이 듣는 언어";
-"%@, or the language they speak" = "%@ 또는 상대방이 말하는 언어";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Polylocal은 사용자의 마이크를 듣고, 말한 내용을 다른 참가자의 언어로 번역하여 ‘Polylocal Microphone’으로 말합니다. 회의 앱에서 마이크로 Polylocal Microphone을 선택하십시오. 설치 시 관리자 암호를 한 번 요청하며 Mac의 오디오가 잠시 재시작됩니다. 헤드폰을 사용하십시오. 자막 막대의 ‘직접 말하기’를 사용하면 자신의 목소리로 말할 수 있습니다.";
 "Speaking translation" = "번역 말하는 중";
 "Speaking directly" = "직접 말하는 중";
 "Switch between speaking through the translation and speaking in your own voice" = "번역을 통해 말하기와 자신의 목소리로 말하기 간에 전환";
@@ -281,3 +278,17 @@
 "Primary language (%@)" = "기본 언어(%@)";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "자막, 메모 및 음성 번역은 이 언어로 제공되며, Polylocal이 사용자 대신 번역을 말할 때 사용자가 말하는 언어이기도 합니다. 상대방이 말하는 언어를 선택하면 자동 감지보다 조금 더 빠르고 정확합니다.";
 "Subtitle language" = "자막 언어";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "회의 앱이 Polylocal Microphone을 사용하면 자동으로 시작";
+"Also when I start meeting subtitles from the menu bar" = "메뉴 막대에서 회의 자막을 시작할 때도";
+"The language they speak (until known: %@)" = "상대방이 말하는 언어(확인 전까지: %@)";
+"Choose their language so your first sentences are not spoken in %@." = "첫 문장이 %@(으)로 말해지지 않도록 상대방 언어를 선택하십시오.";
+"How to use it:" = "사용 방법:";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. Polylocal Microphone을 설치합니다(관리자 암호는 한 번만 필요하며, Mac의 오디오가 잠시 재시작됩니다).";
+"2. Choose the language they speak above." = "2. 위에서 상대방이 말하는 언어를 선택합니다.";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. Zoom, Meet 또는 Teams에서 마이크로 ‘Polylocal Microphone’을 선택하고 통화에 참여합니다.";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Polylocal이 자동으로 시작됩니다. 자신의 언어로 말하면 상대방은 약 3초 후 번역을 듣습니다. 자막 막대에 상대방이 들은 내용이 표시됩니다.";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "헤드폰을 사용하십시오. 자막 막대의 ‘번역 말하는 중’을 누르면 자신의 목소리로 전환되고, 다시 누르면 돌아옵니다.";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "%@에서 Polylocal Microphone을 사용 중이지만 회의 모드가 꺼져 있습니다. 다른 참가자에게는 아무 소리도 들리지 않습니다.";
+"Start meeting mode" = "회의 모드 시작";

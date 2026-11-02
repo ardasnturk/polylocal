@@ -37,6 +37,13 @@ import Testing
         #expect(feed(&segmenter, noise(1) + tone(0.1) + noise(1.5)).isEmpty)
     }
 
+    @Test func microphoneNeedsHalfASecondOfSpeech() {
+        var segmenter = SpeechSegmenter(configuration: .microphone)
+        // A 0.35 s sound passes the meeting lane's minimum but not the microphone's.
+        #expect(feed(&segmenter, noise(1) + tone(0.35) + noise(1.5)).isEmpty)
+        #expect(feed(&segmenter, tone(1.2) + noise(1.5)).count == 1)
+    }
+
     @Test func silenceProducesNothing() {
         var segmenter = SpeechSegmenter()
         #expect(feed(&segmenter, noise(5)).isEmpty)

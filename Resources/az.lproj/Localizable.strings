@@ -277,10 +277,7 @@
 "Install…" = "Quraşdır…";
 "Uninstall…" = "Sil…";
 "Not included in this build" = "Bu yığıma daxil deyil";
-"Translate what I say and speak it to the others" = "Dediklərimi tərcümə et və digərlərinə səsləndir";
 "They hear" = "Onların eşitdiyi";
-"%@, or the language they speak" = "%@ və ya onların danışdığı dil";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Polylocal mikrofonunuzu dinləyir, dediklərinizi digərlərinin dilinə tərcümə edir və “Polylocal Microphone” vasitəsilə səsləndirir. Görüş tətbiqində mikrofon kimi Polylocal Microphone seçin. Quraşdırma bir dəfə administrator parolu tələb edir və Mac-in səs sistemini qısa müddətə yenidən başladır. Qulaqlıq istifadə edin; altyazı zolağındakı “Birbaşa danış” ilə öz səsinizlə danışa bilərsiniz.";
 "Speaking translation" = "Tərcümə səsləndirilir";
 "Speaking directly" = "Birbaşa danışılır";
 "Switch between speaking through the translation and speaking in your own voice" = "Tərcümə vasitəsilə danışmaq ilə öz səsinizlə danışmaq arasında keçid et";
@@ -291,3 +288,17 @@
 "Primary language (%@)" = "Əsas dil (%@)";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "Altyazılar, qeydlər və səsləndirilən tərcümə bu dildə olur; Polylocal tərcüməni sizin əvəzinizə səsləndirəndə danışdığınız dil də budur. Onların danışdığı dili seçmək onu avtomatik müəyyən etməkdən bir az daha sürətli və etibarlıdır.";
 "Subtitle language" = "Altyazı dili";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "Görüş tətbiqi Polylocal Microphone-dan istifadə etdikdə avtomatik başlat";
+"Also when I start meeting subtitles from the menu bar" = "Görüş altyazılarını menyu zolağından başlatdıqda da";
+"The language they speak (until known: %@)" = "Onların danışdığı dil (məlum olana qədər: %@)";
+"Choose their language so your first sentences are not spoken in %@." = "İlk cümlələriniz %@ dilində səsləndirilməsin deyə onların dilini seçin.";
+"How to use it:" = "Necə istifadə etməli:";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. Polylocal Microphone-u quraşdırın (bir dəfə administrator parolu; Mac-in səsi qısa müddətə yenidən başlayır).";
+"2. Choose the language they speak above." = "2. Yuxarıda onların danışdığı dili seçin.";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. Zoom, Meet və ya Teams-də mikrofon olaraq “Polylocal Microphone”-u seçin və zəngə qoşulun.";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Polylocal özü başlayır: öz dilinizdə danışın, onlar isə tərcüməni təxminən 3 saniyə sonra eşidir. Altyazı zolağı onların nə eşitdiyini göstərir.";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "Qulaqlıq istifadə edin. Altyazı zolağındakı “Tərcümə səsləndirilir” öz səsinizə keçirir və geri qaytarır.";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "%@ Polylocal Microphone-dan istifadə edir, amma görüş rejimi söndürülüb: digərləri sükut eşidir.";
+"Start meeting mode" = "Görüş rejimini başlat";
