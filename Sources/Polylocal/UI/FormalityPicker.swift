@@ -25,7 +25,7 @@ struct FormalityPicker: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .fixedSize()
-            .help("Form of address: formal (Sie/siz) or informal (du/sen)")
+            .help("Form of address: formal or informal")
         }
     }
 }

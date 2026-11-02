@@ -88,7 +88,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
     <key>CFBundleDevelopmentRegion</key><string>en</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
-    <key>CFBundleLocalizations</key><array><string>en</string><string>tr</string></array>
+    <key>CFBundleLocalizations</key><array><string>en</string><string>tr</string><string>de</string><string>fr</string><string>es</string><string>it</string><string>pt</string><string>nl</string><string>pl</string><string>sv</string><string>el</string><string>az</string><string>ru</string><string>uk</string><string>ar</string><string>fa</string><string>zh-Hans</string><string>ja</string><string>ko</string><string>hi</string></array>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>

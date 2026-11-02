@@ -21,7 +21,6 @@
 "App" = "Uygulama";
 "At least one modifier key is required (⌘ ⌃ ⌥ ⇧)." = "En az bir değiştirici tuş gerekli (⌘ ⌃ ⌥ ⇧).";
 "Automatic" = "Otomatik";
-"Automatic (%@)" = "Otomatik (%@)";
 "Back" = "Geri";
 "Built-in (llama.cpp)" = "Yerleşik (llama.cpp)";
 "Cancel" = "Vazgeç";
@@ -56,7 +55,7 @@
 "Finish" = "Bitir";
 "Fluent" = "Akıcı";
 "Form of address" = "Hitap";
-"Form of address: formal (Sie/siz) or informal (du/sen)" = "Hitap: resmi (siz/Sie) veya samimi (sen/du)";
+"Form of address: formal or informal" = "Hitap: resmî veya samimi";
 "Formal" = "Resmi";
 "General" = "Genel";
 "Glossary" = "Sözlük";
@@ -124,8 +123,6 @@
 "Settings…" = "Ayarlar…";
 "Setup assistant…" = "Kurulum asistanı…";
 "Shortcuts" = "Kısayollar";
-"Shortcuts on" = "Kısayollar açık";
-"Shortcuts on (%@)" = "Kısayollar açık (%@)";
 "Show history" = "Geçmişi göster";
 "Site (optional)" = "Site (isteğe bağlı)";
 "Source" = "Kaynak";
@@ -190,7 +187,6 @@
 /* Meeting mode */
 "Meeting" = "Toplantı";
 "Meeting subtitles" = "Toplantı altyazıları";
-"Meeting settings…" = "Toplantı ayarları…";
 "No meeting app is running" = "Çalışan bir toplantı uygulaması yok";
 "Stop meeting subtitles (%@)" = "Toplantı altyazılarını durdur (%@)";
 "Stop meeting mode" = "Toplantı modunu durdur";
@@ -202,7 +198,6 @@
 "Text size" = "Yazı boyutu";
 "%lld pt" = "%lld pt";
 "Show the original under the translation" = "Orijinali çevirinin altında göster";
-"Choosing the language is a little faster and more reliable than detecting it. The subtitle language is your primary language (General)." = "Dili seçmek, otomatik algılamaktan biraz daha hızlı ve güvenilirdir. Altyazı dili, birincil dilindir (Genel).";
 "Live subtitles for what the other participants say, translated into %@. Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac and never saved or sent; text is saved only if you turn on notes below." = "Diğer katılımcıların söylediklerinin %@ diline çevrilmiş canlı altyazısı. Menü çubuğundan başlat: Toplantı altyazıları. Ses bu Mac'te işlenir, asla kaydedilmez veya gönderilmez; metin yalnızca aşağıdan notları açarsan kaydedilir.";
 "Meeting mode needs macOS 14.2 or later and a build that includes whisper-server." = "Toplantı modu için macOS 14.2 veya üstü ve whisper-server içeren bir derleme gerekir.";
 "Loading speech recognition…" = "Konuşma tanıma yükleniyor…";
@@ -293,3 +288,6 @@
 "Microphone access is off (System Settings → Privacy & Security → Microphone)." = "Mikrofon erişimi kapalı (Sistem Ayarları → Gizlilik ve Güvenlik → Mikrofon).";
 "The audio device could not be opened." = "Ses aygıtı açılamadı.";
 "No microphone found." = "Mikrofon bulunamadı.";
+"Primary language (%@)" = "Ana dil (%@)";
+"Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "Altyazılar, notlar ve seslendirilen çeviri bu dilde olur; Polylocal senin yerine çeviriyi konuşurken senin konuştuğun dil de budur. Konuştukları dili seçmek, otomatik algılamadan biraz daha hızlı ve güvenilirdir.";
+"Subtitle language" = "Altyazı dili";

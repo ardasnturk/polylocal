@@ -25,6 +25,10 @@ struct SettingsView: View {
 }
 
 private struct GeneralSettings: View {
+    /// The interface translations in Resources/<code>.lproj (keep in sync with CFBundleLocalizations in build-app.sh).
+    static let interfaceLanguages = ["en", "tr", "de", "fr", "es", "it", "pt", "nl", "pl", "sv", "el", "az", "ru", "uk",
+                                     "ar", "fa", "zh-Hans", "ja", "ko", "hi"]
+
     let app: AppModel
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var launchError: String?
@@ -112,8 +116,11 @@ private struct GeneralSettings: View {
             Section("System") {
                 Picker("Interface language", selection: $interfaceLanguage) {
                     Text("System default").tag("")
-                    Text(verbatim: "English").tag("en")
-                    Text(verbatim: "Türkçe").tag("tr")
+                    Divider()
+                    ForEach(Self.interfaceLanguages, id: \.self) { code in
+                        // Each language in its own name, so it can be found whatever the current language is.
+                        Text(verbatim: Locale(identifier: code).localizedString(forIdentifier: code)?.localizedCapitalized ?? code).tag(code)
+                    }
                 }
                 .onChange(of: interfaceLanguage) { _, code in
                     // Per-app override of the macOS language order; takes effect on next launch.
