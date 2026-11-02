@@ -119,5 +119,5 @@ SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Autoupdate" >/dev/null
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Updater.app" >/dev/null
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE" >/dev/null
-codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP" >/dev/null
+codesign --force --options runtime $TIMESTAMP --entitlements "$ROOT/Resources/Polylocal.entitlements" --sign "$IDENTITY" "$APP" >/dev/null
 echo "Built $APP ($CONFIG, signed: $IDENTITY)"

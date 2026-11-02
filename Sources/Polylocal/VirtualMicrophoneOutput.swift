@@ -9,16 +9,40 @@ final class VirtualMicrophoneOutput {
     private let player = AVAudioPlayerNode()
     private var format: AVAudioFormat?
     private var converters: [AVAudioFormat: AVAudioConverter] = [:]
+    private var observer: NSObjectProtocol?
+    private var isStarted = false
 
     func start() throws {
+        engine.attach(player)
+        try configure()
+        isStarted = true
+        // Another app opening the microphone (or any device change) stops the engine; set it up again, on the
+        // voice device: left alone, it could come back on the user's speakers.
+        observer = NotificationCenter.default.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine,
+                                                          queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.isStarted else { return }
+                do {
+                    try self.configure()
+                    Log.meeting.notice("voice output restarted after a device change")
+                } catch {
+                    Log.meeting.error("voice output restart failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+        }
+    }
+
+    private func configure() throws {
+        engine.stop()
         guard let device = AudioDevices.device(uid: PolylocalMicrophone.voiceUID) else {
             throw AudioDeviceError.cannotSelect(-1)
         }
         try AudioDevices.select(device, for: engine.outputNode)
         let hardware = engine.outputNode.outputFormat(forBus: 0)
         let format = AVAudioFormat(standardFormatWithSampleRate: hardware.sampleRate, channels: 1)!
+        if format != self.format { converters = [:] }
         self.format = format
-        engine.attach(player)
+        engine.disconnectNodeOutput(player)
         engine.connect(player, to: engine.mainMixerNode, format: format)
         engine.prepare()
         try engine.start()
@@ -26,6 +50,9 @@ final class VirtualMicrophoneOutput {
     }
 
     func stop() {
+        isStarted = false
+        if let observer { NotificationCenter.default.removeObserver(observer) }
+        observer = nil
         player.stop()
         engine.stop()
         converters = [:]

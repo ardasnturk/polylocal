@@ -105,11 +105,16 @@ public final class MicrophoneCapture: @unchecked Sendable {
         return AudioDevices.builtInInput
     }
 
+    public private(set) var deviceName: String?
+    public private(set) var format: AVAudioFormat?
+
     public func start() throws {
         guard let device = Self.preferredDevice() else { throw AudioDeviceError.noMicrophone }
         let input = engine.inputNode
         try AudioDevices.select(device, for: input)
+        deviceName = CoreAudioProperty.string(device, kAudioObjectPropertyName)
         let format = input.inputFormat(forBus: 0)
+        self.format = format
         converter = AVAudioConverter(from: format, to: speechFormat)
         input.installTap(onBus: 0, bufferSize: 2048, format: format) { [weak self] buffer, _ in
             self?.deliver(buffer)

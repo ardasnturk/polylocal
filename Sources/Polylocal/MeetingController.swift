@@ -86,7 +86,9 @@ final class MeetingController {
     /// Level 4 paused: the user's own voice goes to the Polylocal Microphone unchanged.
     private(set) var isSpeakingDirectly = false
     /// Why level 4 could not start, shown in the subtitle bar.
-    private(set) var speakProblem: String?
+    private(set) var speakProblem: String? {
+        didSet { if let speakProblem { Log.meeting.error("speak translation: \(speakProblem, privacy: .public)") } }
+    }
 
     var isActive: Bool { state != .idle }
 
@@ -378,6 +380,7 @@ final class MeetingController {
             return
         }
         self.microphone = microphone
+        Log.meeting.notice("microphone \(microphone.deviceName ?? "?", privacy: .public) format=\(microphone.format?.description ?? "?", privacy: .public)")
         isSpeakingTranslation = true
         isSpeakingDirectly = false
         Log.meeting.notice("speaking translation started")
@@ -434,7 +437,10 @@ final class MeetingController {
             Log.meeting.notice("own phrase skipped (lang=\(result.language?.code ?? "?", privacy: .public), likely the speakers)")
             return
         }
-        guard !Task.isCancelled, let text = TranscriptFilter.clean(result.text) else { return }
+        guard !Task.isCancelled, let text = TranscriptFilter.clean(result.text) else {
+            Log.meeting.notice("own phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s dropped")
+            return
+        }
         let asrMS = Int(Date().timeIntervalSince(asrStart) * 1000)
         let target = theirLanguage
         let line = Line(original: text, language: mine, translation: "", isOwnLanguage: false, isTranslating: true, isMine: true)

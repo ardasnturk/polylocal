@@ -2,6 +2,7 @@
 // the way a meeting app would. Passes when the tone comes back out of the microphone.
 //
 //   swift run MicLoop [--seconds 3] [--frequency 440]
+//   swift run MicLoop --record out.wav [--seconds 20]   # only record the microphone, e.g. while Polylocal speaks
 
 import AVFoundation
 import AudioToolbox
@@ -62,6 +63,31 @@ recorder.inputNode.installTap(onBus: 0, bufferSize: 1024, format: inFormat) { bu
     lock.unlock()
 }
 do { try recorder.start() } catch { fail("recorder: \(error)") }
+
+if let index = args.firstIndex(of: "--record"), args.indices.contains(index + 1) {
+    let url = URL(fileURLWithPath: args[index + 1])
+    let settings: [String: Any] = [AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: inFormat.sampleRate,
+                                   AVNumberOfChannelsKey: 1, AVLinearPCMBitDepthKey: 16, AVLinearPCMIsFloatKey: false]
+    Thread.sleep(forTimeInterval: seconds)
+    recorder.stop()
+    lock.lock()
+    let samples = captured
+    lock.unlock()
+    // In a function scope so the file is closed (and its header written) before exit().
+    func save() {
+    let file = try! AVAudioFile(forWriting: url, settings: settings)
+    let buffer = AVAudioPCMBuffer(pcmFormat: AVAudioFormat(standardFormatWithSampleRate: inFormat.sampleRate, channels: 1)!,
+                                  frameCapacity: AVAudioFrameCount(samples.count))!
+    buffer.frameLength = AVAudioFrameCount(samples.count)
+    samples.withUnsafeBufferPointer { buffer.floatChannelData![0].update(from: $0.baseAddress!, count: samples.count) }
+    try! file.write(from: buffer)
+    }
+    save()
+    let voiced = samples.filter { abs($0) > 0.02 }.count
+    print(String(format: "recorded %.1f s to %@, %.1f s with sound", Double(samples.count) / inFormat.sampleRate, url.path,
+                 Double(voiced) / inFormat.sampleRate))
+    exit(0)
+}
 
 // Player: like Polylocal speaking into the voice device.
 let player = AVAudioEngine()
