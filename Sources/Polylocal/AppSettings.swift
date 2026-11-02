@@ -50,6 +50,8 @@ final class AppSettings {
     var meetingSummarize: Bool { didSet { save(meetingSummarize, "meetingSummarize") } }
     /// Level 3: mute the meeting app for the user and speak the translation instead.
     var meetingHearTranslation: Bool { didSet { save(meetingHearTranslation, "meetingHearTranslation") } }
+    /// Level 4: translate what the user says and speak it into the Polylocal Microphone.
+    var meetingSpeakTranslation: Bool { didSet { save(meetingSpeakTranslation, "meetingSpeakTranslation") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
@@ -88,6 +90,7 @@ final class AppSettings {
         meetingNotesFolder = defaults.string(forKey: "meetingNotesFolder")
         meetingSummarize = defaults.object(forKey: "meetingSummarize") as? Bool ?? true
         meetingHearTranslation = defaults.bool(forKey: "meetingHearTranslation")
+        meetingSpeakTranslation = defaults.bool(forKey: "meetingSpeakTranslation")
     }
 
     private static func loadShortcut(_ defaults: UserDefaults, _ key: String, default value: Shortcut?) -> Shortcut? {

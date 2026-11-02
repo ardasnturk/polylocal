@@ -10,6 +10,8 @@ swift run ASRBench --locales
 swift run ASRBench tap.wav de-DE
 swift run TTSRoute --devices
 swift run TTSRoute tr-TR "Yeni sürüm hazır." --device "MacBook Pro"
+swift run MicLoop                                           # needs the Polylocal Microphone driver installed
+swift run MicLoop --record out.wav --seconds 20             # record Polylocal Microphone like a meeting app
 ```
 
 ## Results (M4 Pro, macOS 27, 2026-11-01)
@@ -52,7 +54,15 @@ swift run TTSRoute tr-TR "Yeni sürüm hazır." --device "MacBook Pro"
 - First buffer: 379 ms for Turkish (Yelda) and 596 ms for German (Anna), measured cold, including voice loading. Synthesis is ~10× faster than real time.
 - Only the default-quality voices are installed. Enhanced/Premium voices (System Settings → Accessibility → Spoken Content) sound much better; the app should point users to them.
 
+### S5 — Virtual microphone ✅
+
+- The libASPL plug-in ([Driver/Driver.cpp](../../Driver/Driver.cpp)) shows up as "Polylocal Microphone" (48 kHz mono, transport Virtual); its hidden "Polylocal Voice" output is not listed in the system's devices but opens by UID.
+- `MicLoop`: a 440 Hz tone played into the voice device comes out of the microphone with rms 0.337 (expected ~0.35) and the first sound after ~100 ms.
+- End to end in the app (2026-11-02, M4 Pro): Turkish spoken by `say` on the speakers, picked up by the built-in microphone, came out of Polylocal Microphone as German ("Hallo, vielen Dank, dass Sie an der heutigen Besprechung teilgenommen haben."), checked by recording the device and transcribing it. Recognition with language detection ~0.9 s, translation 0.35–0.6 s; the translated voice starts about 3 s after the user stops speaking.
+- Found on the way: the hardened runtime needs the `com.apple.security.device.audio-input` entitlement, or macOS denies the microphone without asking; and the `AVAudioEngine` playing into the voice device stops on a configuration change (for example when another engine opens the microphone) and has to be set up again on the same device.
+
 ## Open
 
 - S2: real meeting audio (several speakers, noise, compression) instead of synthesized voices; M1/M2 timing; whether `audio_ctx` can be set per request or needs linking libwhisper directly.
-- S3 (spoken-phrase translation prompt), S5 (virtual microphone), S6 (echo) — later.
+- S5 with Zoom, Meet and Teams selecting Polylocal Microphone (the device works for any Core Audio client; not yet tried in those apps).
+- S3 (spoken-phrase translation prompt), S6 (echo with speakers and voice processing) — later. The app currently guards against echo by language detection while the original is audible and by skipping the microphone while the incoming voice speaks.

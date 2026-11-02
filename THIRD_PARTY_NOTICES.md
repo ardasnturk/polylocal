@@ -17,6 +17,13 @@ Meeting mode uses a `whisper-server` binary built from
 license text ships in the app as `Contents/Resources/whisper.cpp-LICENSE`. The
 Whisper model weights (OpenAI, MIT License) are downloaded by the user, not bundled.
 
+### libASPL (Polylocal Microphone driver)
+
+The Polylocal Microphone audio driver (`Contents/Resources/PolylocalMicrophone.driver`, built by
+`scripts/build-mic-driver.sh`) links [libASPL](https://github.com/gavv/libASPL) (pinned tag in the script),
+distributed under the MIT License, parts of which derive from Apple sample code under Apple's permissive
+licenses; the license text ships in the app as `Contents/Resources/libASPL-LICENSE`.
+
 ### Sparkle
 
 Polylocal uses [Sparkle](https://sparkle-project.org) for updates, bundled as

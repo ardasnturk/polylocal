@@ -40,9 +40,10 @@ Polylocal uses the macOS Accessibility API.
 
 Meeting subtitles (Settings → Meeting, menu bar → Meeting subtitles) listen to **one app you pick**, such as Zoom or your browser, through a Core Audio process tap. macOS asks for permission ("System Audio Recording Only") the first time.
 
-- Audio is captured only while meeting subtitles are on, and only from the selected app and its helper processes, never the microphone.
+- Audio is captured only while meeting subtitles are on, and only from the selected app and its helper processes. The microphone is used only for **Speak the translation** (below).
 - Audio is cut into phrases in memory, transcribed by the bundled `whisper-server` on `127.0.0.1`, translated by the local engine, then discarded. Audio is never written to disk, and nothing leaves the Mac.
 - **Hear the translation** (off by default) mutes the selected app for you only, through the same tap, and speaks the translations with the macOS system voices, on this Mac.
+- **Speak the translation** (beta, off by default) listens to your microphone while meeting mode runs (macOS asks for microphone permission), transcribes and translates what you say on this Mac, and speaks the translation into the **Polylocal Microphone**, a virtual audio device that you choose as the microphone in the meeting app. The others hear the synthesized translation, not your voice, unless you switch to "Speak directly". The device is an audio driver installed in `/Library/Audio/Plug-Ins/HAL` with your administrator password; it passes audio only from Polylocal to the apps that read it, in memory, and can be removed in Settings → Meeting.
 - Subtitles are kept only in memory (the last 50 phrases) and disappear when you stop.
 - **Meeting notes** are off by default. When you turn them on (Settings → Meeting → Notes, after a consent reminder), each meeting's text (the original and the translation, with times) is saved to a folder, by default `~/Documents/Polylocal Meetings`. Folders and files are readable only by your user account (0700/0600). The subtitle bar shows "Saving notes" the whole time. An optional summary is written by the local translation model after the meeting.
 - Transcribing other people may require their consent where you live; you are responsible for that.

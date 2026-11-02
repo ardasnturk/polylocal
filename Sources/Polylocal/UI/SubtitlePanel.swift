@@ -73,7 +73,19 @@ private struct SubtitleView: View {
                 Label("Saving notes", systemImage: "doc.text").font(.caption).foregroundStyle(.secondary)
                     .labelStyle(.titleAndIcon)
             }
+            if let problem = meeting.speakProblem {
+                Label(problem, systemImage: "mic.slash").font(.caption).foregroundStyle(.orange).lineLimit(1)
+                    .help(problem)
+            }
             Spacer()
+            if meeting.isSpeakingTranslation {
+                Button { meeting.setSpeakingDirectly(!meeting.isSpeakingDirectly) } label: {
+                    Label(meeting.isSpeakingDirectly ? "Speaking directly" : "Speaking translation",
+                          systemImage: meeting.isSpeakingDirectly ? "mic" : "mic.badge.plus")
+                        .font(.caption)
+                }
+                .help("Switch between speaking through the translation and speaking in your own voice")
+            }
             Button { meeting.setHearingTranslation(!meeting.isHearingTranslation) } label: {
                 Label(meeting.isHearingTranslation ? "Hearing translation" : "Hearing original",
                       systemImage: meeting.isHearingTranslation ? "speaker.wave.2.bubble" : "speaker.wave.2")
@@ -143,7 +155,20 @@ private struct LineView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if line.isOwnLanguage {
+            if line.isMine {
+                // What the others hear in their language, marked as the user's own.
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Image(systemName: "mic.fill").font(.system(size: fontSize * 0.55))
+                    Text(line.translation.isEmpty ? line.original : line.translation)
+                        .font(.system(size: fontSize * 0.85, weight: .medium))
+                }
+                .foregroundStyle(line.translation.isEmpty ? Color.secondary : Color.cyan)
+                if showOriginal, !line.translation.isEmpty {
+                    Text(line.original)
+                        .font(.system(size: fontSize * 0.55))
+                        .foregroundStyle(.secondary)
+                }
+            } else if line.isOwnLanguage {
                 Text(line.original)
                     .font(.system(size: fontSize, weight: .medium))
             } else {

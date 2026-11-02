@@ -61,6 +61,8 @@ struct MeetingSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
+            SpeakTranslationSection(app: app)
+
             Section {
                 Toggle("Save meeting notes", isOn: Binding(
                     get: { settings.meetingSaveNotes },
@@ -113,5 +115,59 @@ struct MeetingSettingsView: View {
     private func openFolder(_ url: URL) {
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
         NSWorkspace.shared.open(url)
+    }
+}
+
+/// Level 4: the user's speech, translated and spoken into the Polylocal Microphone.
+private struct SpeakTranslationSection: View {
+    let app: AppModel
+
+    var body: some View {
+        @Bindable var settings = app.settings
+        let driver = app.microphoneDriver
+        let their = app.meeting.theirLanguage
+        Section {
+            LabeledContent("Polylocal Microphone") {
+                if driver.isWorking {
+                    ProgressView().controlSize(.small)
+                } else if driver.isInstalled {
+                    Label("Installed", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                    Button("Uninstall…") { driver.uninstall() }
+                } else if driver.isAvailable {
+                    Button("Install…") { driver.install() }
+                } else {
+                    Text("Not included in this build").foregroundStyle(.secondary)
+                }
+            }
+            if let error = driver.error {
+                Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.orange).font(.caption)
+            }
+            Toggle("Translate what I say and speak it to the others", isOn: $settings.meetingSpeakTranslation)
+                .disabled(!driver.isInstalled)
+            LabeledContent("They hear", value: settings.meetingTheirLanguage?.localizedName
+                           ?? String(localized: "\(their.localizedName), or the language they speak"))
+            LabeledContent("Voice") {
+                Text(MeetingVoice.voice(for: their)?.name ?? String(localized: "None installed"))
+                    .foregroundStyle(.secondary)
+            }
+            if their.hasFormality {
+                LabeledContent("Form of address") {
+                    FormalityPicker(formality: Binding(get: { settings.formality(for: their) },
+                                                       set: { settings.formalityByLanguage[their.code] = $0 }),
+                                    language: their)
+                }
+            }
+        } header: {
+            HStack {
+                Text("Speak the translation")
+                Text("Beta").font(.caption2.weight(.semibold)).padding(.horizontal, 5).padding(.vertical, 1)
+                    .background(.orange.opacity(0.2), in: Capsule()).foregroundStyle(.orange)
+            }
+        } footer: {
+            Text("Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
+        .onAppear { driver.refresh() }
     }
 }
