@@ -21,6 +21,8 @@ final class AppModel {
     let updater = Updater()
     var settingsTab: SettingsTab = .general
     let mainTranslator: TranslatorModel
+    /// The quick translate field in the menu bar panel.
+    let quickTranslator: TranslatorModel
     private(set) var accessibilityTrusted = Permissions.isAccessibilityTrusted
     private(set) var ollamaModels: [String]?
 
@@ -33,7 +35,11 @@ final class AppModel {
 
     private init() {
         mainTranslator = TranslatorModel(settings: settings, engine: engine)
+        quickTranslator = TranslatorModel(settings: settings, engine: engine)
         mainTranslator.onComplete = { [weak self] request, output in
+            self?.record(request, output, origin: .window, appName: nil)
+        }
+        quickTranslator.onComplete = { [weak self] request, output in
             self?.record(request, output, origin: .window, appName: nil)
         }
     }
@@ -60,6 +66,13 @@ final class AppModel {
             if let source = ProcessInfo.processInfo.environment["POLYLOCAL_MEETING_SOURCE"] {
                 let name = NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == source }?.localizedName
                 meeting.start(MeetingApp(bundleID: source, name: name ?? source))
+            }
+            // Development aid: open the translation window with a text, e.g. for UI checks.
+            if let text = ProcessInfo.processInfo.environment["POLYLOCAL_TRANSLATE"] {
+                windows.showMain(with: text)
+            }
+            if ProcessInfo.processInfo.environment["POLYLOCAL_PANEL_WINDOW"] != nil {
+                windows.showMenuBarPanelPreview()
             }
         }
     }

@@ -88,7 +88,8 @@ final class PopupController {
             copy: { [weak self] in self?.copy() },
             replace: { [weak self] in self?.replace() },
             openMain: { [weak self] in self?.openInMainWindow() },
-            close: { [weak self] in self?.close() }
+            close: { [weak self] in self?.close() },
+            copied: { [weak self] in self?.state.copied = true }
         ))
         return PopupPanel(content: view)
     }

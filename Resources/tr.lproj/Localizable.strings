@@ -244,3 +244,32 @@
 "Hearing translation" = "Çeviri dinleniyor";
 "Hearing original" = "Orijinal dinleniyor";
 "Switch between the original audio and the spoken translation" = "Orijinal ses ile seslendirilen çeviri arasında geçiş yap";
+
+/* Translator: word alternatives, form of address, menu bar panel */
+"Alternatives for “%@”" = "“%@” için alternatifler";
+"Always translate “%@” this way" = "“%@” hep böyle çevrilsin";
+"Adds the choice to the glossary (Settings → Glossary)" = "Seçimi sözlüğe ekler (Ayarlar → Sözlük)";
+"Finding alternatives…" = "Alternatifler aranıyor…";
+"No alternatives found." = "Alternatif bulunamadı.";
+"The model did not suggest alternatives." = "Model alternatif önermedi.";
+"Click a word for alternatives" = "Alternatifler için bir kelimeye tıkla";
+"Copy the translation (⇧⌘C). Selecting all of it copies it too." = "Çeviriyi kopyala (⇧⌘C). Tamamını seçmek de kopyalar.";
+"Clear (⌘K)" = "Temizle (⌘K)";
+"Paste" = "Yapıştır";
+"Read aloud" = "Sesli oku";
+"Stop reading" = "Okumayı durdur";
+"Translating…" = "Çevriliyor…";
+"Type or paste text to improve" = "İyileştirmek için metin yaz veya yapıştır";
+"Detect language" = "Dili algıla";
+"%@ (detected)" = "%@ (algılandı)";
+"Improve (%@)" = "İyileştir (%@)";
+"Improve text" = "Metni iyileştir";
+"Glossary: terms that are always translated the same way" = "Sözlük: hep aynı şekilde çevrilen terimler";
+"Auto" = "Oto";
+"Form of address: %@ (formal) or %@ (informal). Remembered for each language." = "Hitap: %@ (resmî) veya %@ (samimi). Her dil için ayrı hatırlanır.";
+"Any language" = "Herhangi bir dil";
+"Quick translate…" = "Hızlı çeviri…";
+"Keyboard shortcuts" = "Klavye kısayolları";
+"No shortcut set" = "Kısayol ayarlanmadı";
+"Settings… (⌘,)" = "Ayarlar… (⌘,)";
+"Subtitles for %@" = "%@ için altyazı";

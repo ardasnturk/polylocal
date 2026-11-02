@@ -14,7 +14,7 @@ final class WindowManager {
 
     func showMain(with text: String? = nil) {
         if let text { app.mainTranslator.reset(input: text) }
-        show("main", title: "Polylocal", size: NSSize(width: 820, height: 460), resizable: true) {
+        show("main", title: "Polylocal", size: NSSize(width: 900, height: 500), resizable: true) {
             MainWindowView(app: self.app, translator: self.app.mainTranslator)
         }
     }
@@ -38,6 +38,13 @@ final class WindowManager {
         }
     }
 
+    /// Development aid: the menu bar panel in a window, for screenshots (POLYLOCAL_PANEL_WINDOW).
+    func showMenuBarPanelPreview() {
+        show("panel-preview", title: "Polylocal", size: NSSize(width: 340, height: 460), resizable: false) {
+            MenuBarPanel(app: self.app)
+        }
+    }
+
     func close(_ id: String) {
         windows[id]?.close()
     }
@@ -50,10 +57,15 @@ final class WindowManager {
             let window = NSWindow(contentRect: NSRect(origin: .zero, size: size), styleMask: style,
                                   backing: .buffered, defer: false)
             window.title = title
+            if id == "main" {
+                // The language bar continues the title bar.
+                window.titlebarAppearsTransparent = true
+                window.titleVisibility = .hidden
+            }
             window.isReleasedWhenClosed = false
             window.contentViewController = NSHostingController(rootView: content())
             window.setContentSize(size)
-            if resizable { window.contentMinSize = NSSize(width: 560, height: 320) }
+            if resizable { window.contentMinSize = NSSize(width: 640, height: 360) }
             window.center()
             window.setFrameAutosaveName("Polylocal.\(id)")
             windows[id] = window

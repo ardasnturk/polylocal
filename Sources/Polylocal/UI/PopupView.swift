@@ -7,6 +7,8 @@ struct PopupView: View {
         var replace: () -> Void
         var openMain: () -> Void
         var close: () -> Void
+        /// Selecting all of the translation copied it.
+        var copied: () -> Void
     }
 
     @Bindable var translator: TranslatorModel
@@ -54,7 +56,8 @@ struct PopupView: View {
                 .pickerStyle(.menu)
                 .fixedSize()
                 if translator.target.hasFormality {
-                    FormalityPicker(formality: $translator.formality)
+                    FormalityPicker(formality: $translator.formality, language: translator.target)
+                        .controlSize(.small)
                 }
             } else {
                 RewriteStylePicker(style: $translator.rewriteStyle)
@@ -79,14 +82,8 @@ struct PopupView: View {
                 .font(.callout)
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
-            ScrollView {
-                Text(translator.output.isEmpty ? " " : translator.output)
-                    .font(.title3)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(minHeight: 28, maxHeight: 280)
-            .fixedSize(horizontal: false, vertical: true)
+            TranslationTextView(translator: translator, fontSize: 17) { actions.copied() }
+                .frame(height: outputHeight)
         }
     }
 
@@ -106,6 +103,13 @@ struct PopupView: View {
                 .keyboardShortcut("o", modifiers: .command)
         }
         .controlSize(.small)
+    }
+
+    /// Grows with the text (estimated; the text view does not size itself), up to a scrolling maximum.
+    private var outputHeight: CGFloat {
+        let lines = translator.output.split(separator: "\n", omittingEmptySubsequences: false)
+            .reduce(0) { $0 + max(1, Int(ceil(Double($1.count) / 48))) }
+        return min(280, max(30, CGFloat(lines) * 23 + 6))
     }
 
     private var sourceLabel: String {

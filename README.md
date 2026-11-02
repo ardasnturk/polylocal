@@ -1,140 +1,168 @@
+<div align="center">
+
 # Polylocal
 
-Polylocal is a free, open-source macOS menu-bar app that translates and rewrites text in any app using an AI model that runs entirely on your Mac. Select text and press ⌘C twice to see a translation, translate what you are typing and replace it in place, or get inline translation suggestions while you write. Your text never leaves the device: the only network access is downloading a model.
+**Private, on-device translation for your Mac.**
+Translate and rewrite text in any app, pick the right word like in DeepL, and follow meetings in another language, with an AI model that runs entirely on your Mac.
 
-> Status: early development (v0.1.0 pre-release). Roadmap phases 0–4 are implemented; inline suggestions are verified only in TextEdit so far.
+[![Latest release](https://img.shields.io/github/v/release/ardasnturk/polylocal?include_prereleases&label=release)](https://github.com/ardasnturk/polylocal/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)
+![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-required-black)
+
+[Download](https://github.com/ardasnturk/polylocal/releases/latest) · [Features](#features) · [Privacy](#privacy) · [Build from source](#build-from-source)
+
+<img src="docs/images/translator.png" alt="The Polylocal translation window: Turkish text on the left, the English translation on the right, with alternatives for the word “meeting” in a popover" width="820">
+
+</div>
+
+## Why Polylocal
+
+- **Nothing leaves your Mac.** Translation, rewriting, speech recognition and summaries run on a local model. No account, no telemetry; the network is used only to download models and check for updates.
+- **Works where you write.** Select text in any app and press ⌘C twice. Replace it in place, or get inline suggestions while you type.
+- **You stay in control of the wording.** Click any word of a translation for alternatives, switch between formal and informal address, and teach it your own terms.
+- **Free and open source** (MIT).
 
 ## Features
 
-- **Quick translate (⌘C C):** select text in any app and press ⌘C twice; a popup shows the translation as it streams in.
-- **Translate and replace (⇧⌘C C):** translate the selection, preview it, and press ↩ to replace the original text.
-- **Main window:** a two-pane translation window (DeepL-style) that translates as you type and detects the source language automatically.
-- **Customizable shortcuts:** single or double press, e.g. ⌃⌥C.
-- **Formal / informal address** (e.g. Sie/du, siz/sen).
-- **Inline suggestions:** add a rule for an app or website; when you type in another language there, a translation suggestion appears below the caret. Tab accepts, Esc dismisses, ⌥Tab inserts a real tab.
-- **Sentence completion:** optionally, per rule, suggests the rest of a sentence while you type in the target language (only at word boundaries).
-- **Meeting mode (preview):** live, translated subtitles for what others say in Zoom, Meet, Teams or any other app, with speech recognition by Whisper on this Mac. Optionally saves the transcript with a summary to a folder, and can speak the translation while the meeting app is muted for you. Menu bar → Meeting subtitles. See [docs/MEETING_MODE.md](docs/MEETING_MODE.md).
-- **Writing assistant:** rewrite text in one of five styles: Correct, Fluent, Formal, Casual, Concise. Available in the popup, in the main window, or via an optional shortcut.
-- **Glossary:** make specific terms always translate the same way; import from CSV.
-- **Updates:** checks for new versions once a day (Sparkle) and can download and install them; Settings → About.
-- **Optional history:** off by default; stored only on this Mac, readable only by your user account.
+### Translate anywhere
 
-The user interface is available in English and Turkish. It follows the macOS language order; Settings → General → Interface language overrides it.
+| | |
+|---|---|
+| **⌘C C** | Select text in any app and press ⌘C twice: a popup streams the translation. |
+| **⇧⌘C C** | Translate what you just wrote, preview it, and press ↩ to replace the original. |
+| **Translation window** | A two-pane translator that translates as you type and detects the source language. |
+| **Menu bar** | A quick translate field, recent actions and meeting subtitles, one click away. |
+| **Inline suggestions** | Per app or website: write in one language and a translation appears under the caret. Tab accepts. |
 
-## Requirements
+### Get the wording right
 
-- Apple Silicon Mac, macOS 14 Sonoma or later
-- About 5 GB of free RAM and ~4.6 GB of disk space for the default model
-- To build: Xcode 16 or later (Swift 6) and `cmake` (`brew install cmake`) for building the bundled `llama-server`
+- **Word alternatives.** Click a word (or select a phrase) in a translation to see other ways to say it. Pick one and the sentence is rebuilt around it, grammar included.
+- **Remember a choice.** Tick “Always translate … this way” and the term goes into your glossary.
+- **Formal or informal.** A one-click switch named the way the language does it: *Sie · du*, *siz · sen*, *vous · tu*, *usted · tú*… Remembered for each language.
+- **Glossary.** Terms that must always be translated the same way; import from CSV.
+- **Writing assistant.** Rewrite text in its own language: Correct, Fluent, Formal, Casual or Concise.
+- **Copy your way.** A Copy button (⇧⌘C), or simply select the whole translation and it is copied. Read texts aloud with the system voices.
+
+### Meeting mode (preview)
+
+Live, translated subtitles for what others say in Zoom, Google Meet, Teams, FaceTime or any other app, with speech recognition by Whisper on your Mac. Optionally:
+
+- **Notes:** saves the original and translated transcript to a folder and writes a summary with decisions and action items after the meeting.
+- **Hear the translation:** mutes the meeting app for you only and speaks the translation instead.
+
+See [docs/MEETING_MODE.md](docs/MEETING_MODE.md) for how it works and what comes next.
+
+<p align="center">
+  <img src="docs/images/menu-bar.png" alt="The Polylocal menu bar panel with a quick translate field, the translation window, history and meeting subtitles" width="340">
+</p>
+
+### And also
+
+- **In-app updates** (Sparkle): checks once a day; download and install with one click.
+- **Optional history:** off by default, stored only on this Mac and readable only by your user account.
+- **English and Turkish interface,** following the macOS language order (Settings → General can override it).
 
 ## Install
 
-1. Download `Polylocal-<version>.dmg` from [Releases](https://github.com/ardasnturk/polylocal/releases) (signed with Developer ID and notarized by Apple).
+1. Download `Polylocal-<version>.dmg` from [Releases](https://github.com/ardasnturk/polylocal/releases). It is signed with a Developer ID and notarized by Apple.
 2. Open it and drag **Polylocal** to Applications.
-3. Launch it; the setup assistant asks for the Accessibility permission and downloads a model.
+3. Launch it. The setup assistant asks for the Accessibility permission and downloads a model.
 
-## Build from source
+Later versions arrive through the app (menu bar → Check for Updates…).
 
-```bash
-git clone https://github.com/ardasnturk/polylocal.git
-cd polylocal
-scripts/build-llama-server.sh   # builds llama.cpp's llama-server (static, Metal)
-scripts/build-whisper-server.sh # builds whisper.cpp's whisper-server for meeting mode
-scripts/build-app.sh            # builds build/Polylocal.app (release), bundling llama-server
-open build/Polylocal.app
-```
+**Requirements:** Apple Silicon Mac, macOS 14 Sonoma or later (meeting mode: 14.2), about 5 GB of free memory and 4.6 GB of disk space for the default model.
 
-`scripts/build-app.sh debug` builds a debug configuration. Set `SIGN_IDENTITY` to sign with a specific identity; otherwise the first "Apple Development" identity is used, or ad-hoc signing as a last resort. A stable signing identity matters during development because macOS ties the Accessibility permission to the code signature.
-
-To produce a signed DMG (Developer ID, hardened runtime) with the styled installer window, with optional notarization through a `notarytool` keychain profile (needs [dmgbuild](https://github.com/dmgbuild/dmgbuild): `uv tool install dmgbuild`):
-
-```bash
-VERSION=<x.y.z> NOTARY_PROFILE=<profile-name> scripts/make-dmg.sh
-VERSION=<x.y.z> scripts/update-appcast.sh   # adds the release to appcast.xml (Sparkle feed)
-```
-
-Releasing: build and notarize the DMG, update `appcast.xml`, publish the GitHub release with the DMG as `Polylocal-<x.y.z>.dmg` under tag `v<x.y.z>`, then commit and push `appcast.xml`. Installed apps read the feed from the `main` branch.
-
-### Tests
-
-```bash
-swift test
-POLYLOCAL_NETWORK_TESTS=1 swift test                    # real download + SHA-256 verification (~60 MB)
-POLYLOCAL_TEST_GGUF=/path/to/model.gguf swift test       # llama-server integration
-```
-
-## First run
-
-On first launch an onboarding assistant walks you through:
-
-1. **Accessibility permission** (System Settings → Privacy & Security → Accessibility). Polylocal needs it to detect the shortcuts and to read and replace selected text.
-2. **Model download.** Pick a model from the catalog; the default is Gemma 4 E4B (~4.6 GB). The file is downloaded from Hugging Face and verified with SHA-256.
-
-If you rebuild the app with an ad-hoc signature, macOS may revoke the Accessibility permission; grant it again or use a stable signing identity.
-
-## Default shortcuts
+## Shortcuts
 
 | Shortcut | Where | Action |
 |---|---|---|
 | ⌘C C | any app | Translate the selection in a popup |
-| ⇧⌘C C | editable field | Translate, preview, and replace the text |
+| ⇧⌘C C | editable field | Translate, preview and replace the text |
 | ⌘↩ | popup | Replace the selection with the translation |
-| ↩ | replace preview | Confirm the replacement |
-| Esc | popup / suggestion | Close |
-| Tab | inline suggestion | Accept the suggestion |
-| ⌥Tab | inline suggestion | Insert a real tab instead |
+| ⇧⌘C | translation window | Copy the translation |
+| ⌘K | translation window | Clear the text |
+| ⇧⌘S | translation window | Swap languages |
+| Tab / ⌥Tab | inline suggestion | Accept / insert a real tab |
+| Esc | popup, suggestion | Close |
 
-All global shortcuts can be changed in Settings → General → Shortcuts. The writing assistant has no shortcut by default; you can assign one.
-
-**Known conflict:** ⇧⌘C can collide with clipboard managers such as Raycast's Clipboard History. Rebind either shortcut if both react. See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+Global shortcuts can be changed in Settings → General. The writing assistant has no shortcut by default; you can assign one. ⇧⌘C can collide with clipboard managers such as Raycast's Clipboard History; see [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## Privacy
 
-All translation runs locally. The app makes network requests only to download models from Hugging Face. There is no telemetry. History is off by default; the diagnostic log never contains your text; password fields are never read. Details: [docs/PRIVACY.md](docs/PRIVACY.md).
+Everything runs locally. Polylocal connects to the internet only to download models (Hugging Face, verified with SHA-256) and to read the update feed (`appcast.xml` on GitHub). There is no telemetry. History and meeting notes are off by default, the diagnostic log never contains your text, password fields are never read, and meeting audio is never saved. Details: [docs/PRIVACY.md](docs/PRIVACY.md).
 
-## Engines and models
+## Models
 
-- **Built-in engine:** `llama-server` from [llama.cpp](https://github.com/ggml-org/llama.cpp), bundled inside the app and run as a child process. End users do not need Homebrew.
-- **Ollama (optional):** if you already run [Ollama](https://ollama.com), Polylocal can use its models instead (e.g. `ollama pull gemma4`).
-
-Models are listed in [models/catalog.json](models/catalog.json). Polylocal does not ship a model; you choose one and download it yourself.
+Polylocal does not ship a model: you choose one in the setup assistant or in Settings → Models, and it is downloaded once.
 
 | Model | Size | License | Notes |
 |---|---:|---|---|
-| Gemma 4 E4B (Q4_0) | 4.6 GB | Apache 2.0 | Default. Best quality in our benchmark; ~5 GB RAM, first token ~120 ms on M4 Pro |
-| Gemma 4 E2B (Q4_0) | 2.8 GB | Apache 2.0 | Lighter option for 8 GB Macs |
-| Gemma 4 26B-A4B (Q4_0) | 14.6 GB | Apache 2.0 | Quality mode; needs 24 GB RAM; not benchmarked yet |
-| TranslateGemma 4B (Q4_K_M) | 2.5 GB | Gemma Terms of Use | Translation-specific; weaker than Gemma 4 E4B for Turkish |
+| Gemma 4 E4B (Q4_0) | 4.6 GB | Apache 2.0 | Default. Best quality in our benchmark; first token ~120 ms on an M4 Pro |
+| Gemma 4 E2B (Q4_0) | 2.8 GB | Apache 2.0 | Lighter, for 8 GB Macs |
+| Gemma 4 26B-A4B (Q4_0) | 14.6 GB | Apache 2.0 | Quality mode; needs 24 GB of memory |
+| TranslateGemma 4B (Q4_K_M) | 2.5 GB | Gemma Terms of Use | Translation-only; weaker than Gemma 4 E4B for Turkish |
+| Whisper large-v3 turbo (Q5_0) | 0.6 GB | MIT | Speech recognition for meeting mode |
 
-Benchmark results: [tools/bench/RESULTS.md](tools/bench/RESULTS.md).
+The built-in engine is [llama.cpp](https://github.com/ggml-org/llama.cpp)'s `llama-server`, bundled in the app. If you already use [Ollama](https://ollama.com), Polylocal can use its models instead. Benchmark: [tools/bench/RESULTS.md](tools/bench/RESULTS.md).
+
+## Build from source
+
+Requires Xcode 16 or later (Swift 6) and `cmake` (`brew install cmake`).
+
+```bash
+git clone https://github.com/ardasnturk/polylocal.git
+cd polylocal
+scripts/build-llama-server.sh    # llama.cpp's llama-server (static, Metal)
+scripts/build-whisper-server.sh  # whisper.cpp's whisper-server, for meeting mode
+scripts/build-app.sh             # build/Polylocal.app (release)
+open build/Polylocal.app
+```
+
+`scripts/build-app.sh debug` builds a debug configuration. Set `SIGN_IDENTITY` to sign with a specific identity; otherwise the first “Apple Development” identity is used, or ad-hoc signing as a last resort. Use a stable identity during development: macOS ties the Accessibility permission to the code signature.
+
+Tests:
+
+```bash
+swift test
+POLYLOCAL_NETWORK_TESTS=1 swift test                 # real download + SHA-256 verification (~60 MB)
+POLYLOCAL_TEST_GGUF=/path/to/model.gguf swift test    # llama-server integration
+```
+
+Development aids: launch with `open --env POLYLOCAL_TRANSLATE="text" build/Polylocal.app` to open the translation window with a text (add `POLYLOCAL_ALTERNATIVES_FOR=word` to open its alternatives), `POLYLOCAL_PANEL_WINDOW=1` to show the menu bar panel in a window, or `POLYLOCAL_MEETING_SOURCE=<bundle id>` to start meeting mode for an app.
+
+<details>
+<summary>Releasing</summary>
+
+```bash
+VERSION=<x.y.z> NOTARY_PROFILE=<profile> scripts/make-dmg.sh   # signed, notarized DMG (needs dmgbuild: uv tool install dmgbuild)
+VERSION=<x.y.z> scripts/update-appcast.sh                      # adds the release to appcast.xml (Sparkle feed)
+```
+
+Publish the GitHub release with the DMG as `Polylocal-<x.y.z>.dmg` under tag `v<x.y.z>`, then commit and push `appcast.xml`. Installed apps read the feed from the `main` branch.
+
+</details>
 
 ## Project layout
 
 | Path | Contents |
 |---|---|
-| [Sources/PolylocalCore](Sources/PolylocalCore) | Pure logic: languages, prompts, shortcuts, glossary, inline segmenting, catalog types |
-| [Sources/Engines](Sources/Engines) | OpenAI-compatible streaming client, `llama-server` process, Ollama |
-| [Sources/ModelManager](Sources/ModelManager) | Catalog, downloads, SHA-256 verification, hardware info |
-| [Sources/SystemIntegration](Sources/SystemIntegration) | Global shortcuts (event tap), Accessibility text capture/replace, focus watching, permissions |
-| [Sources/Polylocal](Sources/Polylocal) | The menu-bar app: app model, engine controller, history, UI |
+| [Sources/PolylocalCore](Sources/PolylocalCore) | Pure logic: languages, prompts, word alternatives, glossary, speech segmenting, meeting notes |
+| [Sources/Engines](Sources/Engines) | OpenAI-compatible streaming client, `llama-server` and `whisper-server` processes |
+| [Sources/ModelManager](Sources/ModelManager) | Model catalog, downloads, SHA-256 verification |
+| [Sources/SystemIntegration](Sources/SystemIntegration) | Global shortcuts, Accessibility text capture and replace, app audio capture |
+| [Sources/Polylocal](Sources/Polylocal) | The menu bar app and its UI |
 | [Tests](Tests) | Swift Testing suites |
-| [scripts](scripts) | Build, `llama-server`, and DMG scripts |
-| [models/catalog.json](models/catalog.json) | Downloadable model catalog (bundled into the app) |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture and roadmap |
-| [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | App compatibility matrix |
-| [docs/PRIVACY.md](docs/PRIVACY.md) | What data the app touches and where it goes |
-| [docs/MEETING_MODE.md](docs/MEETING_MODE.md) | Plan for meeting mode (subtitles, notes, spoken interpretation) |
-| [tools/bench](tools/bench) | Translation model benchmark |
-| [tools/compat](tools/compat) | Semi-automatic compatibility test |
-| [prototypes/ax-probe](prototypes/ax-probe) | Phase 0 shortcut and Accessibility prototype |
+| [docs](docs) | [Architecture](docs/ARCHITECTURE.md), [compatibility](docs/COMPATIBILITY.md), [privacy](docs/PRIVACY.md), [meeting mode](docs/MEETING_MODE.md) |
+| [tools](tools) | Model benchmark and compatibility test |
 
 ## Roadmap
 
-Not done yet: a Homebrew cask, verified inline suggestions in browsers and Electron apps, and speaking to the meeting in another language ([meeting mode L4–L5](docs/MEETING_MODE.md)). See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
+Next: speaking to a meeting in another language through a virtual microphone ([meeting mode L4](docs/MEETING_MODE.md)), a Homebrew cask, and verified inline suggestions in browsers and Electron apps. See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

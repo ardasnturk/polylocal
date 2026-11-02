@@ -24,6 +24,10 @@ final class AppSettings {
     var translateShortcut: Shortcut? { didSet { saveShortcut(translateShortcut, "translateShortcut") } }
     var replaceShortcut: Shortcut? { didSet { saveShortcut(replaceShortcut, "replaceShortcut") } }
     var defaultFormality: Formality { didSet { save(defaultFormality.rawValue, "defaultFormality") } }
+    /// The form of address last chosen per target language (code → formality); falls back to `defaultFormality`.
+    var formalityByLanguage: [String: Formality] {
+        didSet { defaults.set(try? JSONEncoder().encode(formalityByLanguage), forKey: "formalityByLanguage") }
+    }
     /// Off by default: translated text may be sensitive, so keeping it is the user's choice.
     var historyEnabled: Bool { didSet { save(historyEnabled, "historyEnabled") } }
     /// Inline suggestions only run in apps/sites that have a rule; this is the master switch.
@@ -49,6 +53,10 @@ final class AppSettings {
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
 
+    func formality(for language: Language) -> Formality {
+        formalityByLanguage[language.code] ?? defaultFormality
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let systemCode = Locale.current.language.languageCode?.identifier ?? "en"
@@ -64,6 +72,8 @@ final class AppSettings {
         translateShortcut = Self.loadShortcut(defaults, "translateShortcut", default: .defaultTranslate)
         replaceShortcut = Self.loadShortcut(defaults, "replaceShortcut", default: .defaultReplace)
         defaultFormality = defaults.string(forKey: "defaultFormality").flatMap(Formality.init) ?? .automatic
+        formalityByLanguage = defaults.data(forKey: "formalityByLanguage")
+            .flatMap { try? JSONDecoder().decode([String: Formality].self, from: $0) } ?? [:]
         historyEnabled = defaults.bool(forKey: "historyEnabled")
         inlineEnabled = defaults.object(forKey: "inlineEnabled") as? Bool ?? true
         inlineRules = defaults.data(forKey: "inlineRules").flatMap { try? JSONDecoder().decode([InlineRule].self, from: $0) } ?? []

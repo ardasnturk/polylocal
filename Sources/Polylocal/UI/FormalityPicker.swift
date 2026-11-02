@@ -1,18 +1,32 @@
 import SwiftUI
 import PolylocalCore
 
-/// Compact formal/informal switch, shown only for target languages that distinguish them.
+/// Formal/informal switch, shown only for target languages that distinguish them. With a `language` it names
+/// the forms the way its speakers do (Auto · Sie · du); without one it is a compact menu.
 struct FormalityPicker: View {
     @Binding var formality: Formality
+    var language: Language?
 
     var body: some View {
-        Picker("Form of address", selection: $formality) {
-            ForEach(Formality.allCases) { Text($0.title).tag($0) }
+        if let words = language?.formalityWords {
+            Picker("Form of address", selection: $formality) {
+                Text("Auto").tag(Formality.automatic)
+                Text(words.formal).tag(Formality.formal)
+                Text(words.informal).tag(Formality.informal)
+            }
+            .labelsHidden()
+            .pickerStyle(.segmented)
+            .fixedSize()
+            .help("Form of address: \(words.formal) (formal) or \(words.informal) (informal). Remembered for each language.")
+        } else {
+            Picker("Form of address", selection: $formality) {
+                ForEach(Formality.allCases) { Text($0.title).tag($0) }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .fixedSize()
+            .help("Form of address: formal (Sie/siz) or informal (du/sen)")
         }
-        .labelsHidden()
-        .pickerStyle(.menu)
-        .fixedSize()
-        .help("Form of address: formal (Sie/siz) or informal (du/sen)")
     }
 }
 
