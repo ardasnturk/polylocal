@@ -277,10 +277,7 @@
 "Install…" = "Installera…";
 "Uninstall…" = "Avinstallera…";
 "Not included in this build" = "Ingår inte i det här bygget";
-"Translate what I say and speak it to the others" = "Översätt det jag säger och läs upp det för de andra";
 "They hear" = "De hör";
-"%@, or the language they speak" = "%@ eller språket de talar";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Polylocal lyssnar på din mikrofon, översätter det du säger till de andras språk och läser upp det i ”Polylocal Microphone”. Välj Polylocal Microphone som mikrofon i mötesappen. Installationen ber om ett administratörslösenord en gång och startar om Macens ljud en kort stund. Använd hörlurar; med ”Tala direkt” i undertextfältet kan du prata med din egen röst.";
 "Speaking translation" = "Talar via översättning";
 "Speaking directly" = "Talar direkt";
 "Switch between speaking through the translation and speaking in your own voice" = "Växla mellan att tala via översättningen och att tala med din egen röst";
@@ -291,3 +288,17 @@
 "Primary language (%@)" = "Primärt språk (%@)";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "Undertexter, anteckningar och den upplästa översättningen är på det här språket; det är också det språk du talar när Polylocal talar översättningen åt dig. Att välja språket de talar är lite snabbare och mer tillförlitligt än att identifiera det automatiskt.";
 "Subtitle language" = "Undertextspråk";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "Starta automatiskt när en mötesapp använder Polylocal Microphone";
+"Also when I start meeting subtitles from the menu bar" = "Även när jag startar mötesundertexter från menyraden";
+"The language they speak (until known: %@)" = "Språket de talar (tills det är känt: %@)";
+"Choose their language so your first sentences are not spoken in %@." = "Välj deras språk så att dina första meningar inte talas på %@.";
+"How to use it:" = "Så använder du det:";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. Installera Polylocal Microphone (administratörslösenord en gång; Macens ljud startar om en kort stund).";
+"2. Choose the language they speak above." = "2. Välj språket de talar ovan.";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. Välj ”Polylocal Microphone” som mikrofon i Zoom, Meet eller Teams och gå med i samtalet.";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Polylocal startar av sig självt: tala ditt språk, så hör de översättningen ungefär 3 sekunder senare. Undertextfältet visar vad de hörde.";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "Använd hörlurar. ”Talar via översättning” i undertextfältet växlar till din egen röst och tillbaka.";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "%@ använder Polylocal Microphone, men mötesläget är av: de andra hör tystnad.";
+"Start meeting mode" = "Starta mötesläget";

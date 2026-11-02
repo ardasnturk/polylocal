@@ -10,6 +10,22 @@ public enum PolylocalMicrophone {
     public static let voiceUID = "dev.polylocal.microphone.voice"
 
     public static var isInstalled: Bool { AudioDevices.device(uid: voiceUID) != nil && AudioDevices.device(uid: inputUID) != nil }
+
+    /// Some app is reading the microphone (a meeting app chose it and is in a call).
+    public static var isInUse: Bool {
+        guard let device = AudioDevices.device(uid: inputUID) else { return false }
+        return (CoreAudioProperty.value(device, kAudioDevicePropertyDeviceIsRunningSomewhere, UInt32(0)) ?? 0) != 0
+    }
+
+    /// The apps reading the microphone right now, by bundle ID (helpers resolved to their app, e.g. a browser).
+    @available(macOS 14.2, *)
+    public static func clients() -> [String] {
+        guard let device = AudioDevices.device(uid: inputUID) else { return [] }
+        return AppAudioCapture.processes().compactMap { process -> String? in
+            guard process.isInputting, process.inputDevices.contains(device) else { return nil }
+            return process.ownerBundleID ?? process.bundleID
+        }
+    }
 }
 
 public enum AudioDevices {

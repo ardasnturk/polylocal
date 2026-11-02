@@ -277,10 +277,7 @@
 "Install…" = "Instaluj…";
 "Uninstall…" = "Odinstaluj…";
 "Not included in this build" = "Niedostępne w tej wersji";
-"Translate what I say and speak it to the others" = "Tłumacz to, co mówię, i odczytuj to innym";
 "They hear" = "Słyszą";
-"%@, or the language they speak" = "%@ lub język, w którym mówią";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Polylocal słucha twojego mikrofonu, tłumaczy to, co mówisz, na język pozostałych osób i odtwarza to przez „Polylocal Microphone”. W aplikacji do spotkań wybierz Polylocal Microphone jako mikrofon. Instalacja raz poprosi o hasło administratora i na chwilę uruchomi ponownie dźwięk Maca. Używaj słuchawek; „Mów bezpośrednio” na pasku napisów pozwala mówić własnym głosem.";
 "Speaking translation" = "Tłumaczenie jest odczytywane";
 "Speaking directly" = "Mówisz bezpośrednio";
 "Switch between speaking through the translation and speaking in your own voice" = "Przełączaj między mówieniem przez tłumaczenie a mówieniem własnym głosem";
@@ -291,3 +288,17 @@
 "Primary language (%@)" = "Język główny (%@)";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "Napisy, notatki i odczytywane tłumaczenie są w tym języku; to także język, w którym mówisz, gdy Polylocal odczytuje za ciebie tłumaczenie. Wybranie języka, w którym mówią inni, jest nieco szybsze i bardziej niezawodne niż jego wykrywanie.";
 "Subtitle language" = "Język napisów";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "Uruchamiaj automatycznie, gdy aplikacja do spotkań używa Polylocal Microphone";
+"Also when I start meeting subtitles from the menu bar" = "Także gdy uruchamiam napisy spotkania z paska menu";
+"The language they speak (until known: %@)" = "Język, w którym mówią (do czasu rozpoznania: %@)";
+"Choose their language so your first sentences are not spoken in %@." = "Wybierz ich język, aby twoje pierwsze zdania nie zostały wypowiedziane w języku: %@.";
+"How to use it:" = "Jak tego używać:";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. Zainstaluj Polylocal Microphone (jednorazowo hasło administratora; dźwięk Maca na chwilę uruchomi się ponownie).";
+"2. Choose the language they speak above." = "2. Wybierz powyżej język, w którym mówią.";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. W Zoom, Meet lub Teams wybierz „Polylocal Microphone” jako mikrofon i dołącz do rozmowy.";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Polylocal uruchamia się sam: mów w swoim języku, a oni usłyszą tłumaczenie około 3 sekundy później. Pasek napisów pokazuje, co usłyszeli.";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "Używaj słuchawek. „Tłumaczenie jest odczytywane” na pasku napisów przełącza na twój własny głos i z powrotem.";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "%@ używa Polylocal Microphone, ale tryb spotkania jest wyłączony: inni słyszą ciszę.";
+"Start meeting mode" = "Uruchom tryb spotkania";

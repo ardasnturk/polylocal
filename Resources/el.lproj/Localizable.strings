@@ -277,10 +277,7 @@
 "Install…" = "Εγκατάσταση…";
 "Uninstall…" = "Απεγκατάσταση…";
 "Not included in this build" = "Δεν περιλαμβάνεται σε αυτή την έκδοση";
-"Translate what I say and speak it to the others" = "Μετάφραση όσων λέω και εκφώνησή τους στους άλλους";
 "They hear" = "Ακούν";
-"%@, or the language they speak" = "%@ ή τη γλώσσα που μιλούν";
-"Polylocal listens to your microphone, translates what you say into the others' language and speaks it into “Polylocal Microphone”. In the meeting app, choose Polylocal Microphone as your microphone. Installing it asks for an administrator password once and briefly restarts the Mac's audio. Use headphones; “Speak directly” in the subtitle bar lets you talk in your own voice." = "Το Polylocal ακούει το μικρόφωνό σας, μεταφράζει όσα λέτε στη γλώσσα των άλλων και τα εκφωνεί στο «Polylocal Microphone». Στην εφαρμογή σύσκεψης, επιλέξτε το Polylocal Microphone ως μικρόφωνο. Η εγκατάσταση ζητά μία φορά συνθηματικό διαχειριστή και επανεκκινεί για λίγο τον ήχο του Mac. Χρησιμοποιήστε ακουστικά· με την επιλογή «Απευθείας ομιλία» στη γραμμή υποτίτλων μιλάτε με τη δική σας φωνή.";
 "Speaking translation" = "Εκφώνηση μετάφρασης";
 "Speaking directly" = "Απευθείας ομιλία";
 "Switch between speaking through the translation and speaking in your own voice" = "Εναλλαγή μεταξύ ομιλίας μέσω της μετάφρασης και ομιλίας με τη δική σας φωνή";
@@ -291,3 +288,17 @@
 "Primary language (%@)" = "Κύρια γλώσσα (%@)";
 "Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it." = "Οι υπότιτλοι, οι σημειώσεις και η εκφωνούμενη μετάφραση είναι σε αυτή τη γλώσσα· είναι επίσης η γλώσσα που μιλάτε όταν το Polylocal εκφωνεί τη μετάφραση για εσάς. Η επιλογή της γλώσσας που μιλούν είναι λίγο πιο γρήγορη και αξιόπιστη από τον αυτόματο εντοπισμό της.";
 "Subtitle language" = "Γλώσσα υποτίτλων";
+
+/* Meeting mode: automatic start with Polylocal Microphone */
+"Start automatically when a meeting app uses Polylocal Microphone" = "Αυτόματη έναρξη όταν μια εφαρμογή σύσκεψης χρησιμοποιεί το Polylocal Microphone";
+"Also when I start meeting subtitles from the menu bar" = "Και όταν ξεκινώ τους υπότιτλους σύσκεψης από τη γραμμή μενού";
+"The language they speak (until known: %@)" = "Η γλώσσα που μιλούν (μέχρι να εντοπιστεί: %@)";
+"Choose their language so your first sentences are not spoken in %@." = "Επιλέξτε τη γλώσσα τους, ώστε οι πρώτες σας προτάσεις να μην εκφωνηθούν σε %@.";
+"How to use it:" = "Τρόπος χρήσης:";
+"1. Install Polylocal Microphone (administrator password once; the Mac's audio restarts briefly)." = "1. Εγκαταστήστε το Polylocal Microphone (κωδικός διαχειριστή μία φορά· ο ήχος του Mac επανεκκινείται για λίγο).";
+"2. Choose the language they speak above." = "2. Επιλέξτε παραπάνω τη γλώσσα που μιλούν.";
+"3. In Zoom, Meet or Teams, choose “Polylocal Microphone” as the microphone and join the call." = "3. Στο Zoom, στο Meet ή στο Teams, επιλέξτε «Polylocal Microphone» ως μικρόφωνο και συνδεθείτε στην κλήση.";
+"4. Polylocal starts by itself: speak your language, and they hear the translation about 3 seconds later. The subtitle bar shows what they heard." = "4. Το Polylocal ξεκινά μόνο του: μιλήστε στη γλώσσα σας και οι άλλοι ακούν τη μετάφραση περίπου 3 δευτερόλεπτα αργότερα. Η γραμμή υποτίτλων δείχνει τι άκουσαν.";
+"Use headphones. “Speaking translation” in the subtitle bar switches to your own voice and back." = "Χρησιμοποιήστε ακουστικά. Το «Εκφώνηση μετάφρασης» στη γραμμή υποτίτλων αλλάζει στη δική σας φωνή και πίσω.";
+"%@ uses Polylocal Microphone, but meeting mode is off: the others hear silence." = "Το %@ χρησιμοποιεί το Polylocal Microphone, αλλά η λειτουργία σύσκεψης είναι απενεργοποιημένη: οι άλλοι ακούν σιωπή.";
+"Start meeting mode" = "Έναρξη λειτουργίας σύσκεψης";

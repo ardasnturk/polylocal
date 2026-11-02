@@ -34,6 +34,15 @@ public struct SpeechSegmenter: Sendable {
         public var calibrationFrames = 15
 
         public init() {}
+
+        /// For the user's own microphone (level 4), where a mistake is spoken to the meeting: a clear margin over
+        /// the room and at least half a second of speech, so clicks, breathing and typing are not sent.
+        public static var microphone: Configuration {
+            var configuration = Configuration()
+            configuration.speechAboveFloorDB = 15
+            configuration.minSpeech = 0.5
+            return configuration
+        }
     }
 
     public let configuration: Configuration

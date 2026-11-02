@@ -85,6 +85,10 @@ final class MeetingController {
     private(set) var isSpeakingTranslation = false
     /// Level 4 paused: the user's own voice goes to the Polylocal Microphone unchanged.
     private(set) var isSpeakingDirectly = false
+    /// Started because a meeting app opened Polylocal Microphone; stops again when it closes it.
+    private(set) var startedAutomatically = false
+    /// The app that reads Polylocal Microphone right now (in a call), if any.
+    private(set) var microphoneClient: MeetingApp?
     /// Why level 4 could not start, shown in the subtitle bar.
     private(set) var speakProblem: String? {
         didSet { if let speakProblem { Log.meeting.error("speak translation: \(speakProblem, privacy: .public)") } }
@@ -113,6 +117,10 @@ final class MeetingController {
     @ObservationIgnored private var outgoing: Task<Void, Never>?
     /// The last time the incoming voice (level 3) was speaking, to ignore its echo in the microphone.
     @ObservationIgnored private var incomingVoiceUntil = Date.distantPast
+    @ObservationIgnored private var speakThisMeeting = false
+    @ObservationIgnored private var microphoneTimer: Timer?
+    /// Consecutive checks without anyone reading Polylocal Microphone.
+    @ObservationIgnored private var microphoneIdleChecks = 0
     @ObservationIgnored private lazy var panel = SubtitlePanel(app: app)
 
     init(app: AppModel) {
@@ -126,9 +134,13 @@ final class MeetingController {
     var speechModel: CatalogModel? { app.store.models(.speech).first }
     var isSpeechModelInstalled: Bool { speechModel.map { app.store.state(of: $0) == .installed } ?? false }
 
-    func start(_ source: MeetingApp) {
+    /// `speak` overrides the "Speak the translation" setting for this meeting (it is on when the meeting app
+    /// itself chose Polylocal Microphone).
+    func start(_ source: MeetingApp, speak: Bool? = nil, automatically: Bool = false) {
         guard #available(macOS 14.2, *) else { return }
         stop()
+        speakThisMeeting = speak ?? app.settings.meetingSpeakTranslation
+        startedAutomatically = automatically
         guard let model = speechModel, isSpeechModelInstalled else {
             app.windows.showSettings(tab: .meeting)
             return
@@ -162,7 +174,7 @@ final class MeetingController {
             // The first request pays for loading the weights onto the GPU (~1 s); pay it before anyone speaks.
             _ = try? await server.transcribe([Float](repeating: 0, count: Int(SpeechAudio.sampleRate)), language: nil)
             startCapture()
-            if app.settings.meetingSpeakTranslation { await startSpeaking(with: server) }
+            if speakThisMeeting { await startSpeaking(with: server) }
             for await phrase in stream {
                 await recognize(phrase, with: server)
             }
@@ -190,6 +202,7 @@ final class MeetingController {
         isHearingTranslation = false
         stopSpeaking()
         segmenter = nil
+        startedAutomatically = false
         state = .idle
         panel.hide()
     }
@@ -322,6 +335,52 @@ final class MeetingController {
         }
     }
 
+    // MARK: - Following Polylocal Microphone
+
+    /// Watches who reads Polylocal Microphone. When a meeting app starts reading it (a call begins with it as the
+    /// microphone), meeting mode starts for that app with the translation spoken; it stops again a little after
+    /// the app lets go of it. Choosing the microphone in the meeting app is then all the user has to do.
+    func watchMicrophone() {
+        guard #available(macOS 14.2, *), microphoneTimer == nil else { return }
+        microphoneTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.checkMicrophone() }
+        }
+    }
+
+    @available(macOS 14.2, *)
+    private func checkMicrophone() {
+        guard PolylocalMicrophone.isInstalled, PolylocalMicrophone.isInUse else {
+            microphoneClient = nil
+            microphoneIdleChecks += 1
+            // ~10 s without a reader: the call ended.
+            if startedAutomatically, microphoneIdleChecks >= 5 {
+                Log.meeting.notice("Polylocal Microphone released; stopping meeting mode")
+                stop()
+            }
+            return
+        }
+        microphoneIdleChecks = 0
+        let own = Bundle.main.bundleIdentifier
+        // Only apps: a process without a bundle ID (a command-line tool) cannot be followed as a meeting source.
+        // Development aid: POLYLOCAL_MIC_CLIENT_AS=<bundle id> counts a command-line reader (MicLoop) as that app.
+        let stand_in = ProcessInfo.processInfo.environment["POLYLOCAL_MIC_CLIENT_AS"]
+        let client = PolylocalMicrophone.clients().compactMap { id -> MeetingApp? in
+            guard id != own else { return nil }
+            let bundleID = NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == id } ? id : stand_in
+            // Only apps: a process without one (a command-line tool) cannot be followed as a meeting source.
+            guard let bundleID, !bundleID.isEmpty,
+                  let running = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundleID })
+            else { return nil }
+            return MeetingApp(bundleID: bundleID, name: running.localizedName ?? bundleID)
+        }.first
+        let isNew = client != nil && client != microphoneClient
+        microphoneClient = client
+        // Only when a call starts, so stopping meeting mode by hand during the call is respected.
+        guard isNew, let client, app.settings.meetingAutoStart, !isActive else { return }
+        Log.meeting.notice("Polylocal Microphone opened by \(client.bundleID, privacy: .public); starting meeting mode")
+        start(client, speak: true, automatically: true)
+    }
+
     // MARK: - Speaking the translation (level 4)
 
     /// The language the others hear: the one set for them, the one learned from the meeting, or the secondary language.
@@ -357,7 +416,7 @@ final class MeetingController {
 
         let (stream, continuation) = AsyncStream.makeStream(of: [Float].self, bufferingPolicy: .bufferingNewest(4))
         ownPhrases = continuation
-        let segmenter = SegmenterBox()
+        let segmenter = SegmenterBox(configuration: .microphone)
         let microphone = MicrophoneCapture(
             onSamples: { samples in
                 // Runs on the audio thread, the segmenter's only user.
@@ -427,16 +486,16 @@ final class MeetingController {
         let mine = app.settings.meetingLanguage
         let asrStart = Date()
         let result: Transcription
-        // While the meeting is muted for the user, the microphone can only hear the user: give Whisper the language.
-        // Otherwise the speakers may play the others, so detect the language and keep only the user's own.
-        let forced = isHearingTranslation ? mine : nil
+        // Never give Whisper the language here: forced to the user's language it turns room noise, or the others
+        // on the speakers, into a made-up sentence that would be spoken to the meeting. Detected, such phrases
+        // mostly come out in another language and are dropped (~0.3 s slower).
         do {
-            result = try await server.transcribe(phrase, language: forced)
+            result = try await server.transcribe(phrase, language: nil)
         } catch {
             Log.meeting.error("own recognition failed: \(error.localizedDescription, privacy: .public)")
             return
         }
-        if forced == nil, result.language != mine {
+        if result.language != mine {
             Log.meeting.notice("own phrase skipped (lang=\(result.language?.code ?? "?", privacy: .public), likely the speakers)")
             return
         }
@@ -519,7 +578,11 @@ final class MeetingController {
 
 /// Owns a SpeechSegmenter on the capture queue.
 private final class SegmenterBox: @unchecked Sendable {
-    private var segmenter = SpeechSegmenter()
+    private var segmenter: SpeechSegmenter
+
+    init(configuration: SpeechSegmenter.Configuration = .init()) {
+        segmenter = SpeechSegmenter(configuration: configuration)
+    }
 
     func append(_ samples: [Float]) -> [[Float]] {
         segmenter.append(samples)
