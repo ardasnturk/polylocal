@@ -139,7 +139,7 @@ final class MeetingController {
         languageVote = LanguageVote()
         if app.settings.meetingSaveNotes {
             notes = MeetingNotesWriter(root: notesRoot, app: source.name, started: Date(),
-                                       targetLanguage: app.settings.primaryLanguage)
+                                       targetLanguage: app.settings.meetingLanguage)
         }
         isSavingNotes = notes != nil
         isHearingTranslation = app.settings.meetingHearTranslation
@@ -280,7 +280,7 @@ final class MeetingController {
             Log.meeting.notice("phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms dropped")
             return
         }
-        let target = app.settings.primaryLanguage
+        let target = app.settings.meetingLanguage
         let ownLanguage = result.language == target
         let line = Line(original: text, language: result.language, translation: "",
                         isOwnLanguage: ownLanguage, isTranslating: !ownLanguage)
@@ -326,7 +326,10 @@ final class MeetingController {
 
     /// The language the others hear: the one set for them, the one learned from the meeting, or the secondary language.
     var theirLanguage: Language {
-        app.settings.meetingTheirLanguage ?? languageVote.dominant ?? app.settings.secondaryLanguage
+        let mine = app.settings.meetingLanguage
+        if let set = app.settings.meetingTheirLanguage ?? languageVote.dominant, set != mine { return set }
+        // Before anyone spoke: the other language of the user's pair.
+        return [app.settings.secondaryLanguage, app.settings.primaryLanguage, Language.code("en")!].first { $0 != mine }!
     }
 
     /// Starts translating the user's microphone into the Polylocal Microphone. Meeting mode keeps running
@@ -421,7 +424,7 @@ final class MeetingController {
             return
         }
         let duration = Double(phrase.count) / SpeechAudio.sampleRate
-        let mine = app.settings.primaryLanguage
+        let mine = app.settings.meetingLanguage
         let asrStart = Date()
         let result: Transcription
         // While the meeting is muted for the user, the microphone can only hear the user: give Whisper the language.
@@ -478,7 +481,7 @@ final class MeetingController {
     /// Writes summary.md with the local model once the meeting ends: decisions, action items, open questions.
     /// Long meetings are summarized in parts first, then the parts are combined.
     private func summarize(_ notes: MeetingNotesWriter) {
-        let target = Language.code(notes.transcript.targetLanguage) ?? app.settings.primaryLanguage
+        let target = Language.code(notes.transcript.targetLanguage) ?? app.settings.meetingLanguage
         isSummarizing = true
         Task {
             defer { isSummarizing = false }

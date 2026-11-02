@@ -46,7 +46,7 @@ Translate and rewrite text in any app, pick the right word like in DeepL, and fo
 
 ### Meeting mode (preview)
 
-Live, translated subtitles for what others say in Zoom, Google Meet, Teams, FaceTime or any other app, with speech recognition by Whisper on your Mac. Optionally:
+Live subtitles, in the language you choose, for what others say in Zoom, Google Meet, Teams, FaceTime or any other app, with speech recognition by Whisper on your Mac. Optionally:
 
 - **Notes:** saves the original and translated transcript to a folder and writes a summary with decisions and action items after the meeting.
 - **Hear the translation:** mutes the meeting app for you only and speaks the translation instead.
@@ -62,7 +62,8 @@ See [docs/MEETING_MODE.md](docs/MEETING_MODE.md) for how it works and what comes
 
 - **In-app updates** (Sparkle): checks once a day; download and install with one click.
 - **Optional history:** off by default, stored only on this Mac and readable only by your user account.
-- **English and Turkish interface,** following the macOS language order (Settings → General can override it).
+- **20 languages, in any direction:** Turkish, English, German, French, Spanish, Italian, Portuguese, Dutch, Polish, Swedish, Greek, Azerbaijani, Russian, Ukrainian, Arabic, Persian, Chinese, Japanese, Korean and Hindi.
+- **Interface in the same 20 languages,** following the macOS language order (Settings → General can override it). Translations other than English and Turkish were machine-assisted; corrections are welcome.
 
 ## Install
 

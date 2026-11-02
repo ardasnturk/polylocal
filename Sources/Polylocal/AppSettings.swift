@@ -37,6 +37,8 @@ final class AppSettings {
     /// nil = off. Opens the popup in rewrite (DeepL Write) mode instead of translating.
     var rewriteShortcut: Shortcut? { didSet { saveShortcut(rewriteShortcut, "rewriteShortcut") } }
     var defaultRewriteStyle: RewriteStyle { didSet { save(defaultRewriteStyle.rawValue, "defaultRewriteStyle") } }
+    /// Meeting mode: the user's language, for subtitles, notes and the user's own speech; nil = the primary language.
+    var meetingMyLanguage: Language? { didSet { save(meetingMyLanguage?.code, "meetingMyLanguage") } }
     /// Meeting mode: the language the other participants speak; nil = detect per phrase.
     var meetingTheirLanguage: Language? { didSet { save(meetingTheirLanguage?.code, "meetingTheirLanguage") } }
     var meetingShowOriginal: Bool { didSet { save(meetingShowOriginal, "meetingShowOriginal") } }
@@ -54,6 +56,9 @@ final class AppSettings {
     var meetingSpeakTranslation: Bool { didSet { save(meetingSpeakTranslation, "meetingSpeakTranslation") } }
 
     var pair: LanguagePair { LanguagePair(primary: primaryLanguage, secondary: secondaryLanguage) }
+
+    /// The language meeting subtitles are shown in, and the one the user speaks in meetings.
+    var meetingLanguage: Language { meetingMyLanguage ?? primaryLanguage }
 
     func formality(for language: Language) -> Formality {
         formalityByLanguage[language.code] ?? defaultFormality
@@ -82,6 +87,7 @@ final class AppSettings {
         glossary = defaults.data(forKey: "glossary").flatMap { try? JSONDecoder().decode([GlossaryEntry].self, from: $0) } ?? []
         rewriteShortcut = Self.loadShortcut(defaults, "rewriteShortcut", default: nil)
         defaultRewriteStyle = defaults.string(forKey: "defaultRewriteStyle").flatMap(RewriteStyle.init) ?? .correct
+        meetingMyLanguage = defaults.string(forKey: "meetingMyLanguage").flatMap(Language.code)
         meetingTheirLanguage = defaults.string(forKey: "meetingTheirLanguage").flatMap(Language.code)
         meetingShowOriginal = defaults.object(forKey: "meetingShowOriginal") as? Bool ?? true
         meetingFontSize = defaults.object(forKey: "meetingFontSize") as? Double ?? 22

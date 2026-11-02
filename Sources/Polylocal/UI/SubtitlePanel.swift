@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import PolylocalCore
 
 /// Floating subtitle bar for meeting mode. Stays above other windows, including full-screen meeting apps,
 /// never takes focus, and can be dragged anywhere; its position is remembered.
@@ -86,6 +87,18 @@ private struct SubtitleView: View {
                 }
                 .help("Switch between speaking through the translation and speaking in your own voice")
             }
+            Menu {
+                Picker("Subtitles in", selection: Binding(get: { app.settings.meetingLanguage },
+                                                         set: { app.settings.meetingMyLanguage = $0 })) {
+                    ForEach(Language.all) { Text($0.localizedName).tag($0) }
+                }
+                .pickerStyle(.inline)
+            } label: {
+                Label(app.settings.meetingLanguage.localizedName, systemImage: "captions.bubble").font(.caption)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Subtitle language")
             Button { meeting.setHearingTranslation(!meeting.isHearingTranslation) } label: {
                 Label(meeting.isHearingTranslation ? "Hearing translation" : "Hearing original",
                       systemImage: meeting.isHearingTranslation ? "speaker.wave.2.bubble" : "speaker.wave.2")

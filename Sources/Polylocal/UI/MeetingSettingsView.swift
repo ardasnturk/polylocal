@@ -22,7 +22,7 @@ struct MeetingSettingsView: View {
             } header: {
                 Text("Speech recognition")
             } footer: {
-                Text("Live subtitles for what the other participants say, translated into \(settings.primaryLanguage.localizedName). Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac and never saved or sent; text is saved only if you turn on notes below.")
+                Text("Live subtitles for what the other participants say, translated into \(settings.meetingLanguage.localizedName). Start it from the menu bar: Meeting subtitles. Audio is processed on this Mac and never saved or sent; text is saved only if you turn on notes below.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -31,8 +31,12 @@ struct MeetingSettingsView: View {
                     Text("Detect automatically").tag(Language?.none)
                     ForEach(Language.all) { Text($0.localizedName).tag(Language?.some($0)) }
                 }
-                LabeledContent("Subtitles in", value: settings.primaryLanguage.localizedName)
-                Text("Choosing the language is a little faster and more reliable than detecting it. The subtitle language is your primary language (General).")
+                Picker("Subtitles in", selection: $settings.meetingMyLanguage) {
+                    Text("Primary language (\(settings.primaryLanguage.localizedName))").tag(Language?.none)
+                    Divider()
+                    ForEach(Language.all) { Text($0.localizedName).tag(Language?.some($0)) }
+                }
+                Text("Subtitles, notes and the spoken translation are in this language; it is also the language you speak when Polylocal speaks the translation for you. Choosing the language they speak is a little faster and more reliable than detecting it.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -41,12 +45,12 @@ struct MeetingSettingsView: View {
                     get: { settings.meetingHearTranslation },
                     set: { app.meeting.setHearingTranslation($0) }))
                 LabeledContent("Voice") {
-                    Text(MeetingVoice.voice(for: settings.primaryLanguage)?.name ?? String(localized: "None installed"))
+                    Text(MeetingVoice.voice(for: settings.meetingLanguage)?.name ?? String(localized: "None installed"))
                         .foregroundStyle(.secondary)
                 }
-                if MeetingVoice.hasOnlyBasicVoice(for: settings.primaryLanguage) {
+                if MeetingVoice.hasOnlyBasicVoice(for: settings.meetingLanguage) {
                     HStack {
-                        Text("Only the basic \(settings.primaryLanguage.localizedName) voice is installed. Enhanced and Premium voices sound much more natural.")
+                        Text("Only the basic \(settings.meetingLanguage.localizedName) voice is installed. Enhanced and Premium voices sound much more natural.")
                             .font(.caption).foregroundStyle(.secondary)
                         Spacer()
                         Button("Get voices…") {
