@@ -1,6 +1,6 @@
 # Meeting mode — plan
 
-Status: **L1 (live subtitles), L2 (meeting notes with summary) and L3 (hear the translation) released as a preview in v0.3.0**; **L4 (speak the translation) implemented as a beta** on the `feature/meeting-l4` branch; L5 planned. Spike results that shaped the decisions below are in [prototypes/meeting-spikes](../prototypes/meeting-spikes/README.md).
+Status: **L1 (live subtitles), L2 (meeting notes with summary) and L3 (hear the translation) released as a preview in v0.3.0**; **L4 (speak the translation) released as a beta in v0.5.0**; L5 planned. Spike results that shaped the decisions below are in [prototypes/meeting-spikes](../prototypes/meeting-spikes/README.md).
 
 Measured end to end (M4 Pro, German → Turkish, synthesized speech played in QuickTime): recognition 0.6–0.7 s and translation 0.3–0.5 s per phrase. Including ~0.6 s to notice the pause, a subtitle appears about 1.7 s after the speaker finishes a sentence.
 

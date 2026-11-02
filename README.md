@@ -50,6 +50,7 @@ Live, translated subtitles for what others say in Zoom, Google Meet, Teams, Face
 
 - **Notes:** saves the original and translated transcript to a folder and writes a summary with decisions and action items after the meeting.
 - **Hear the translation:** mutes the meeting app for you only and speaks the translation instead.
+- **Speak the translation (beta):** translates what you say into the others' language and speaks it through **Polylocal Microphone**, a virtual microphone you pick in the meeting app. Installed from Settings → Meeting with your administrator password; “Speak directly” switches back to your own voice.
 
 See [docs/MEETING_MODE.md](docs/MEETING_MODE.md) for how it works and what comes next.
 
@@ -115,6 +116,7 @@ git clone https://github.com/ardasnturk/polylocal.git
 cd polylocal
 scripts/build-llama-server.sh    # llama.cpp's llama-server (static, Metal)
 scripts/build-whisper-server.sh  # whisper.cpp's whisper-server, for meeting mode
+scripts/build-mic-driver.sh      # the Polylocal Microphone audio driver (libASPL), for speaking the translation
 scripts/build-app.sh             # build/Polylocal.app (release)
 open build/Polylocal.app
 ```
@@ -158,7 +160,7 @@ Publish the GitHub release with the DMG as `Polylocal-<x.y.z>.dmg` under tag `v<
 
 ## Roadmap
 
-Next: speaking to a meeting in another language through a virtual microphone ([meeting mode L4](docs/MEETING_MODE.md)), a Homebrew cask, and verified inline suggestions in browsers and Electron apps. See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
+Next: speaker labels and a per-meeting glossary ([meeting mode L5](docs/MEETING_MODE.md)), a Homebrew cask, and verified inline suggestions in browsers and Electron apps. See [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-roadmap).
 
 ## Contributing
 
