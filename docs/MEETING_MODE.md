@@ -1,6 +1,6 @@
 # Meeting mode — plan
 
-Status: **L1 (live subtitles), L2 (meeting notes with summary) and L3 (hear the translation) released as a preview in v0.3.0**; L4–L5 planned. Spike results that shaped the decisions below are in [prototypes/meeting-spikes](../prototypes/meeting-spikes/README.md).
+Status: **L1 (live subtitles), L2 (meeting notes with summary) and L3 (hear the translation) released as a preview in v0.3.0**; **L4 (speak the translation) implemented as a beta** on the `feature/meeting-l4` branch; L5 planned. Spike results that shaped the decisions below are in [prototypes/meeting-spikes](../prototypes/meeting-spikes/README.md).
 
 Measured end to end (M4 Pro, German → Turkish, synthesized speech played in QuickTime): recognition 0.6–0.7 s and translation 0.3–0.5 s per phrase. Including ~0.6 s to notice the pause, a subtitle appears about 1.7 s after the speaker finishes a sentence.
 
@@ -112,10 +112,11 @@ The meeting app must receive the translated voice as a microphone. macOS has no 
 | DriverKit audio driver (system extension) | Modern, user-approved in System Settings; requires an entitlement Apple grants on request. Possible later migration |
 | Ask users to install BlackHole | Zero driver work, but GPL-3.0, an extra install, and confusing. Fallback for a beta only |
 
-- The driver exposes one device, "Polylocal Microphone".
-- The app writes TTS audio into it through shared memory (ring buffer); the meeting app reads from it.
-- When the user's lane is idle, the device passes the user's real mic through at low level or silence (configurable), so the meeting does not hear dead air when the user is not speaking.
-- The installer is a separate signed `.pkg` inside the app ("Install Polylocal Microphone…"). Uninstall is in Settings.
+As built ([Driver/Driver.cpp](../Driver/Driver.cpp)):
+
+- One plug-in, two devices that share a ring buffer inside the audio server: the visible input **"Polylocal Microphone"** (what meeting apps select) and the hidden output **"Polylocal Voice"**. Polylocal plays into the hidden device by UID with an ordinary `AVAudioEngine`; whatever it plays comes out of the microphone. No shared memory or IPC with the app, which keeps the driver within the audio server's sandbox. 48 kHz mono float; at most 100 ms buffered.
+- Between phrases the microphone is silent. "Speak directly" in the subtitle bar sends the user's real microphone through unchanged instead.
+- The driver ships inside the app (`Contents/Resources`), signed and notarized with it. Settings → Meeting installs and uninstalls it with `do shell script … with administrator privileges` (macOS asks for the password) and restarts `coreaudiod`; a `.pkg` was not needed.
 
 ### 3.7 Echo and feedback
 

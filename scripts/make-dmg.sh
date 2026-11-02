@@ -37,6 +37,10 @@ if [ ! -x "$ROOT/build/whisper-server/whisper-server" ] && [ "${ALLOW_NO_WHISPER
     echo "error: build/whisper-server/whisper-server missing; run scripts/build-whisper-server.sh first" >&2
     exit 1
 fi
+if [ ! -d "$ROOT/build/mic-driver/PolylocalMicrophone.driver" ] && [ "${ALLOW_NO_MIC_DRIVER:-0}" != 1 ]; then
+    echo "error: build/mic-driver/PolylocalMicrophone.driver missing; run scripts/build-mic-driver.sh first" >&2
+    exit 1
+fi
 
 VERSION="$VERSION" SIGN_IDENTITY="$IDENTITY" "$ROOT/scripts/build-app.sh" release
 codesign --verify --strict --verbose=2 "$APP"

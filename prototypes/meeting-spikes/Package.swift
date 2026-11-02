@@ -12,5 +12,7 @@ let package = Package(
         .executableTarget(name: "TTSRoute", swiftSettings: [.swiftLanguageMode(.v5)]),
         // S2: speech recognition latency on short phrases.
         .executableTarget(name: "ASRBench", swiftSettings: [.swiftLanguageMode(.v5)]),
+        // S5: the Polylocal Microphone driver passes what is played into "Polylocal Voice" to meeting apps.
+        .executableTarget(name: "MicLoop", swiftSettings: [.swiftLanguageMode(.v5)]),
     ]
 )

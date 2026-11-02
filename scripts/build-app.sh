@@ -65,6 +65,15 @@ else
     echo "note: no bundled whisper-server (run scripts/build-whisper-server.sh); meeting mode will be unavailable"
 fi
 
+MIC_DRIVER="$ROOT/build/mic-driver/PolylocalMicrophone.driver"
+if [ -d "$MIC_DRIVER" ]; then
+    cp -R "$MIC_DRIVER" "$APP/Contents/Resources/PolylocalMicrophone.driver"
+    cp "$ROOT/build/mic-driver/LICENSE.libASPL" "$APP/Contents/Resources/libASPL-LICENSE"
+    echo "Bundled the Polylocal Microphone driver (libASPL $(cat "$ROOT/build/mic-driver/LIBASPL_VERSION" 2>/dev/null))"
+else
+    echo "note: no Polylocal Microphone driver (run scripts/build-mic-driver.sh); speaking the translation will be unavailable"
+fi
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -84,6 +93,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSUIElement</key><true/>
     <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
     <key>NSAudioCaptureUsageDescription</key><string>Meeting mode listens to the meeting app's audio to show live subtitles. Audio is processed on this Mac and never stored or sent anywhere.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Meeting mode can translate what you say and speak it to the others through Polylocal Microphone. Audio is processed on this Mac and never stored or sent anywhere.</string>
     <key>SUFeedURL</key><string>$FEED_URL</string>
     <key>SUPublicEDKey</key><string>+3vnPcaIqjwbAO4UT9Og6ognigF7VEgo2l+xIvEB8dI=</string>
     <key>NSHumanReadableCopyright</key><string>Copyright © 2026 Arda Senturk. MIT License.</string>
@@ -102,6 +112,9 @@ for helper in llama-server whisper-server; do
         codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP/Contents/Helpers/$helper" >/dev/null
     fi
 done
+if [ -d "$APP/Contents/Resources/PolylocalMicrophone.driver" ]; then
+    codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$APP/Contents/Resources/PolylocalMicrophone.driver" >/dev/null
+fi
 SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Autoupdate" >/dev/null
 codesign --force --options runtime $TIMESTAMP --sign "$IDENTITY" "$SPARKLE/Versions/B/Updater.app" >/dev/null

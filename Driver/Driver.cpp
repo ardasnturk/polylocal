@@ -113,11 +113,11 @@ aspl::StreamParameters StreamParams(aspl::Direction direction)
         .mSampleRate = SampleRate,
         .mFormatID = kAudioFormatLinearPCM,
         .mFormatFlags = kAudioFormatFlagIsFloat | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked,
-        .mBitsPerChannel = 32,
-        .mChannelsPerFrame = ChannelCount,
-        .mBytesPerFrame = 4 * ChannelCount,
-        .mFramesPerPacket = 1,
         .mBytesPerPacket = 4 * ChannelCount,
+        .mFramesPerPacket = 1,
+        .mBytesPerFrame = 4 * ChannelCount,
+        .mChannelsPerFrame = ChannelCount,
+        .mBitsPerChannel = 32,
     };
     return params;
 }

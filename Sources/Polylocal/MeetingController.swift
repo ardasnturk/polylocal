@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import Engines
 import Foundation
 import Observation
@@ -65,6 +66,8 @@ final class MeetingController {
         /// No translation needed: the phrase is already in the user's language.
         var isOwnLanguage: Bool
         var isTranslating: Bool
+        /// Said by the user (level 4): `translation` is what the others hear.
+        var isMine = false
     }
 
     private(set) var state: State = .idle {
@@ -78,6 +81,12 @@ final class MeetingController {
     private(set) var isSavingNotes = false
     /// The meeting app is muted for the user and translations are spoken instead.
     private(set) var isHearingTranslation = false
+    /// Level 4 is running: the user's speech is translated into the Polylocal Microphone.
+    private(set) var isSpeakingTranslation = false
+    /// Level 4 paused: the user's own voice goes to the Polylocal Microphone unchanged.
+    private(set) var isSpeakingDirectly = false
+    /// Why level 4 could not start, shown in the subtitle bar.
+    private(set) var speakProblem: String?
 
     var isActive: Bool { state != .idle }
 
@@ -95,6 +104,13 @@ final class MeetingController {
     @ObservationIgnored private var notes: MeetingNotesWriter?
     @ObservationIgnored private var segmenter: SegmenterBox?
     @ObservationIgnored private lazy var voice = MeetingVoice()
+    @ObservationIgnored private var microphone: MicrophoneCapture?
+    @ObservationIgnored private var virtualMicrophone: VirtualMicrophoneOutput?
+    @ObservationIgnored private var outgoingVoice: MeetingVoice?
+    @ObservationIgnored private var ownPhrases: AsyncStream<[Float]>.Continuation?
+    @ObservationIgnored private var outgoing: Task<Void, Never>?
+    /// The last time the incoming voice (level 3) was speaking, to ignore its echo in the microphone.
+    @ObservationIgnored private var incomingVoiceUntil = Date.distantPast
     @ObservationIgnored private lazy var panel = SubtitlePanel(app: app)
 
     init(app: AppModel) {
@@ -144,6 +160,7 @@ final class MeetingController {
             // The first request pays for loading the weights onto the GPU (~1 s); pay it before anyone speaks.
             _ = try? await server.transcribe([Float](repeating: 0, count: Int(SpeechAudio.sampleRate)), language: nil)
             startCapture()
+            if app.settings.meetingSpeakTranslation { await startSpeaking(with: server) }
             for await phrase in stream {
                 await recognize(phrase, with: server)
             }
@@ -169,6 +186,7 @@ final class MeetingController {
         isSavingNotes = false
         voice.stop()
         isHearingTranslation = false
+        stopSpeaking()
         segmenter = nil
         state = .idle
         panel.hide()
@@ -294,9 +312,159 @@ final class MeetingController {
             update(id) { $0.isTranslating = false }
             let translation = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
             notes?.setTranslation(id, translation.isEmpty ? nil : translation)
-            if isHearingTranslation, !translation.isEmpty { voice.say(translation, language: target) }
+            if isHearingTranslation, !translation.isEmpty {
+                voice.say(translation, language: target)
+                incomingVoiceUntil = Date().addingTimeInterval(SpeechBacklog.seconds([translation]) + 1)
+            }
             Log.meeting.notice("translated in \(Int(Date().timeIntervalSince(asrStart) * 1000) - asrMS, privacy: .public)ms chars=\(buffer.count, privacy: .public)")
         }
+    }
+
+    // MARK: - Speaking the translation (level 4)
+
+    /// The language the others hear: the one set for them, the one learned from the meeting, or the secondary language.
+    var theirLanguage: Language {
+        app.settings.meetingTheirLanguage ?? languageVote.dominant ?? app.settings.secondaryLanguage
+    }
+
+    /// Starts translating the user's microphone into the Polylocal Microphone. Meeting mode keeps running
+    /// without it if the driver or the microphone permission is missing.
+    private func startSpeaking(with server: WhisperServer) async {
+        speakProblem = nil
+        guard PolylocalMicrophone.isInstalled else {
+            speakProblem = String(localized: "Polylocal Microphone is not installed (Settings → Meeting).")
+            return
+        }
+        guard await AVCaptureDevice.requestAccess(for: .audio) else {
+            speakProblem = String(localized: "Microphone access is off (System Settings → Privacy & Security → Microphone).")
+            return
+        }
+        guard isActive else { return }
+        let output = VirtualMicrophoneOutput()
+        do {
+            try output.start()
+        } catch {
+            speakProblem = error.localizedDescription
+            return
+        }
+        virtualMicrophone = output
+        outgoingVoice = MeetingVoice(output: output)
+
+        let (stream, continuation) = AsyncStream.makeStream(of: [Float].self, bufferingPolicy: .bufferingNewest(4))
+        ownPhrases = continuation
+        let segmenter = SegmenterBox()
+        let microphone = MicrophoneCapture(
+            onSamples: { samples in
+                // Runs on the audio thread, the segmenter's only user.
+                for phrase in segmenter.append(samples) { continuation.yield(phrase) }
+            },
+            onBuffer: { [weak self] buffer in
+                // "Speak directly": the user's voice, unchanged. The tap reuses its buffer, so pass a copy.
+                guard let copy = buffer.copy() as? AVAudioPCMBuffer else { return }
+                let box = BufferBox(buffer: copy)
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        guard let self, self.isSpeakingDirectly else { return }
+                        self.virtualMicrophone?.play(box.buffer)
+                    }
+                }
+            })
+        do {
+            try microphone.start()
+        } catch {
+            speakProblem = error.localizedDescription
+            output.stop()
+            virtualMicrophone = nil
+            return
+        }
+        self.microphone = microphone
+        isSpeakingTranslation = true
+        isSpeakingDirectly = false
+        Log.meeting.notice("speaking translation started")
+        outgoing = Task {
+            for await phrase in stream {
+                await recognizeOwn(phrase, with: server)
+            }
+        }
+    }
+
+    private func stopSpeaking() {
+        microphone?.stop()
+        microphone = nil
+        ownPhrases?.finish()
+        ownPhrases = nil
+        outgoing?.cancel()
+        outgoing = nil
+        outgoingVoice?.stop()
+        outgoingVoice = nil
+        virtualMicrophone?.stop()
+        virtualMicrophone = nil
+        isSpeakingTranslation = false
+        isSpeakingDirectly = false
+    }
+
+    /// Pauses the translation so the user can talk to the meeting in their own voice, and back.
+    func setSpeakingDirectly(_ on: Bool) {
+        guard isSpeakingTranslation else { return }
+        isSpeakingDirectly = on
+        if on { outgoingVoice?.stop() }
+    }
+
+    private func recognizeOwn(_ phrase: [Float], with server: WhisperServer) async {
+        guard !isSpeakingDirectly else { return }
+        // Without headphones the microphone hears the incoming translation too; that is not the user speaking.
+        if Date() < incomingVoiceUntil || voice.isSpeaking {
+            Log.meeting.notice("own phrase skipped (incoming voice playing)")
+            return
+        }
+        let duration = Double(phrase.count) / SpeechAudio.sampleRate
+        let mine = app.settings.primaryLanguage
+        let asrStart = Date()
+        let result: Transcription
+        // While the meeting is muted for the user, the microphone can only hear the user: give Whisper the language.
+        // Otherwise the speakers may play the others, so detect the language and keep only the user's own.
+        let forced = isHearingTranslation ? mine : nil
+        do {
+            result = try await server.transcribe(phrase, language: forced)
+        } catch {
+            Log.meeting.error("own recognition failed: \(error.localizedDescription, privacy: .public)")
+            return
+        }
+        if forced == nil, result.language != mine {
+            Log.meeting.notice("own phrase skipped (lang=\(result.language?.code ?? "?", privacy: .public), likely the speakers)")
+            return
+        }
+        guard !Task.isCancelled, let text = TranscriptFilter.clean(result.text) else { return }
+        let asrMS = Int(Date().timeIntervalSince(asrStart) * 1000)
+        let target = theirLanguage
+        let line = Line(original: text, language: mine, translation: "", isOwnLanguage: false, isTranslating: true, isMine: true)
+        lines.append(line)
+        if lines.count > 50 { lines.removeFirst(lines.count - 50) }
+        let notes = self.notes
+        notes?.add(line.id, .init(time: asrStart.addingTimeInterval(-duration), language: mine.code,
+                                  original: text, translation: nil))
+        Log.meeting.notice("own phrase audio=\(duration, format: .fixed(precision: 1), privacy: .public)s asr=\(asrMS, privacy: .public)ms to=\(target.code, privacy: .public) chars=\(text.count, privacy: .public)")
+
+        let id = line.id
+        let request = TranslationRequest(text: text, source: mine, target: target,
+                                         formality: app.settings.formality(for: target),
+                                         glossary: Glossary.relevant(app.settings.glossary, for: text, target: target))
+        var buffer = ""
+        do {
+            for try await token in app.engine.translate(request) {
+                buffer += token
+                let partial = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+                update(id) { $0.translation = partial }
+            }
+        } catch {
+            update(id) { $0.translation = "" }
+        }
+        update(id) { $0.isTranslating = false }
+        let translation = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+        notes?.setTranslation(id, translation.isEmpty ? nil : translation)
+        guard !translation.isEmpty, !isSpeakingDirectly else { return }
+        outgoingVoice?.say(translation, language: target)
+        Log.meeting.notice("own translated in \(Int(Date().timeIntervalSince(asrStart) * 1000) - asrMS, privacy: .public)ms")
     }
 
     // MARK: - Summary
@@ -347,4 +515,9 @@ private final class SegmenterBox: @unchecked Sendable {
     func append(_ samples: [Float]) -> [[Float]] {
         segmenter.append(samples)
     }
+}
+
+/// Hands a copied audio buffer to the main thread; nothing else touches it.
+private struct BufferBox: @unchecked Sendable {
+    let buffer: AVAudioPCMBuffer
 }

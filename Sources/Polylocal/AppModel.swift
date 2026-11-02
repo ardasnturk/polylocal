@@ -19,6 +19,7 @@ final class AppModel {
     let engine = EngineController()
     let history = HistoryStore()
     let updater = Updater()
+    let microphoneDriver = MicrophoneDriver()
     var settingsTab: SettingsTab = .general
     let mainTranslator: TranslatorModel
     /// The quick translate field in the menu bar panel.
