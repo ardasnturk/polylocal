@@ -49,6 +49,7 @@ public struct OpenAICompatibleEngine: TranslationEngine {
         let maxTokens = switch request.kind {
         case .complete: 32
         case .summarize: 700
+        case .alternatives: 200
         default: max(64, request.text.count * 2)
         }
         let body: [String: Any] = [

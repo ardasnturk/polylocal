@@ -8,6 +8,8 @@ public struct TranslationRequest: Sendable, Hashable {
         case complete
         /// Meeting notes: summarize a transcript (or partial summaries of one) in `target`.
         case summarize
+        /// Other ways to say `span`, a part of `translation` (the translation of `text`). Answer: WordAlternatives JSON.
+        case alternatives(span: String, translation: String)
     }
 
     public var text: String
@@ -17,15 +19,18 @@ public struct TranslationRequest: Sendable, Hashable {
     public var kind: Kind
     /// Terms that must be translated a fixed way; pass only entries relevant to `text`.
     public var glossary: [GlossaryEntry]
+    /// For `.translate`: the translation must start with this; the model only writes the rest.
+    public var prefix: String?
 
     public init(text: String, source: Language?, target: Language, formality: Formality = .automatic,
-                kind: Kind = .translate, glossary: [GlossaryEntry] = []) {
+                kind: Kind = .translate, glossary: [GlossaryEntry] = [], prefix: String? = nil) {
         self.text = text
         self.source = source
         self.target = target
         self.formality = formality
         self.kind = kind
         self.glossary = glossary
+        self.prefix = prefix
     }
 }
 
@@ -76,6 +81,24 @@ extension Language {
     public var hasFormality: Bool {
         ["tr", "de", "fr", "es", "it", "pt", "nl", "pl", "ru", "uk", "el", "az", "fa", "hi", "ja", "ko"].contains(code)
     }
+
+    /// The formal and informal "you" as speakers of the language name them, for a compact switch (Sie | du).
+    public var formalityWords: (formal: String, informal: String)? {
+        switch code {
+        case "de": ("Sie", "du")
+        case "tr", "az": ("siz", "sen")
+        case "fr": ("vous", "tu")
+        case "es": ("usted", "tú")
+        case "it": ("Lei", "tu")
+        case "pt": ("o senhor", "você")
+        case "nl": ("u", "jij")
+        case "pl": ("Pan/Pani", "ty")
+        case "ru": ("вы", "ты")
+        case "uk": ("ви", "ти")
+        case "el": ("εσείς", "εσύ")
+        default: nil
+        }
+    }
 }
 
 public protocol TranslationEngine: Sendable {
@@ -102,8 +125,18 @@ public enum PromptTemplate: String, Codable, Sendable {
         case .rewrite(let style): return Prompts.rewrite(request, style: style)
         case .complete: return Prompts.complete(request)
         case .summarize: return Prompts.summarize(request)
+        case .alternatives(let span, let translation): return Prompts.alternatives(request, span: span, translation: translation)
         case .translate: break
         }
+        var messages = translationMessages(for: request)
+        // Prefill: llama-server and Ollama continue a final assistant message instead of starting a new one.
+        if let prefix = request.prefix, !prefix.isEmpty {
+            messages.append(["role": "assistant", "content": prefix])
+        }
+        return messages
+    }
+
+    private func translationMessages(for request: TranslationRequest) -> [[String: String]] {
         let target = request.target.englishName
         switch self {
         case .generic:
@@ -113,17 +146,7 @@ public enum PromptTemplate: String, Codable, Sendable {
             Output only the translation. Preserve meaning, tone, numbers and formatting. \
             Do not add explanations, quotes or notes.
             """
-            if request.target.hasFormality {
-                switch request.formality {
-                case .formal: system += " Address the reader formally (polite form of \"you\")."
-                case .informal: system += " Address the reader informally (familiar form of \"you\")."
-                case .automatic: break
-                }
-            }
-            if !request.glossary.isEmpty {
-                let terms = request.glossary.map { "\"\($0.source)\" → \"\($0.target)\"" }.joined(separator: "; ")
-                system += " Always use these term translations: \(terms)."
-            }
+            system += Prompts.constraints(request)
             return [["role": "system", "content": system], ["role": "user", "content": request.text]]
         case .translategemma:
             // Prompt format from the TranslateGemma model card; it needs an explicit source language.
@@ -133,7 +156,7 @@ public enum PromptTemplate: String, Codable, Sendable {
             You are a professional \(s) (\(sc)) to \(target) (\(tc)) translator. \
             Your goal is to accurately convey the meaning and nuances of the original \(s) text \
             while adhering to \(target) grammar, vocabulary, and cultural sensitivities.
-            Produce only the \(target) translation, without any additional explanations or commentary. \
+            Produce only the \(target) translation, without any additional explanations or commentary.\(Prompts.constraints(request)) \
             Please translate the following \(s) text into \(target):
 
 
@@ -145,6 +168,45 @@ public enum PromptTemplate: String, Codable, Sendable {
 }
 
 enum Prompts {
+    /// Form of address and glossary terms, as sentences appended to a translation instruction ("" if none).
+    static func constraints(_ request: TranslationRequest) -> String {
+        var text = ""
+        if request.target.hasFormality {
+            let words = request.target.formalityWords
+            switch request.formality {
+            case .formal: text += " Address the reader formally (polite form of \"you\"\(words.map { ", \($0.formal)" } ?? ""))."
+            case .informal: text += " Address the reader informally (familiar form of \"you\"\(words.map { ", \($0.informal)" } ?? ""))."
+            case .automatic: break
+            }
+        }
+        if !request.glossary.isEmpty {
+            let terms = request.glossary.map { "\"\($0.source)\" → \"\($0.target)\"" }.joined(separator: "; ")
+            text += " Always use these term translations, adapting the surrounding grammar: \(terms)."
+        }
+        return text
+    }
+
+    static func alternatives(_ request: TranslationRequest, span: String, translation: String) -> [[String: String]] {
+        let source = request.source?.englishName ?? "Original"
+        let target = request.target.englishName
+        // Naming the key after the source language ("turkish") makes small models copy source words into it;
+        // with a generic "source" key they tended to repeat the marked target word.
+        let system = """
+        You help a user choose words in a \(source) to \(target) translation. One part of the \(target) translation \
+        is marked as [[...]]. Reply with JSON only: {"alternatives": [up to 5 other \(target) words or phrases that \
+        could replace the marked part in this sentence, best first], "\(source.lowercased())": "the matching words \
+        copied from the \(source) text"}
+        """
+        let marked: String
+        if let range = translation.range(of: span) {
+            marked = translation.replacingCharacters(in: range, with: "[[\(span)]]")
+        } else {
+            marked = translation + " [[\(span)]]"
+        }
+        let user = "\(source): \(request.text)\n\(target): \(marked)"
+        return [["role": "system", "content": system], ["role": "user", "content": user]]
+    }
+
     static func rewrite(_ request: TranslationRequest, style: RewriteStyle) -> [[String: String]] {
         let language = request.target.englishName
         let system = """
@@ -175,6 +237,39 @@ enum Prompts {
         Output only the continuation. Never repeat the user's text, never add quotes or explanations.
         """
         return [["role": "system", "content": system], ["role": "user", "content": request.text]]
+    }
+}
+
+/// The answer to a `.alternatives` request.
+public struct WordAlternatives: Sendable, Hashable {
+    /// The part of the source text the span translates; nil if the model named something not in the text.
+    public var source: String?
+    public var alternatives: [String]
+
+    public init(source: String?, alternatives: [String]) {
+        self.source = source
+        self.alternatives = alternatives
+    }
+
+    /// Parses the model's JSON (tolerating code fences or text around it). Drops alternatives equal to `span`,
+    /// duplicates, and source words that do not occur in `sourceText`.
+    public static func parse(_ reply: String, span: String, sourceText: String) -> WordAlternatives? {
+        guard let start = reply.firstIndex(of: "{"), let end = reply.lastIndex(of: "}"), start < end,
+              let object = try? JSONSerialization.jsonObject(with: Data(reply[start...end].utf8)) as? [String: Any]
+        else { return nil }
+        var seen: Set<String> = [span.lowercased()]
+        let alternatives = (object["alternatives"] as? [Any] ?? []).compactMap { item -> String? in
+            guard let text = (item as? String)?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty,
+                  seen.insert(text.lowercased()).inserted else { return nil }
+            return text
+        }
+        // The source words come under the source language's name ("turkish"), or any other string key.
+        var source = object.first { $0.key != "alternatives" && $0.value is String }
+            .flatMap { ($0.value as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) }
+        if let found = source, found.isEmpty || sourceText.range(of: found, options: .caseInsensitive) == nil {
+            source = nil
+        }
+        return WordAlternatives(source: source, alternatives: Array(alternatives.prefix(5)))
     }
 }
 

@@ -23,7 +23,9 @@ final class EngineController {
         }
     }
 
-    private(set) var status: Status = .notConfigured(String(localized: "No model selected"))
+    private(set) var status: Status = .notConfigured(String(localized: "No model selected")) {
+        didSet { if status.isReady, !oldValue.isReady { NotificationCenter.default.post(name: .engineDidBecomeReady, object: self) } }
+    }
 
     private var engine: (any TranslationEngine)?
     private var server: LlamaServer?
@@ -123,4 +125,9 @@ final class EngineController {
         _ = try? await engine.translateAll(
             TranslationRequest(text: "Hello.", source: .code("en"), target: .code("tr")!))
     }
+}
+
+extension Notification.Name {
+    /// Posted when a model finished loading, so text typed while it loaded gets translated.
+    static let engineDidBecomeReady = Notification.Name("PolylocalEngineDidBecomeReady")
 }
